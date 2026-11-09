@@ -52,12 +52,15 @@ namespace GooNapped
             t += Time.deltaTime * fps;
             int i = (int)t % current.body.Length;
 
+            // Hanya arah side yang di-mirror untuk hadap kiri. Front/back punya sprite sendiri,
+            // kalau ikut di-flip wajah & glint pindah sisi. faceLeft tetap diingat untuk saat kembali ke side.
+            bool flip = faceLeft && dir == "side";
             bodyRenderer.sprite = current.body[i];
-            bodyRenderer.flipX = faceLeft;
+            bodyRenderer.flipX = flip;
             if (faceRenderer != null && current.face != null && current.face.Length > i)
             {
                 faceRenderer.sprite = current.face[i];
-                faceRenderer.flipX = faceLeft;
+                faceRenderer.flipX = flip;
             }
         }
     }

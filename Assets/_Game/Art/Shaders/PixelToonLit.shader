@@ -143,11 +143,11 @@ Shader "GooNapped/PixelToonLit"
                 v.positionOS = UnityFlipSprite(v.positionOS, unity_SpriteProps.xy);
                 Varyings o = CommonNormalsVertex(v);
                 o.color = v.color * unity_SpriteColor;
-                // sprite yang di-flipX: arah kiri-kanan normal ikut dibalik
-                o.tangentWS *= unity_SpriteProps.x;
                 return o;
             }
 
+            // PENTING: jangan balik normal manual untuk sprite flipX. NormalsRenderingShared (URP) sudah
+            // melakukannya lewat unity_SpriteProps; flip tambahan = dibalik 2x = cahaya hadap kiri salah sisi.
             half4 frag (Varyings i) : SV_Target { return CommonNormalsFragment(i, i.color); }
             ENDHLSL
         }
