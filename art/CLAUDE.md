@@ -2,71 +2,75 @@
 
 Berlaku untuk semua kerjaan di Blender, sprite, dan aset visual.
 
-## Gaya
+## Siapa mengerjakan apa (keputusan tim, 9 Nov 2026)
+- **Desain visual = tim desainer**: bentuk karakter, wajah, style, palet, look level. AI tidak mengubah desain atas inisiatif sendiri.
+- **AI = teknis**: pipeline render, tooling (`art/tools/`), import Unity, shader, setup scene.
+- Kalau diminta mengubah desain tanpa arahan konkret (sketsa, referensi, "mata lebih kecil"), minta arahan dulu.
+- Panduan untuk desainer: `docs/panduan-art-desainer.md`. Pembagian kerja: `docs/ai-vs-tim.md`.
+
+## Gaya (arah awal, desain final oleh tim)
 - **Bentuk:** cute dan soft-blobby, terinspirasi feel Slime Rancher. Bulat, kenyal, ekspresif, mata besar sederhana.
 - **Output:** sprite pixel art top-down 3/4, mirip feel aset Momo (dango slime, itch.io).
-- **BUKAN PSX/low-poly.** Tidak ada batas segitiga dan tidak ada tekstur 64px. Model boleh smooth (Subdivision OK) karena yang dipakai di game hanya hasil render-nya.
-- **Desain harus original.** Slime Rancher dan Momo hanya acuan feel. Jangan menyalin desain slime mereka (contoh: kristal pink ala Rock slime, telinga dango ala Momo). Aset Momo tidak boleh masuk repo karena lisensinya melarang redistribusi, sedangkan repo kita publik.
+- **BUKAN PSX/low-poly.** Model boleh smooth (Subdivision OK) karena yang dipakai di game hanya hasil render-nya.
+- **Desain harus original.** Slime Rancher dan Momo hanya acuan feel. Aset Momo tidak boleh masuk repo (lisensi melarang redistribusi, repo publik).
 
 ## Spesifikasi sprite (sudah dikunci)
 | Item | Nilai |
 |---|---|
-| Pipeline | Blender → pre-render → sprite sheet → Unity 2D |
+| Pipeline | Blender → pre-render → sprite sheet → Unity 2D (atau gambar tangan, aturan sama) |
 | Ukuran cell | 48×48 px |
-| Sudut | top-down 3/4, kamera orthographic |
+| Sudut | top-down 3/4, kamera orthographic (tilt 55°) |
 | Arah | 3: `front`, `side` (hadap kanan), `back`. Kiri = flip X di Unity |
-| Unity import | PPU 48, Filter Point, Compression None, Pixel Perfect Camera |
-| Bayangan | TIDAK di-render. Pakai blob shadow sprite terpisah di Unity |
+| Unity import | Otomatis oleh `PixelSpriteImporter`: PPU 48, Point, no compression, slice grid 48, pivot bottom-center |
+| Bayangan jatuh | TIDAK di-render. Blob shadow sprite terpisah di Unity |
+| **Cahaya** | **TIDAK di-bake.** Sprite = albedo flat + normal map. Cahaya dihitung real-time di Unity (shader `GooNapped/PixelToonLit`, Light 2D) lalu dipotong jadi band |
 
-## Slime pemain & tiruan: render grayscale + layer
+## Lighting di engine (penting)
+- **Albedo flat:** warna material saja. Tanpa highlight/bayangan dari arah cahaya. Outline gelap boleh (bagian dari desain, bukan cahaya).
+- **Nada menengah:** albedo jangan terlalu gelap. Lampu hanya bisa menggelapkan, tidak bisa membuat lebih terang dari albedo. Gelapnya stage datang dari Global Light 2D yang redup.
+- **Normal map** (`<nama>_normal`): ruang layar, R = kanan, G = atas, B = ke penonton, linear. Ukuran dan layout frame sama persis dengan albedo. Dipasang otomatis sebagai secondary texture `_NormalMap`.
+- **Light 2D** yang harus mempengaruhi bentuk: `Normal Map Quality = Accurate`, `Distance` ±1.5.
+- Bagian yang menyala sendiri (api, kristal glow) pakai material unlit/emisif, bukan dicerahkan di albedo.
+
+## Slime pemain & tiruan: layer
 Warna tubuh berubah terus karena bahan, jadi warna JANGAN di-render per varian.
-- **Layer `body`:** grayscale, toon 4 tingkat + outline hitam. Di Unity diwarnai lewat gradient-map (1 baris palet per state bahan).
-- **Layer `face`:** mata, mulut, dan detail berwarna tetap. Di-render terpisah dengan body disembunyikan.
-- Dua layer ini jadi dua SpriteRenderer dengan animasi yang sama.
-- Efek nyala (bara), uap (panas), dan garis bau ditambahkan di Unity (particle/overlay), tidak di-bake ke sprite.
-- Musuh, prop, dan toples langsung di-render berwarna (mode `palette`).
+- **`body`**: flat putih (255) + outline abu 40. Di Unity, intensitas cahaya dipetakan ke 4 warna palet state bahan (gradient-map dari cahaya, `_UseGradient = 1`).
+- **`normal`**: normal map body (render Blender, material `Slime_NormalPass`, view transform `Raw`, Z dibalik supaya +Z ke kamera). Lalu `art/tools/normal_pad.py` (isi 1px di bawah outline).
+- **`face`**: mata, glint, mulut, shine. Body jadi holdout. Tampak belakang: kosong.
+- Body + face = dua SpriteRenderer dengan animasi yang sama.
+- Efek nyala (bara), uap (panas), garis bau ditambahkan di Unity (particle/overlay), tidak di-bake.
+- Musuh, prop, toples: albedo berwarna flat + normal map (mode `palette` di pixelize untuk albedo).
 
 ## Cara ciri resep terbaca di 48px (usulan, boleh diubah tim)
 | Ciri | Visual |
 |---|---|
-| Warna | gradient-map body |
-| Suhu | glow + uap (Unity) |
+| Warna | palet gradient-map body |
+| Suhu | glow + uap (Unity), light 2D kecil menempel di slime |
 | Berat | squash lebih pipih, gerak lambat, palet lebih gelap |
 | Kilau | 1–2 pixel highlight tambahan (layer `face`/overlay) |
 | Bau | garis bergelombang di atas kepala (Unity) |
 
-## Aturan bentuk slime
-- Origin di tengah bawah, berdiri di Z=0, hadap **-Y**. Skala: tinggi badan sekitar 1.0 m, lebar sekitar 1.2 m.
-- Siluet: kubah bulat, bawah agak rata/melebar seperti tetesan jeli. Jangan bola sempurna.
-- Mata: 2 oval hitam vertikal, besar, posisinya sekitar 45% tinggi badan (agak ke bawah = lebih cute), jarak antar mata sekitar 1 lebar mata. Tanpa hidung. Mulut opsional dan kecil.
-- Aksesori/ciri (tanduk, daun, bara, batu): bentuk chunky sederhana dengan 1 bentuk dasar yang jelas. Harus tetap kebaca jadi 3–6 pixel di 48px. Jangan bola yang cuma di-scale.
+## Aturan bentuk slime (arah awal)
+- Origin di tengah bawah, berdiri di Z=0, hadap **-Y**. Tinggi badan ±1.0 m, lebar ±1.2 m.
+- Siluet: kubah bulat, bawah agak rata/melebar seperti tetesan jeli.
 - Setiap bagian harus lolos **tes siluet**: render 48px hitam-putih, bentuknya masih bisa dikenali.
 
-## Shading render
-- Toon: Shader to RGB → Color Ramp **Constant**, 3–4 band. Tanpa gradasi halus, tanpa SSS, tanpa transparansi halus.
-- Body slime grayscale: warna ramp harus jatuh di tengah bin `pixelize.py` (bin per 64). Isi nilai **sRGB 32/96/160/224** (linear 0.0144/0.117/0.3515/0.7454), posisi 0/0.3/0.55/0.85. Kalau diisi linear 0.25/0.5/0.75/1.0, hasilnya cuma 2 band.
-- Satu sun light dari kiri-atas-depan. Arahnya SAMA untuk semua aset.
-- Reuse pipeline dari `Knight_mc__1.blend` (Blender 3.6): material `PixelArt_Simple`, image `Bayer Matrix` (dither, pakai seperlunya), `Dolly_Camera`. Append, jangan bikin ulang dari nol.
+## Render Blender
+- Body flat: `render_slime.py` memaksa ramp toon `Slime_Body_Toon` jadi putih selama render (nilai ramp tetap disimpan untuk preview viewport).
+- Catatan ramp (kalau suatu saat butuh render grayscale ber-band lagi): isi nilai sRGB 32/96/160/224 (tengah bin `pixelize.py`), bukan linear 0.25/0.5/0.75/1.0.
+- Tanpa AA (`filter_size 0`), film transparan, view `Standard` (albedo) / `Raw` (normal).
 
 ## Mood stage & palet (USULAN, belum disepakati tim)
 Game ini stealth, jadi cahaya = mekanik (Familiar Api melihat benda menyala, slime yang makan bara jadi gampang terlihat). Stage TIDAK boleh cerah.
-- **Dasar:** gelap dan dingin (biru kehijauan). Cahaya hangat (oranye/kuning) hanya dari sumber: kuali, api, obor. Warna hangat = sinyal "penting/berbahaya".
-- **Slime pemain harus menonjol** dari lantai gelap: palet gradient-map lebih terang dari lingkungan, outline gelap yang sewarna badan, rim light tipis kalau perlu.
+- **Dasar:** gelap dan dingin (Global Light 2D redup kebiruan). Cahaya hangat hanya dari sumber: kuali, api, obor.
+- **Slime pemain harus menonjol**: palet gradient-map lebih terang dari lingkungan, outline gelap sewarna badan.
 - **Cone penjaga:** merah, tetap terbaca di atas lantai gelap.
-- **Jangan terlalu gelap:** area aman agak gelap, area penjaga dan bahan tetap terbaca (cek saat playtest).
-- **Palet:** `art/palette.hex` (lingkungan, musuh, prop). Slime pemain TIDAK memakai file ini, ia di-render grayscale dan diwarnai gradient-map di Unity.
-- **Gradient-map slime:** nilai abu 40 = outline (hijau/merah/dll gelap versi warna badan), 64/128/191/255 = 4 band. Geser hue antar band (bayangan agak ke biru, terang agak ke kuning), bukan sekadar terang-gelap.
-- Referensi mockup dari generator gambar hanya acuan mood, bukan target piksel. Pipeline render 48px tidak akan sedetail itu.
-
-### Slime: perbaikan yang direncanakan (belum dikerjakan)
-- Layer highlight terpisah (1-3 piksel). Hati-hati: "kilau" adalah ciri resep. Highlight dasar harus kecil, ciri kilau = highlight besar + kilauan.
-- Mata: tambah glint kecil dan mulut kecil opsional di layer `face`.
-- Bentuk lebih bulat dan jeli (Subdivision + smooth), bukan facet low-poly.
+- **Palet:** `art/palette.hex` (lingkungan, musuh, prop). Slime pemain memakai palet gradient-map per state bahan (material di Unity).
 
 ## Konvensi Blender
-- Satu file per karakter: `art/blender/<nama>.blend`. Simpan incremental (`_v01`, `_v02`) sebelum perubahan besar.
-- Nama objek: `<Karakter>_<Bagian>` (contoh: `Slime_Body`, `Slime_EyeL`, `Golem_Head`). Collection: `<Karakter>`, `Render_Rig`, `Ref`.
-- Animasi: Action per anim (`idle`, `move`, `eat`, `split`, `merge`, `disguise`, `alert`). Squash & stretch pakai shape key/lattice.
+- Satu file per karakter: `art/blender/<nama>.blend`. Simpan incremental (`_v01`, `_v02`) sebelum perubahan besar. Terbaru slime: `slime_v06.blend`.
+- Nama objek: `<Karakter>_<Bagian>` (contoh: `Slime_Body`, `Slime_EyeL`, `Golem_Head`).
+- Animasi: Action per anim (`idle`, `move`, `eat`, `split`, `merge`, `jelly`, `disguise`, `alert`). Squash & stretch pakai shape key/lattice.
 - Jangan hapus objek/file tanpa konfirmasi.
 
 ## Folder
@@ -75,11 +79,11 @@ art/
   blender/      .blend sumber
   ref/          referensi (gitignore kalau aset berbayar)
   renders/raw/  hasil render mentah (gitignore)
-  sprites/      sheet final → di-copy ke Unity Assets/Sprites
-  tools/        pixelize.py, render_slime.py (render semua anim slime, jalankan di Blender)
+  sprites/      sheet final (body/face/normal) → di-copy ke Assets/_Game/Art/Sprites/<kategori>/
+  tools/        pixelize.py, normal_pad.py, render_slime.py (jalankan di Blender)
 ```
 
-## Workflow (wajib)
-- Modeling karakter/prop → ikuti skill `slime-model`.
-- Render ke sprite → ikuti skill `sprite-render`.
-- Pakai Blender MCP. Setelah tiap tahap, ambil screenshot viewport/render dan **cek sendiri** sebelum lanjut. Jangan bangun semua sekaligus tanpa cek.
+## Workflow
+- Modeling → skill `slime-model`. Render → skill `sprite-render` + `art/tools/render_slime.py`.
+- Pakai Blender MCP. Setelah tiap tahap, ambil screenshot/preview dan **cek sendiri** sebelum lanjut.
+- Cek hasil akhir di scene `Assets/_Game/Scenes/Sandbox/DemoSlime.unity` (ada obor dengan normal map aktif).

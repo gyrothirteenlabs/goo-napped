@@ -1,11 +1,12 @@
-"""Render semua animasi slime pemain (layer body + face, 3 arah) ke art/renders/raw/slime.
+"""Render semua animasi slime pemain (layer body + face + normal, 3 arah) ke art/renders/raw/slime.
 
 Jalankan di Blender (file art/blender/slime_v06.blend atau lebih baru), misal lewat Blender MCP:
     exec(open(r'<repo>/art/tools/render_slime.py').read()); render_anims(['idle'])
 Tanpa argumen = semua anim. Setelah itu jalankan pixelize (lihat bawah file).
 
 Aturan (art/CLAUDE.md + skill sprite-render):
-- body: objek face disembunyikan.
+- body: FLAT (tanpa cahaya). Ramp toon dipaksa putih selama render; cahaya dihitung di Unity.
+- normal: normal ruang kamera (R=kanan, G=atas, B=ke penonton), material Slime_NormalPass, view Raw.
 - face: body (dan piece) jadi holdout, supaya mata yang ketutup body tidak ikut.
 - tampak belakang: layer face dikosongkan (semua objek face disembunyikan).
 - arah diatur lewat rotasi Slime_Root (front 0, side 90 = hadap kanan, back 180).
@@ -34,9 +35,17 @@ def _ad(idb):
     return idb.animation_data
 
 
-def render_anims(names=None):
+LAYERS = ('body', 'face', 'normal')
+
+
+def render_anims(names=None, layers=LAYERS):
     s = bpy.context.scene
+    vl = bpy.context.view_layer
     ob = bpy.data.objects
+    ramp = next(n for n in bpy.data.materials['Slime_Body_Toon'].node_tree.nodes if n.type == 'VALTORGB').color_ramp
+    ramp_saved = [tuple(e.color) for e in ramp.elements]
+    normal_mat = bpy.data.materials['Slime_NormalPass']
+    view_saved = s.view_settings.view_transform
     root, body, pb = ob['Slime_Root'], ob['Slime_Body'], ob['Slime_PieceBody']
     key = ob['Slime_Lattice'].data.shape_keys
     face = [ob[n] for n in FACE]
@@ -60,9 +69,14 @@ def render_anims(names=None):
             pb.hide_render = not piece
             for d, ang in DIRS.items():
                 root.rotation_euler = (0, 0, math.radians(ang))
-                for layer in ('body', 'face'):
+                for layer in layers:
                     is_face = layer == 'face'
+                    is_normal = layer == 'normal'
                     body.is_holdout = pb.is_holdout = is_face
+                    for e in ramp.elements:
+                        e.color = (1, 1, 1, 1)          # body flat putih (outline ditambah pixelize)
+                    vl.material_override = normal_mat if is_normal else None
+                    s.view_settings.view_transform = 'Raw' if is_normal else view_saved
                     show_face = is_face and d != 'back'
                     for o in face:
                         o.hide_render = not show_face
@@ -75,6 +89,10 @@ def render_anims(names=None):
                         cnt += 1
     finally:
         # kembalikan ke kondisi rest
+        for e, c in zip(ramp.elements, ramp_saved):
+            e.color = c
+        vl.material_override = None
+        s.view_settings.view_transform = view_saved
         body.is_holdout = pb.is_holdout = False
         if body.animation_data: body.animation_data.action = None
         if pb.animation_data: pb.animation_data.action = None
@@ -91,6 +109,7 @@ def render_anims(names=None):
     print('rendered', cnt, 'to', raw)
     return cnt
 
-# Pixelize (dari root repo; body dan face harus di folder input terpisah):
-#   pixelize.py <in_body> art/sprites/slime --mode gray --levels 4 --outline 282828 --sheet
-#   pixelize.py <in_face> art/sprites/slime --mode none --outline none --sheet
+# Pixelize (dari root repo; body, face, normal harus di folder input terpisah):
+#   pixelize.py <in_body>   art/sprites/slime --mode gray --levels 4 --outline 282828 --sheet
+#   pixelize.py <in_face>   art/sprites/slime --mode none --outline none --sheet
+#   pixelize.py <in_normal> art/sprites/slime --mode none --outline none --sheet
