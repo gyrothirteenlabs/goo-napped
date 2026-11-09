@@ -27,8 +27,19 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
-    m_Floats: []
+    m_Floats:
+    - _LightInfluence: 0.75
+    - _MinLight: 0.45
+    - _UseGradient: 1
     m_Colors:
     - _Band1: {r: 0.18431373, g: 0.47843137, b: 0.41568628, a: 1}
     - _Band2: {r: 0.24705882, g: 0.65882355, b: 0.41568628, a: 1}

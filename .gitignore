@@ -117,3 +117,7 @@ InitTestScene*.unity*
 /art/renders/raw/
 /art/ref/
 *.blend1
+
+# Screenshot dari Unity MCP / editor (bukan aset game)
+/[Aa]ssets/[Ss]creenshots/
+/[Aa]ssets/[Ss]creenshots.meta
