@@ -47,6 +47,21 @@ Warna tubuh berubah terus karena bahan, jadi warna JANGAN di-render per varian.
 - Satu sun light dari kiri-atas-depan. Arahnya SAMA untuk semua aset.
 - Reuse pipeline dari `Knight_mc__1.blend` (Blender 3.6): material `PixelArt_Simple`, image `Bayer Matrix` (dither, pakai seperlunya), `Dolly_Camera`. Append, jangan bikin ulang dari nol.
 
+## Mood stage & palet (USULAN, belum disepakati tim)
+Game ini stealth, jadi cahaya = mekanik (Familiar Api melihat benda menyala, slime yang makan bara jadi gampang terlihat). Stage TIDAK boleh cerah.
+- **Dasar:** gelap dan dingin (biru kehijauan). Cahaya hangat (oranye/kuning) hanya dari sumber: kuali, api, obor. Warna hangat = sinyal "penting/berbahaya".
+- **Slime pemain harus menonjol** dari lantai gelap: palet gradient-map lebih terang dari lingkungan, outline gelap yang sewarna badan, rim light tipis kalau perlu.
+- **Cone penjaga:** merah, tetap terbaca di atas lantai gelap.
+- **Jangan terlalu gelap:** area aman agak gelap, area penjaga dan bahan tetap terbaca (cek saat playtest).
+- **Palet:** `art/palette.hex` (lingkungan, musuh, prop). Slime pemain TIDAK memakai file ini, ia di-render grayscale dan diwarnai gradient-map di Unity.
+- **Gradient-map slime:** nilai abu 40 = outline (hijau/merah/dll gelap versi warna badan), 64/128/191/255 = 4 band. Geser hue antar band (bayangan agak ke biru, terang agak ke kuning), bukan sekadar terang-gelap.
+- Referensi mockup dari generator gambar hanya acuan mood, bukan target piksel. Pipeline render 48px tidak akan sedetail itu.
+
+### Slime: perbaikan yang direncanakan (belum dikerjakan)
+- Layer highlight terpisah (1-3 piksel). Hati-hati: "kilau" adalah ciri resep. Highlight dasar harus kecil, ciri kilau = highlight besar + kilauan.
+- Mata: tambah glint kecil dan mulut kecil opsional di layer `face`.
+- Bentuk lebih bulat dan jeli (Subdivision + smooth), bukan facet low-poly.
+
 ## Konvensi Blender
 - Satu file per karakter: `art/blender/<nama>.blend`. Simpan incremental (`_v01`, `_v02`) sebelum perubahan besar.
 - Nama objek: `<Karakter>_<Bagian>` (contoh: `Slime_Body`, `Slime_EyeL`, `Golem_Head`). Collection: `<Karakter>`, `Render_Rig`, `Ref`.
