@@ -1,0 +1,623 @@
+fileFormatVersion: 2
+guid: d64a21f781aba5c4e862b8a798d7485b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1118259018584321156
+    second: slime_face_jelly_front_0
+  - first:
+      213: -2243315912865770013
+    second: slime_face_jelly_front_1
+  - first:
+      213: 2843200086272573197
+    second: slime_face_jelly_front_2
+  - first:
+      213: 2536423121249085911
+    second: slime_face_jelly_front_3
+  - first:
+      213: 6939452480216217039
+    second: slime_face_jelly_front_4
+  - first:
+      213: -2628809241752733778
+    second: slime_face_jelly_front_5
+  - first:
+      213: 5939225339470362687
+    second: slime_face_jelly_front_6
+  - first:
+      213: 9194839568707372193
+    second: slime_face_jelly_front_7
+  - first:
+      213: 3305302791985054828
+    second: slime_face_jelly_front_8
+  - first:
+      213: -883814339196693351
+    second: slime_face_jelly_front_9
+  - first:
+      213: 7761293428564877238
+    second: slime_face_jelly_front_10
+  - first:
+      213: 8086115176040332167
+    second: slime_face_jelly_front_11
+  - first:
+      213: 5373533151631344752
+    second: slime_face_jelly_front_12
+  - first:
+      213: -4148904465633007648
+    second: slime_face_jelly_front_13
+  - first:
+      213: -8555295808636334175
+    second: slime_face_jelly_front_14
+  - first:
+      213: 4872349337643387378
+    second: slime_face_jelly_front_15
+  - first:
+      213: 6422886512085990610
+    second: slime_face_jelly_front_16
+  - first:
+      213: -9150779572857875063
+    second: slime_face_jelly_front_17
+  - first:
+      213: -8141443528260643629
+    second: slime_face_jelly_front_18
+  - first:
+      213: 597540662376981484
+    second: slime_face_jelly_front_19
+  - first:
+      213: 7053233071765544738
+    second: slime_face_jelly_front_20
+  - first:
+      213: 5108793626571203757
+    second: slime_face_jelly_front_21
+  - first:
+      213: 3819791208719678139
+    second: slime_face_jelly_front_22
+  - first:
+      213: 8065525705428412489
+    second: slime_face_jelly_front_23
+  - first:
+      213: -2428095316867597097
+    second: slime_face_jelly_front_24
+  - first:
+      213: -3580447495452676354
+    second: slime_face_jelly_front_25
+  - first:
+      213: 1597141695110923639
+    second: slime_face_jelly_front_26
+  - first:
+      213: -7519755404717126438
+    second: slime_face_jelly_front_27
+  - first:
+      213: -3523735618767016537
+    second: slime_face_jelly_front_28
+  - first:
+      213: -339755148804786999
+    second: slime_face_jelly_front_29
+  - first:
+      213: -6510377486313337729
+    second: slime_face_jelly_front_30
+  - first:
+      213: 2370572203446247223
+    second: slime_face_jelly_front_31
+  - first:
+      213: -8967983817192510663
+    second: slime_face_jelly_front_32
+  - first:
+      213: -4163603518274356035
+    second: slime_face_jelly_front_33
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 48
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: slime_face_jelly_front_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9ec3488196f7c3743ba12332218bd4bb
+      internalID: -1118259018584321156
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_1
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3e3504b27a7d8ad48b261292ebd0f04c
+      internalID: -2243315912865770013
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_2
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e265b4dbb1423140bd6f4a47d6f04df
+      internalID: 2843200086272573197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_3
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49369f810379b924285be6dd2792e3d3
+      internalID: 2536423121249085911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_4
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0bd74a95f8aeb5148b5d2066f6e23140
+      internalID: 6939452480216217039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_5
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6751a091611ba304f8e85b1bb1e5edcb
+      internalID: -2628809241752733778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_6
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2d026493f524fb45b03a904d01933e9
+      internalID: 5939225339470362687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_7
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 55b5025fda99d3542b9dd78ead0e8e14
+      internalID: 9194839568707372193
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_8
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2f7845a832438ae44b5780a733c0be0f
+      internalID: 3305302791985054828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_9
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f93a7e8e5d2d10949b6a68fce63e3398
+      internalID: -883814339196693351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_10
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e6d1e71b5fa15e6469bc689c9222fe1c
+      internalID: 7761293428564877238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_11
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a910b68a05c942945bfe5bf858f164f0
+      internalID: 8086115176040332167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_12
+      rect:
+        serializedVersion: 2
+        x: 576
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9504502c895d00c4d81e916c154979d5
+      internalID: 5373533151631344752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_13
+      rect:
+        serializedVersion: 2
+        x: 624
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 58c730c7324812e489789d285142a103
+      internalID: -4148904465633007648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_14
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 012a389ede3e38d4ba20fd8c8c5519e5
+      internalID: -8555295808636334175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_15
+      rect:
+        serializedVersion: 2
+        x: 720
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: de8a644a60f12154b9e08cd464e67db6
+      internalID: 4872349337643387378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slime_face_jelly_front_16
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd59b600ff4331d4e8c03c722bcff8c3
+      internalID: 6422886512085990610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: ac02f0fbec0e3a6438a312765bd3a87f
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      slime_face_jelly_front_0: -1118259018584321156
+      slime_face_jelly_front_1: -2243315912865770013
+      slime_face_jelly_front_10: 7761293428564877238
+      slime_face_jelly_front_11: 8086115176040332167
+      slime_face_jelly_front_12: 5373533151631344752
+      slime_face_jelly_front_13: -4148904465633007648
+      slime_face_jelly_front_14: -8555295808636334175
+      slime_face_jelly_front_15: 4872349337643387378
+      slime_face_jelly_front_16: 6422886512085990610
+      slime_face_jelly_front_2: 2843200086272573197
+      slime_face_jelly_front_3: 2536423121249085911
+      slime_face_jelly_front_4: 6939452480216217039
+      slime_face_jelly_front_5: -2628809241752733778
+      slime_face_jelly_front_6: 5939225339470362687
+      slime_face_jelly_front_7: 9194839568707372193
+      slime_face_jelly_front_8: 3305302791985054828
+      slime_face_jelly_front_9: -883814339196693351
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
