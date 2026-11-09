@@ -80,10 +80,17 @@ art/
   ref/          referensi (gitignore kalau aset berbayar)
   renders/raw/  hasil render mentah (gitignore)
   sprites/      sheet final (body/face/normal) → di-copy ke Assets/_Game/Art/Sprites/<kategori>/
-  tools/        pixelize.py, normal_pad.py, render_slime.py (jalankan di Blender)
+  tools/        goonapped_sprite_addon.py (panel render), make_sprite_template.py,
+                pixelize.py, normal_pad.py, render_slime.py (khusus slime_v06)
 ```
 
+## Template render (model baru)
+- `art/blender/sprite_template.blend` + add-on `art/tools/goonapped_sprite_addon.py`: kamera, render setting, material flat sementara, 3 layer, pixelize, preview. Panduan desainer: `docs/panduan-blender-3d.md`.
+- Template dibangun ulang dari skrip, jangan diedit tangan: `blender -b --factory-startup --python art/tools/make_sprite_template.py`. Konstanta spek (CELL, PX_PER_M, CAM_TILT) ada di add-on.
+- Render headless di mesin ini butuh `--gpu-backend vulkan` (backend OpenGL crash di EEVEE background).
+- Hasil v06 lewat template = identik pixel dengan `art/sprites/slime/` (sudah dites 9 Nov).
+
 ## Workflow
-- Modeling → skill `slime-model`. Render → skill `sprite-render` + `art/tools/render_slime.py`.
+- Modeling → skill `slime-model`. Render → template + add-on (model baru) atau `art/tools/render_slime.py` (slime_v06).
 - Pakai Blender MCP. Setelah tiap tahap, ambil screenshot/preview dan **cek sendiri** sebelum lanjut.
 - Cek hasil akhir di scene `Assets/_Game/Scenes/Sandbox/DemoSlime.unity` (ada obor dengan normal map aktif).

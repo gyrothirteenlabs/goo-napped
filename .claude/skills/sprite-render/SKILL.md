@@ -7,6 +7,8 @@ description: Render model Blender jadi sprite sheet pixel 48px (top-down 3/4, 3 
 
 Baca `art/CLAUDE.md` dulu. Jalankan kode lewat Blender MCP (`execute_blender_code`).
 
+**Model baru: pakai template.** `art/blender/sprite_template.blend` + add-on `art/tools/goonapped_sprite_addon.py` sudah mengerjakan langkah di bawah (rig, flat material, 3 layer, pixelize, preview). Lewat kode: import modul add-on, `assign_objects(ctx, 'MODEL_Body'|'MODEL_Face')`, `fit_model(ctx, 1.0)`, isi `scene.gn_sprite`, `render_sprites(ctx)`. Panduan: `docs/panduan-blender-3d.md`. Langkah manual di bawah = referensi / file lama.
+
 ## 1. Render rig (sekali per file)
 ```python
 import bpy, math
