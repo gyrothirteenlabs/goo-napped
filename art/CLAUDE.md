@@ -44,6 +44,7 @@ Warna tubuh berubah terus karena bahan, jadi warna JANGAN di-render per varian.
 
 ## Shading render
 - Toon: Shader to RGB → Color Ramp **Constant**, 3–4 band. Tanpa gradasi halus, tanpa SSS, tanpa transparansi halus.
+- Body slime grayscale: warna ramp harus jatuh di tengah bin `pixelize.py` (bin per 64). Isi nilai **sRGB 32/96/160/224** (linear 0.0144/0.117/0.3515/0.7454), posisi 0/0.3/0.55/0.85. Kalau diisi linear 0.25/0.5/0.75/1.0, hasilnya cuma 2 band.
 - Satu sun light dari kiri-atas-depan. Arahnya SAMA untuk semua aset.
 - Reuse pipeline dari `Knight_mc__1.blend` (Blender 3.6): material `PixelArt_Simple`, image `Bayer Matrix` (dither, pakai seperlunya), `Dolly_Camera`. Append, jangan bikin ulang dari nol.
 
@@ -75,7 +76,7 @@ art/
   ref/          referensi (gitignore kalau aset berbayar)
   renders/raw/  hasil render mentah (gitignore)
   sprites/      sheet final → di-copy ke Unity Assets/Sprites
-  tools/        pixelize.py
+  tools/        pixelize.py, render_slime.py (render semua anim slime, jalankan di Blender)
 ```
 
 ## Workflow (wajib)
