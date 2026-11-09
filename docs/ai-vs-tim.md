@@ -3,6 +3,8 @@
 Catatan dari pengalaman minggu 1 (pipeline slime Blender → Unity dikerjakan bareng Claude lewat Blender MCP + Unity MCP).
 Intinya: **AI cepat untuk kerjaan yang aturannya jelas dan bisa dicek. Keputusan rasa (fun, gaya, cerita) tetap di tim.**
 
+**Keputusan (9 Nov 2026):** semua desain art dikerjakan tim desainer. Code, tooling render, setup scene, dan **shader** dikerjakan AI (dibantu/di-review programmer). Panduan desainer: [panduan-art-desainer.md](panduan-art-desainer.md).
+
 ## Cocok dikerjakan AI (tetap di-review tim)
 
 | Kerjaan | Kenapa cocok | Yang harus dicek tim |
@@ -32,7 +34,7 @@ Intinya: **AI cepat untuk kerjaan yang aturannya jelas dan bisa dicek. Keputusan
 
 - **Arsitektur Unity** (sistem potongan/Shift, sistem bahan, AI penjaga): AI bisa usulkan 2–3 opsi + risiko, tim pilih, baru AI implementasi.
 - **Animasi**: AI bisa bikin keyframe/shape key dari deskripsi, tapi timing final dicek animator tim.
-- **Shader & efek** (glow bara, uap, garis bau): AI tulis, tim nilai apakah terbaca di 48px.
+- **Efek** (glow bara, uap, garis bau): AI tulis shader/particle, tim nilai apakah terbaca di 48px.
 
 ## Aturan kerja dengan AI di repo ini
 
@@ -43,7 +45,9 @@ Intinya: **AI cepat untuk kerjaan yang aturannya jelas dan bisa dicek. Keputusan
 5. AI tidak menghapus file/objek tanpa konfirmasi.
 6. Kasih AI arah yang konkret (sketsa, referensi, "lebih bulat", "mata lebih kecil") — permintaan "bikin lebih bagus" saja hasilnya untung-untungan.
 
-## Status demo per 9 Nov
+## Status per 9 Nov
 
-- Scene `Assets/Scenes/DemoSlime.unity`: 3 slime (gradient-map normal/cabai/batu), WASD + collider dinding/batas, obor dengan light 2D, slime ikut lampu (shader lit).
-- Belum: desain slime final, controller asli (Input Actions), sistem makan/belah/gabung, penjaga.
+- Struktur project `Assets/_Game/` + 18 scene placeholder (Boot, menu, cerita, 12 level) di Build Settings.
+- Lighting real-time: shader `GooNapped/PixelToonLit` (normal map + band toon), slime body flat + normal map.
+- Sandbox `Assets/_Game/Scenes/Sandbox/DemoSlime.unity`: 3 slime, WASD + collider, obor dengan normal map.
+- Belum: desain slime final (tim), controller asli (Input Actions), sistem makan/belah/gabung, penjaga, tileset level.

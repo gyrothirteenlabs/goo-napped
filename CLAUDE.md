@@ -1,12 +1,67 @@
 # Game Off 2026: tema "SHIFT"
 
-Game jam itch.io, 1 bulan, mulai 3 Nov 2026, dikerjakan bareng tim. Engine: Unity (2D).
+Game jam itch.io, 1 bulan, mulai 3 Nov 2026, dikerjakan bareng tim. Engine: Unity 6 (6000.3.28f1), URP 2D.
 Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double, Shiftling.
 
-## Status
-- Sudah disepakati: konsep gameplay, lore, objektif.
-- Belum dibahas: technical (arsitektur, kode).
-- Visual: arah art sudah ada di `art/CLAUDE.md`. Baca file itu dulu sebelum mengerjakan apa pun di Blender atau sprite.
+## Pembagian kerja (keputusan 9 Nov 2026)
+- **Tim desainer:** semua desain visual (karakter, style, palet, UI look, level look), desain level/puzzle, cerita, audio.
+- **Programmer tim:** arsitektur gameplay, review & merge.
+- **AI (Claude):** kode, tooling render, setup scene/prefab, shader, struktur project, debug, dokumentasi teknis. Membantu programmer, bukan menggantikan keputusan desain.
+- AI **tidak mengubah desain art** atas inisiatif sendiri. Kalau diminta "bikin lebih bagus" tanpa arahan, minta arahan konkret (sketsa, referensi, ukuran, warna).
+- Detail: `docs/ai-vs-tim.md`. Panduan art desainer: `docs/panduan-art-desainer.md`. Pipeline art/Blender: `art/CLAUDE.md` (baca dulu sebelum kerja di Blender atau sprite).
+
+## Status (9 Nov 2026, minggu 2)
+- Sudah: konsep gameplay, lore, objektif. Pipeline sprite Blender → Unity. Lighting real-time (normal map + toon band). Struktur project + 18 scene placeholder. Sandbox demo slime (WASD + collider).
+- Belum: desain slime final (tim desainer), controller asli, sistem makan/belah/gabung/Shift, resep, penjaga, tileset level.
+- Mood gelap-dingin + `art/palette.hex` masih USULAN.
+
+## Struktur project
+```
+Assets/
+  _Game/                      semua aset milik game (pisah dari pihak ketiga)
+    Art/
+      Sprites/                Characters/Slime, Enemies, Props, Environment, UI, VFX (import otomatis)
+      Materials/              Slime_* (palet state bahan), Slime_Face, Env_Lit
+      Shaders/                PixelToonLit.shader (semua sprite lit)
+      Animations/ Tiles/ Fonts/
+    Audio/                    Music, SFX
+    Data/                     ScriptableObject: Ingredients, Recipes, Levels
+    Prefabs/                  Characters, Enemies, Props, Level, UI, Systems
+    Scenes/
+      Boot/Boot.unity         build index 0, init service global
+      Menus/                  MainMenu, ChapterSelect, Credits
+      Story/                  Intro, Ending
+      Levels/Chapter1..3/     C<ch>_L<nn>.unity (12 level, chapter 3 kandidat dipotong)
+      Sandbox/                DemoSlime, SampleScene (tidak masuk build)
+    Scripts/
+      Runtime/                asmdef GooNapped.Runtime, namespace GooNapped
+        Core/ Player/ Slime/ Ingredients/ Enemies/ Level/ UI/ Audio/ Demo/
+      Editor/                 asmdef GooNapped.Editor (PixelSpriteImporter, tool editor)
+    Tests/EditMode, PlayMode  asmdef test (Test Runner)
+  ThirdParty/                 aset/plugin pihak ketiga + lisensinya
+  Settings/                   URP, Renderer2D, Input Actions
+art/                          sumber art (Blender, sprite final, tools). Lihat art/CLAUDE.md
+docs/                         panduan tim
+```
+Tiap scene placeholder punya objek `_SceneInfo` (komponen `SceneNote`) berisi tujuan scene dan TODO.
+
+## Konvensi teknis
+- **Kode:** C#, namespace `GooNapped` (sub-namespace per folder kalau perlu). PascalCase untuk tipe/method/properti, camelCase untuk field privat, `[SerializeField] private` daripada field publik untuk kode baru. Satu class MonoBehaviour per file, nama file = nama class.
+- **Script baru** masuk `Assets/_Game/Scripts/Runtime/<Sistem>/`. Editor tool masuk `Scripts/Editor/`. Jangan taruh script di luar asmdef.
+- **Input:** Input System (`Assets/Settings/InputSystem_Actions.inputactions`). `SlimeDemoMover` hanya prototipe.
+- **Rendering:** semua sprite pakai `GooNapped/PixelToonLit`. Light 2D yang perlu efek bentuk: `Normal Map Quality = Accurate`. Pixel Perfect Camera 384×216, PPU 48. Sort sumbu Y (Renderer2D).
+- **Aset:** sprite masuk `Assets/_Game/Art/Sprites/`, normal map `<nama>_normal` dipasang otomatis. Jangan ubah import setting manual.
+- **Scene:** jangan edit scene yang sama bersamaan (konflik YAML). Kerja di prefab kalau bisa. Klaim scene di chat tim sebelum edit.
+- **Test:** smoke test di `Tests/EditMode`. Tambah test untuk logika murni (resep, state slime).
+
+## Git
+- `main` = stabil, hanya lewat PR + review. Jangan push langsung, jangan force-push.
+- Branch: `feat/<fitur>`, `fix/<bug>`, `art/<aset>`, `level/<cx_lyy>`, `docs/<topik>`.
+- Commit pendek, bahasa Indonesia/Inggris boleh, prefix area: `art:`, `unity:`, `feat:`, `fix:`, `docs:`, `level:`.
+- AI: `git add` file spesifik (bukan `-A`), **tanpa atribusi AI** di commit/PR.
+- `.blend`, `.png`, audio lewat Git LFS (`.gitattributes`). `Library/`, `Temp/`, `Assets/Screenshots/` di-ignore.
+- `Packages/` dan `ProjectSettings/` dibahas tim dulu sebelum di-commit.
+- Aturan Game Off: repo GitHub publik. Jangan commit aset berbayar yang lisensinya melarang redistribusi.
 
 ## Genre & feel
 Puzzle stealth 2D top-down, level pendek (2–4 menit). Referensi feel: Robbery Bob (aktif, lucu, chaotic), cerita ringan ala Helltaker.
@@ -59,16 +114,15 @@ Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, 
 - Minggu 3: semua level, art, sound, cerita.
 - Minggu 4: playtest, bug fix, halaman itch.io. TIDAK tambah fitur.
 - Kalau molor, potong musuh ke-4 dan chapter 3.
-- Aturan Game Off: source code wajib di repo GitHub publik. Jangan commit aset berbayar yang lisensinya melarang redistribusi.
 
 ## Cara diskusi
 - Bahasa Indonesia santai, singkat, langsung ke inti. Istilah teknis boleh bahasa Inggris.
 - Kasih pendapat jujur, jangan cuma ikut opini user. Kalau ada yang lemah, bilang.
 - Kalau kasih opsi, sertakan kecocokannya ke tema dan risikonya.
-- Saat diskusi desain game, fokus satu topik dulu. Jangan loncat ke technical/visual kecuali diminta.
-- Pengecualian: kalau user minta kerjaan art/Blender/sprite atau sedang di folder `art/`, langsung kerjakan sesuai `art/CLAUDE.md`.
+- Saat diskusi desain game, fokus satu topik dulu.
+- Kerjaan teknis (kode, scene, shader, tooling, pipeline render) langsung kerjakan. Kerjaan desain art: bantu eksekusi kalau ada arahan dari tim desainer.
 
-## Next step (belum dipilih)
-- Tentukan daftar bahan + ciri dan slime teman per chapter.
-- Susun daftar level per chapter.
-- Mulai technical (arsitektur sistem Unity).
+## Next step
+- Programmer: controller slime (Input Actions), sistem bahan/state tubuh, belah/gabung + Shift, toples & resep (ScriptableObject di `Data/`), 1 penjaga.
+- Desainer: desain final slime + palet state bahan, tileset chapter 1 (albedo flat + normal), toples, Golem Batu.
+- Tim: daftar bahan + ciri, slime teman per chapter, daftar level.

@@ -1,0 +1,27 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+csharp_new_line_before_open_brace = all
+dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+[*.{shader,hlsl,cginc}]
+indent_style = space
+indent_size = 4
+
+[*.{json,asmdef,yml,yaml,md}]
+indent_style = space
+indent_size = 2
+
+[*.{unity,prefab,asset,mat,meta,controller,anim}]
+# file YAML Unity: jangan diformat ulang
+trim_trailing_whitespace = false
+insert_final_newline = false
