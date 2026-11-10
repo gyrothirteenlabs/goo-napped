@@ -11,7 +11,8 @@ namespace GooNapped.EditorTools
     // Desainer: ubah peta di bawah lalu jalankan menu GooNapped > Blockout, atau gambar ulang langsung di Tilemap.
     //
     // Legenda:  # batu (tembok)   . lantai   S spawn pemain   E exit   J toples
-    //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   y Minyak Belerang   L lentera
+    //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   y Minyak Belerang   i Garam Beku   L lentera
+    //           J atau 1 = toples resep pertama (recipe), 2 = toples resep kedua (recipe2)
     //           g/G, h/H, k/K  titik awal / akhir patroli Golem 1, 2, 3 (garis lurus; huruf kecil = posisi awal)
     //           f/F, v/V       titik awal / akhir patroli Familiar Api 1, 2
     //           d/D            titik awal / akhir patroli Anjing Lendir
@@ -23,7 +24,7 @@ namespace GooNapped.EditorTools
 
         class Config
         {
-            public string scene, recipe, next, note;
+            public string scene, recipe, recipe2, next, note;
             public string[] map;
         }
 
@@ -156,7 +157,7 @@ namespace GooNapped.EditorTools
         {
             scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L02.unity",
             recipe = "Recipe_Lumpur",
-            next = "",
+            next = "C2_L03",
             note = "BLOCKOUT C2_L02 (kenalan Anjing Lendir). Kandang & selokan kastil.\n" +
                    "Anjing Lendir: penglihatan pendek, tapi MENCIUM jejak bau dan mengikutinya (tembus tikungan, tidak butuh cahaya).\n" +
                    "Resep Lumpur: kuning + berat. Serbuk Batu lalu Minyak Belerang (kuning + bau). Selama berbau kamu meninggalkan jejak.\n" +
@@ -179,8 +180,69 @@ namespace GooNapped.EditorTools
             },
         };
 
+        static readonly Config C2L03 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L03.unity",
+            recipe = "Recipe_Percik",
+            next = "C2_L04",
+            note = "BLOCKOUT C2_L03 (ruang tungku). Familiar Api di lorong tengah, Golem di gudang bawah, banyak lentera.\n" +
+                   "Resep Percik: merah + berkilau. Lumut Pendar dulu, lalu Ramuan Api: dua-duanya menyala (Familiar melihat dari jauh).\n" +
+                   "Setelah tukar: makan Garam Beku (ruang toples) untuk MEMADAMKAN tubuh, lalu padamkan lentera (E, butuh tubuh dingin) di jalan kabur.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C2_L03. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S..#....L.....#.......#",
+                "#...#.###.####.#...1.i.#",
+                "#.l.#.#......#.##.###.##",
+                "#...#.#..r...#.........#",
+                "##.##.#.####.#####.##..#",
+                "#.......f.........F....#",
+                "#.###.####.###.####.####",
+                "#.#..#..L#.......#....L#",
+                "#.#..#...#..g.....G....#",
+                "#E.......#.......#.....#",
+                "########################",
+            },
+        };
+
+        static readonly Config C2L04 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L04.unity",
+            recipe = "Recipe_Ibu",
+            recipe2 = "Recipe_Adik",
+            next = "",
+            note = "BLOCKOUT C2_L04 (ujian chapter 2). Gudang toples besar: DUA toples (ibu dan adik), Golem + Familiar + Anjing.\n" +
+                   "Resep Ibu: kuning + panas (Minyak Belerang + Ramuan Api: berbau DAN menyala).\n" +
+                   "Resep Adik: abu + dingin. Garam Beku dulu (putih + dingin), lalu Serbuk Batu (abu menimpa putih).\n" +
+                   "Butuh dua kali belah: setelah toples pertama, bentuk ulang tubuh (muntah Q / makan lagi) untuk toples kedua.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C2_L04. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#.....1.....#....2..#",
+                "#....#.#########.#.......#",
+                "#.y..#.#.......#.#.##.##.#",
+                "#....#...L.....#.........#",
+                "##.###.###.#####.###.#####",
+                "#g.....................G.#",
+                "#.##.####.#####.####.###.#",
+                "#.#r.#..d.....D.#..f....F#",
+                "#.#..#.........#.#.......#",
+                "#.##.#..b..i...#.#..L....#",
+                "#E.......................#",
+                "##########################",
+            },
+        };
+
         [MenuItem("GooNapped/Blockout/C2_L01")]
         public static void BuildC2L01() => Build(C2L01);
+
+        [MenuItem("GooNapped/Blockout/C2_L03")]
+        public static void BuildC2L03() => Build(C2L03);
+
+        [MenuItem("GooNapped/Blockout/C2_L04")]
+        public static void BuildC2L04() => Build(C2L04);
 
         [MenuItem("GooNapped/Blockout/C2_L02")]
         public static void BuildC2L02() => Build(C2L02);
@@ -206,6 +268,8 @@ namespace GooNapped.EditorTools
             BuildChapter1();
             Build(C2L01);
             Build(C2L02);
+            Build(C2L03);
+            Build(C2L04);
         }
 
         [MenuItem("GooNapped/Blockout/C1_L01")]
@@ -325,7 +389,7 @@ namespace GooNapped.EditorTools
             var golemEnd = new Dictionary<char, Vector2>();
             var ingredients = new Dictionary<char, string>
             {
-                { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'w', "AirEmbun" }, { 'r', "RamuanApi" }, { 'y', "MinyakBelerang" },
+                { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'w', "AirEmbun" }, { 'r', "RamuanApi" }, { 'y', "MinyakBelerang" }, { 'i', "GaramBeku" },
             };
             for (int row = 0; row < h; row++)
             {
@@ -363,9 +427,12 @@ namespace GooNapped.EditorTools
                             break;
                         }
                         case 'J':
+                        case '1':
+                        case '2':
                         {
-                            var j = Spawn(P + "Props/Jar.prefab", jarRoot, pos, "Jar_" + c.recipe.Replace("Recipe_", ""));
-                            var recipe = Load<RecipeData>(D + "Recipes/" + c.recipe + ".asset");
+                            string rn = ch == '2' ? c.recipe2 : c.recipe;
+                            var j = Spawn(P + "Props/Jar.prefab", jarRoot, pos, "Jar_" + rn.Replace("Recipe_", ""));
+                            var recipe = Load<RecipeData>(D + "Recipes/" + rn + ".asset");
                             Set(j.GetComponent<Jar>(), "recipe", p => p.objectReferenceValue = recipe);
                             break;
                         }

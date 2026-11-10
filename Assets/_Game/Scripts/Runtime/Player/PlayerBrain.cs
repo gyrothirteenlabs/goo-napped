@@ -173,7 +173,22 @@ namespace GooNapped
             var jar = FindNear<Jar>(a, interactRadius);
             if (jar != null && jar.HasFriend) return SwapWithJar(a, jar);
 
-            return a.TryEat();
+            if (a.TryEat()) return true;
+
+            // padamkan lentera: butuh tubuh dingin
+            var lamp = FindNear<Extinguishable>(a, interactRadius);
+            if (lamp != null && lamp.IsLit)
+            {
+                if (a.Body.State.Get(TraitKind.Temperature) != "dingin")
+                {
+                    Say("Butuh tubuh dingin (Garam Beku / Air Embun) untuk memadamkan.");
+                    return true;
+                }
+                lamp.Extinguish();
+                Say("Lentera padam. Desisnya terdengar penjaga di dekat!");
+                return true;
+            }
+            return false;
         }
 
         // Objektif 4: potongan aktif masuk toples sebagai tiruan, teman keluar di tempat potongan itu berdiri.

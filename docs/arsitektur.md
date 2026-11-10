@@ -36,7 +36,7 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
 | `Slime/SlimeBody` + `SlimeBodyState` | Ciri tubuh (logika murni, ada test). Makan menimpa ciri sejenis, jadi urutan penting. Efek samping (lambat, menyala, bau) aktif selama bahannya masih punya ciri. `Clone()` untuk belah, `Absorb()` untuk gabung (ciri potongan aktif menang), `MismatchCount()` untuk resep. |
 
 ## Data (ScriptableObject, `Assets/_Game/Data/`)
-- **`IngredientData`**: ciri (`Trait` = jenis + nilai teks), pengali kecepatan, menyala, radius bau, material palet body, warna placeholder.
+- **`IngredientData`**: ciri (`Trait` = jenis + nilai teks), pengali kecepatan, menyala, radius bau, memadamkan (`Extinguishes`), material palet body, warna placeholder.
 - **`RecipeData`**: nama teman, 2–3 ciri, material palet teman.
 - `Trait`: jenis `Color`, `Temperature`, `Weight`, `Shine`, `Smell`. Nilai teks bebas (huruf besar/spasi diabaikan saat dibandingkan).
 
@@ -49,6 +49,7 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
 | `Level/LevelGoal` | Menang: bawa semua teman ke exit. Kalah: `Fail()` dari penjaga → level diulang. `nextScene` = level berikutnya. |
 | `Level/LevelExit` | Trigger exit. |
 | `Level/CameraFollow` | Ikut potongan aktif, dijepit ke `CameraBounds`. |
+| `Level/Extinguishable` | Lentera/obor yang bisa dipadamkan (E) oleh tubuh bersuhu `dingin`. Desisnya `NoiseBus.Emit` (pengalih yang berisiko). |
 | `Level/LightExposure` | Seberapa terang sebuah titik oleh Light 2D titik (bukan global), memperhitungkan tembok. Dipakai penjaga. |
 
 ## Penjaga

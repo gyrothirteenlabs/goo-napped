@@ -32,15 +32,15 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 | ✅ | Air Embun | biru, dingin | – |
 | ✅ | Ramuan Api | merah, panas | menyala |
 | ✅ | Minyak Belerang | kuning, bau | meninggalkan jejak bau (Anjing) |
-| ⬜ | Garam Beku | putih, dingin | memadamkan menyala |
+| ✅ | Garam Beku | putih, dingin | memadamkan nyala bahan yang dimakan sebelumnya; tubuh dingin bisa memadamkan lentera |
 
 ## Level
 | | Fitur | Prio |
 |---|---|---|
 | ✅ | Blockout chapter 1 (4 level) + tool peta teks | P1 |
-| 🔧 | Blockout chapter 2 (kastil bawah): C2_L01 (Familiar), C2_L02 (Anjing) selesai, L03–L04 belum | P1 |
+| ✅ | Blockout chapter 2 (4 level): C2_L01 Familiar, C2_L02 Anjing, C2_L03 tungku (padamkan), C2_L04 dua toples + 3 musuh | P1 |
 | ⬜ | Pintu / tuas / lorong tikus (hanya potongan kecil bisa lewat) | P2 |
-| ⬜ | Lampu yang bisa dipadamkan (Garam Beku / potongan dingin) | P2 |
+| ✅ | Lentera bisa dipadamkan (E, butuh tubuh dingin); desisnya = suara yang memancing penjaga | P2 |
 
 ## Alur game & UI
 | | Fitur | Prio |

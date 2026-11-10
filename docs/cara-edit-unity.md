@@ -18,8 +18,9 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `.` | lantai |
    | `S` | spawn pemain |
    | `E` | exit |
-   | `J` | toples (resep = `recipe` di config) |
-   | `b` `l` `w` `r` `y` | Serbuk Batu, Lumut Pendar, Air Embun, Ramuan Api, Minyak Belerang |
+   | `J` atau `1` | toples resep pertama (`recipe` di config) |
+   | `2` | toples resep kedua (`recipe2` di config) |
+   | `b` `l` `w` `r` `y` `i` | Serbuk Batu, Lumut Pendar, Air Embun, Ramuan Api, Minyak Belerang, Garam Beku |
    | `L` | lentera |
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |
    | `f`/`F`, `v`/`V` | titik awal/akhir patroli Familiar Api 1, 2 |
@@ -34,7 +35,7 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
   - `Prefabs/Props/Jar` → isi `Recipe` di Inspector
   - `Prefabs/Props/IngredientPickup` → isi `Ingredient`
   - `Prefabs/Enemies/Golem_Placeholder` → isi `Patrol Points` (posisi dunia)
-  - `Prefabs/Level/Lantern` → di `Lights/`
+  - `Prefabs/Level/Lantern` → di `Lights/` (punya `Extinguishable`: bisa dipadamkan slime bertubuh dingin)
 - **Exit**: objek dengan `BoxCollider2D` (Is Trigger) + `LevelExit`.
 - **Sistem**: satu `Prefabs/Systems/LevelSystems` per level. Isi `LevelGoal > Next Scene` (nama scene berikutnya, harus ada di Build Settings).
 - **Kamera**: `Main Camera` punya `CameraFollow`. Isi `Bounds` dengan collider yang menutup seluruh level (`CameraBounds`).
@@ -52,7 +53,8 @@ Play di scene level. HUD kiri atas menampilkan tubuh, potongan, resep toples ter
    - **Traits**: jenis + nilai (contoh: `Temperature = panas`, `Color = merah`). Ciri sejenis dari bahan sebelumnya tertimpa.
    - **Speed Multiplier**: 1 normal, 0.6 lambat.
    - **Emits Light**: menyala (terlihat lebih jauh, kena aturan cahaya, bisa jadi umpan).
-   - **Smell Radius**: bau (untuk Anjing Lendir nanti).
+   - **Smell Radius**: bau (meninggalkan jejak, dicium Anjing Lendir).
+   - **Extinguishes**: memadamkan nyala bahan yang dimakan sebelumnya (Garam Beku).
    - **Body Material**: palet `Slime_*` saat bahan ini menentukan warna (kosong = warna tidak berubah).
 3. Taruh di level lewat `IngredientPickup`, atau tambah huruf baru di dictionary `ingredients` di `LevelBlockout`.
 
