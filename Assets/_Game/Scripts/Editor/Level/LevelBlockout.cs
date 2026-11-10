@@ -211,7 +211,7 @@ namespace GooNapped.EditorTools
             scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L04.unity",
             recipe = "Recipe_Ibu",
             recipe2 = "Recipe_Adik",
-            next = "",
+            next = "Ending",
             note = "BLOCKOUT C2_L04 (ujian chapter 2). Gudang toples besar: DUA toples (ibu dan adik), Golem + Familiar + Anjing.\n" +
                    "Resep Ibu: kuning + panas (Minyak Belerang + Ramuan Api: berbau DAN menyala).\n" +
                    "Resep Adik: abu + dingin. Garam Beku dulu (putih + dingin), lalu Serbuk Batu (abu menimpa putih).\n" +

@@ -33,6 +33,7 @@ namespace GooNapped
 
         private void Update()
         {
+            if (StoryPlayer.IsPlaying) return;   // Esc dipakai untuk melewati cerita
             if (pause != null && pause.WasPressedThisFrame()) SetPaused(!paused);
             if (restart != null && restart.WasPressedThisFrame()) GameFlow.ReloadCurrent();
         }

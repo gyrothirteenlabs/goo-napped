@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09b143d257710e34198c112c86d7af17, type: 3}
+  m_Name: Story_Intro
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.StorySequence
+  pages:
+  - layout: 2
+    image: {fileID: 21300000, guid: d2b2e1a9bba6dbe4e818ba33239ea005, type: 3}
+    lines: []
+    autoAdvance: 0
+  - layout: 0
+    image: {fileID: 21300000, guid: 5ee38ba08bafe094ca3ced09252d7814, type: 3}
+    lines:
+    - speaker: 
+      text: '[TULIS INTRO DI SINI]'
+      portrait: {fileID: 0}
+    - speaker: 
+      text: '[...]'
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  - layout: 1
+    image: {fileID: 21300000, guid: d2b2e1a9bba6dbe4e818ba33239ea005, type: 3}
+    lines:
+    - speaker: 
+      text: '[TULIS INTRO DI SINI]'
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  pauseGame: 1
+  skippable: 1

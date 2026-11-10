@@ -88,9 +88,14 @@ Potongan yang nyamar tidak terlihat. Potongan nyamar yang menyala/berbau = **ump
 - `UI/GuardMeter` (di tiap prefab penjaga): bar curiga + ikon `?` (memeriksa) / `!` (melihat/mencium) di atas kepala, material unlit supaya terbaca di gelap.
 - `Demo/ProtoHud` (HUD teks lama) tinggal dipakai di scene sandbox.
 
+## Cerita
+- `UI/StorySequence` (ScriptableObject): halaman berlayout `ImageLeft`/`ImageTop`/`ImageOnly`/`Dialogue`, baris teks, gambar, potret.
+- `UI/StoryPlayer` (prefab `Prefabs/UI/StoryUI`, UI Toolkit `Story.uxml`/`Story.uss`): antrean, ketik bertahap, fade antar halaman, lewati, jeda game (`Time.timeScale = 0`, semua pakai waktu unscaled). API statis `Play`, `Say`, `Next`, `IsPlaying`. `PlayerBrain` dan `PauseMenu` diam selama cerita.
+- `UI/StoryTrigger` (OnStart/OnEnter/Manual) dan `UI/StoryScene` (scene Intro/Ending → scene berikutnya).
+
 ## Alur game
 - `Core/GameFlow`: daftar level (`Levels`, urut), progres (PlayerPrefs `gn_unlocked`), `Load`, `ReloadCurrent`, `LoadMainMenu`. **Level baru wajib ditambahkan di `GameFlow.Levels` dan Build Settings.**
-- `Core/BootLoader` (scene Boot) → menu utama. `UI/MainMenuController` (scene MainMenu): Mulai/Lanjut, Pilih level (terkunci sampai level sebelumnya selesai), Reset progres.
+- `Core/BootLoader` (scene Boot) → menu utama. Mulai (baru) → scene `Intro` → C1_L01. Level terakhir → scene `Ending` → menu utama. `UI/MainMenuController` (scene MainMenu): Mulai/Lanjut, Pilih level (terkunci sampai level sebelumnya selesai), Reset progres.
 - `UI/PauseMenu` (di LevelSystems): Esc jeda, R ulang. Tampilan OnGUI = placeholder sampai UI desainer.
 - `LevelGoal`: selesai → buka level berikutnya → muat; level terakhir → menu utama.
 

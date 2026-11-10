@@ -98,16 +98,38 @@ Jeda aksi (anti spam) ada di `LevelSystems > PlayerBrain`: `Switch Cooldown`, `S
 - Font pixel: taruh font di `Art/Fonts/`, set `-unity-font-definition` di `.hud-root`.
 - Ikon di atas penjaga: komponen `GuardMeter` di prefab penjaga, isi `Question Sprite` / `Exclaim Sprite` dengan sprite sendiri (kosong = ikon placeholder dari kode).
 
-## 8. Suara
+## 8. Cerita: cutscene & dialog
+Sistem siap pakai; isi cerita ditulis tim. Teks dan gambar tinggal diganti, tanpa kode.
+
+**Bikin cerita baru**: `Assets/_Game/Data/Story/` > klik kanan > **Create > GooNapped > Cerita (Story Sequence)**. Isi `Pages`; tiap halaman:
+
+| Field | Isi |
+|---|---|
+| Layout | `ImageLeft` (gambar tinggi kiri, baris teks muncul bertumpuk di kanan), `ImageTop` (gambar lebar atas, teks bawah), `ImageOnly` (gambar saja), `Dialogue` (kotak dialog bawah dengan potret, game tetap terlihat) |
+| Image | gambar cutscene (taruh di `Art/Story/`, import Sprite Single + Point) |
+| Lines | baris teks: `Speaker` (opsional), `Text`, `Portrait` (untuk Dialogue) |
+| Auto Advance | > 0 = lanjut sendiri setelah sekian detik |
+
+Opsi urutan: `Pause Game` (penjaga berhenti), `Skippable` (Esc melewati). Contoh semua layout: `Story_Contoh.asset`. Placeholder: `Story_Intro`, `Story_Ending`.
+
+**Memutar cerita**
+- Scene cerita penuh (Intro, Ending): komponen `StoryScene` (cerita + scene berikutnya). Intro diputar saat **Mulai** permainan baru; Ending sesudah level terakhir.
+- Di level: objek dengan `StoryTrigger`: `OnStart` (pembuka level), `OnEnter` (masuk area, butuh Collider2D Is Trigger), `Manual` (dipanggil event lain). Ada event `On Finished`.
+- Dari kode, kapan saja: `StoryPlayer.Play(sequence, () => { ... })` atau dialog cepat `StoryPlayer.Say("Nama", "Teks", potret)`.
+- Scene harus punya prefab `Prefabs/UI/StoryUI` (sudah ada di LevelSystems, Intro, Ending).
+
+Kontrol: E / Space / Enter / klik = lanjut (menekan saat teks diketik = tampilkan seluruh baris), Esc = lewati. Tampilan: `Assets/_Game/UI/Story.uss` (font pixel: `-unity-font-definition` di `.story-root`).
+
+## 9. Suara
 - Komponen **`AudioDirector`** di prefab `Systems/LevelSystems`: drag klip ke slot `Music`, `Ambience`, dan tiap efek (langkah slime, langkah golem, makan, belah, gabung, nyamar, Shift, waspada, ketahuan).
 - Kretek obor: `AudioSource` di prefab `Level/Lantern`.
 - Klip `proto_*` adalah placeholder hasil sintesis (**GooNapped > Audio > Buat suara placeholder**). Klip asli: taruh di `Assets/_Game/Audio/Music|SFX/` (WAV/OGG), ganti referensinya. Kode tidak perlu diubah.
 
-## 9. Sprite dari Blender
+## 10. Sprite dari Blender
 1. Desainer 3D bikin model di template Blender: [panduan-blender-3d.md](panduan-blender-3d.md) (render 1 klik → `art/sprites/<nama>/`).
 2. Copy sheet ke `Assets/_Game/Art/Sprites/<Characters|Enemies|Props>/<Nama>/`. Slice 48 px, pivot, dan normal map terpasang otomatis.
 3. Karakter slime: drag frame ke `SlimeSpriteAnimator > Clips` (anim + arah + frame body/face) di prefab `Slime_Player`. Spek jumlah frame tiap anim: panduan Blender bagian C.1.
 4. Musuh/prop: material `Env_Lit` untuk albedo, `Enemy_Glow_Unlit` untuk bagian menyala.
 
-## 10. Test
+## 11. Test
 Window > General > **Test Runner** > EditMode > Run All. Wajib hijau sebelum PR.

@@ -138,6 +138,6 @@ Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, 
 - Kerjaan teknis (kode, scene, shader, tooling, pipeline render) langsung kerjakan. Kerjaan desain art: bantu eksekusi kalau ada arahan dari tim desainer.
 
 ## Next step
-- Programmer: lihat `docs/backlog.md` (berikutnya: cerita + dialog, poles, playtest). Sudah ada: `GolemGuard` + `VisionCone` (penjaga), `Jar`/`RecipeData`/`LevelGoal` (objektif). Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
+- Programmer: lihat `docs/backlog.md` (berikutnya: isi cerita oleh tim, poles, playtest). Sudah ada: `GolemGuard` + `VisionCone` (penjaga), `Jar`/`RecipeData`/`LevelGoal` (objektif). Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
 - Desainer: desain final slime + palet state bahan, tileset chapter 1 (albedo flat + normal), toples, Golem Batu.
 - Tim: daftar bahan + ciri, slime teman per chapter, daftar level.

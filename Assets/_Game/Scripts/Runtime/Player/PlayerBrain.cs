@@ -109,6 +109,7 @@ namespace GooNapped
             var a = Active;
             if (a == null) return;
             if (goal != null && (goal.IsFailed || goal.IsComplete)) { a.Move(Vector2.zero); return; }
+            if (StoryPlayer.IsPlaying) { a.Move(Vector2.zero); return; }   // dialog/cutscene: input terkunci
             if (messageTimer > 0f && (messageTimer -= Time.deltaTime) <= 0f) Message = "";
             // jeda setelah aksi (belah, gabung, Shift): tidak bisa bergerak/aksi lain, supaya tidak bisa di-spam
             if (lockTimer > 0f) { lockTimer -= Time.deltaTime; a.Move(Vector2.zero); return; }

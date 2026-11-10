@@ -39,6 +39,7 @@ Intip toples (lihat resep) → makan bahan sesuai resep (urutan penting: ciri se
 | [docs/panduan-blender-3d.md](docs/panduan-blender-3d.md) | Model Blender → sprite 48 px (template + add-on 1 klik) | Desainer 3D |
 | [docs/panduan-art-desainer.md](docs/panduan-art-desainer.md) | Aturan sprite 2D: albedo flat, normal map, tile | Desainer 2D |
 | [docs/rundown-level.md](docs/rundown-level.md) | Usulan urutan chapter & level | Desainer level |
+| [docs/cara-edit-unity.md#8-cerita-cutscene--dialog](docs/cara-edit-unity.md) | Menulis cutscene & dialog (tanpa kode) | Penulis cerita |
 | [docs/backlog.md](docs/backlog.md) | Daftar fitur: selesai / dikerjakan / berikutnya | Semua |
 | [docs/ai-vs-tim.md](docs/ai-vs-tim.md) | Pembagian kerja tim dan AI | Semua |
 | [CLAUDE.md](CLAUDE.md), [art/CLAUDE.md](art/CLAUDE.md) | Keputusan desain + aturan teknis (juga dibaca asisten AI) | Semua |

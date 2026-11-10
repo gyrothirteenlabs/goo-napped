@@ -35,7 +35,12 @@ namespace GooNapped
             if (!selecting)
             {
                 string cont = GameFlow.UnlockedIndex > 0 ? "Lanjut: " + GameFlow.Levels[GameFlow.UnlockedIndex] : "Mulai";
-                if (GUI.Button(new Rect(x, y, w, h), cont, button)) GameFlow.Load(GameFlow.Levels[GameFlow.UnlockedIndex]);
+                if (GUI.Button(new Rect(x, y, w, h), cont, button))
+                {
+                    // permainan baru: lewat scene Intro (cerita pembuka) dulu
+                    if (GameFlow.UnlockedIndex == 0 && Application.CanStreamedLevelBeLoaded(GameFlow.Intro)) GameFlow.Load(GameFlow.Intro);
+                    else GameFlow.Load(GameFlow.Levels[GameFlow.UnlockedIndex]);
+                }
                 if (GUI.Button(new Rect(x, y + 56, w, h), "Pilih level", button)) selecting = true;
                 if (GUI.Button(new Rect(x, y + 112, w, h), "Keluar", button)) Application.Quit();
                 return;
