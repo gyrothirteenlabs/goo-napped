@@ -116,6 +116,19 @@ namespace GooNapped
             }
         }
 
+        // Muntahkan bahan terakhir: tubuh kembali seperti sebelum memakannya (ciri yang tertimpa pulih).
+        // Dikembalikan bahannya (bisa ditaruh lagi di lantai sebagai bahan/umpan). null kalau perut kosong.
+        public IngredientData Vomit()
+        {
+            if (eaten.Count == 0) return null;
+            var last = eaten[eaten.Count - 1];
+            var rest = new List<IngredientData>(eaten);
+            rest.RemoveAt(rest.Count - 1);
+            Clear();
+            foreach (var i in rest) Eat(i);
+            return last;
+        }
+
         public void Clear()
         {
             traits.Clear();

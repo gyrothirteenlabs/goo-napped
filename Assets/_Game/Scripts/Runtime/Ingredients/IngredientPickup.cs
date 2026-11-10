@@ -11,6 +11,13 @@ namespace GooNapped
 
         public IngredientData Ingredient => ingredient;
 
+        // Untuk bahan yang dimuntahkan / dibuat saat runtime.
+        public void Init(IngredientData data)
+        {
+            ingredient = data;
+            ApplyTint();
+        }
+
         private void OnValidate() => ApplyTint();
         private void Awake() => ApplyTint();
 

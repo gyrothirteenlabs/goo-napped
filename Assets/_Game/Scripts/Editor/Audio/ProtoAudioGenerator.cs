@@ -55,6 +55,16 @@ namespace GooNapped.EditorTools
             Write(Sfx + "proto_caught.wav", Synth(1.0f, (t, d) =>
                 (Math.Sin(2 * Math.PI * 220 * t) + Math.Sin(2 * Math.PI * 233 * t) + Math.Sin(2 * Math.PI * 110 * t)) * Env(t, 0.01f, 0.9f) * 0.25f, smooth: 0.3f));
 
+            Write(Sfx + "proto_vomit.wav", Synth(0.5f, (t, d) =>
+                Math.Sin(2 * Math.PI * (120 + 80 * Math.Sin(t * 40)) * t) * Env(t, 0.02f, 0.4f) * 0.5f +
+                Noise(rng) * Env(t - 0.15, 0.01f, 0.2f) * 0.25f, smooth: 0.75f));
+
+            Write(Sfx + "proto_splat.wav", Synth(0.3f, (t, d) =>
+                Noise(rng) * Env(t, 0.001f, 0.12f) * 0.6f + Math.Sin(2 * Math.PI * (180 - 250 * t) * t) * Env(t, 0.002f, 0.1f) * 0.5f, smooth: 0.7f));
+
+            Write(Sfx + "proto_ui_click.wav", Synth(0.08f, (t, d) =>
+                Math.Sin(2 * Math.PI * 880 * t) * Env(t, 0.001f, 0.03f) * 0.4f, smooth: 0.2f));
+
             // obor: brown noise pelan + letupan acak (loop 4 detik)
             double brown = 0;
             Write(Sfx + "proto_torch_loop.wav", Synth(4f, (t, d) =>

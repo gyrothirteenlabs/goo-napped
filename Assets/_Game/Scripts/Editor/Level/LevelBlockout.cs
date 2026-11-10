@@ -13,6 +13,7 @@ namespace GooNapped.EditorTools
     // Legenda:  # batu (tembok)   . lantai   S spawn pemain   E exit   J toples
     //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   L lentera
     //           g/G, h/H, k/K  titik awal / akhir patroli Golem 1, 2, 3 (garis lurus; huruf kecil = posisi awal)
+    //           f/F, v/V       titik awal / akhir patroli Familiar Api 1, 2
     public static class LevelBlockout
     {
         const string P = "Assets/_Game/Prefabs/";
@@ -101,7 +102,7 @@ namespace GooNapped.EditorTools
         {
             scene = "Assets/_Game/Scenes/Levels/Chapter1/C1_L04.unity",
             recipe = "Recipe_Tetua",
-            next = "",
+            next = "C2_L01",
             note = "BLOCKOUT C1_L04 (ujian chapter 1). Mulut tambang menuju gerbang kastil, slime tetua.\n" +
                    "Resep Tetua: berat + dingin (Serbuk Batu + Air Embun). Kabur sambil berat = lambat.\n" +
                    "Golem 1 patroli jalan utama, Golem 2 menjaga gerbang (exit). Pancing Golem 2 dengan umpan:\n" +
@@ -123,6 +124,36 @@ namespace GooNapped.EditorTools
             },
         };
 
+        static readonly Config C2L01 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L01.unity",
+            recipe = "Recipe_Bara",
+            next = "",
+            note = "BLOCKOUT C2_L01 (kenalan Familiar Api). Halaman kastil malam, sedikit lampu.\n" +
+                   "Familiar Api melayang di jalan tengah: BUTA di gelap, tapi melihat yang panas/menyala dari jauh, dan membawa cahaya sendiri.\n" +
+                   "Resep Bara: merah + berat. Serbuk Batu dulu, lalu Ramuan Api (merah + panas + menyala).\n" +
+                   "Setelah minum Ramuan Api kamu terlihat dari jauh oleh Familiar: pakai gumpalan (F) untuk memancingnya, atau muntahkan (Q) setelah tukar.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C2_L01. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S....#........#.....J.#",
+                "#.....#.####...#.......#",
+                "#..b..#.#..#...####.####",
+                "#.....#.#..#...........#",
+                "##.####.#..#####.###...#",
+                "#.......f..........F...#",
+                "#.###.####.####.###.####",
+                "#.#r#....#....#.......L#",
+                "#.#.#.L..#.b..#........#",
+                "#E..#.........#....r...#",
+                "########################",
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/C2_L01")]
+        public static void BuildC2L01() => Build(C2L01);
+
         [MenuItem("GooNapped/Blockout/C1_L03")]
         public static void BuildC1L03() => Build(C1L03);
 
@@ -136,6 +167,13 @@ namespace GooNapped.EditorTools
             Build(C1L02);
             Build(C1L03);
             Build(C1L04);
+        }
+
+        [MenuItem("GooNapped/Blockout/Semua level")]
+        public static void BuildAll()
+        {
+            BuildChapter1();
+            Build(C2L01);
         }
 
         [MenuItem("GooNapped/Blockout/C1_L01")]
@@ -250,7 +288,7 @@ namespace GooNapped.EditorTools
             }
 
             int h = c.map.Length, w = c.map[0].Length;
-            const string golemKeys = "ghk";
+            const string golemKeys = "ghkfv";   // g h k = Golem Batu, f v = Familiar Api
             var golemStart = new Dictionary<char, Vector2>();
             var golemEnd = new Dictionary<char, Vector2>();
             var ingredients = new Dictionary<char, string>
@@ -322,8 +360,11 @@ namespace GooNapped.EditorTools
             {
                 if (!golemStart.TryGetValue(key, out var a)) continue;
                 var b = golemEnd.TryGetValue(key, out var e) ? e : a;
-                var g = Spawn(P + "Enemies/Golem_Placeholder.prefab", guardRoot, a, "Golem_Patroli_" + (++gi));
-                Set(g.GetComponent<GolemGuard>(), "patrolPoints", p =>
+                bool familiar = key == 'f' || key == 'v';
+                var g = familiar
+                    ? Spawn(P + "Enemies/Familiar_Placeholder.prefab", guardRoot, a, "Familiar_" + (++gi))
+                    : Spawn(P + "Enemies/Golem_Placeholder.prefab", guardRoot, a, "Golem_Patroli_" + (++gi));
+                Set(g.GetComponent<Guard>(), "patrolPoints", p =>
                 {
                     p.arraySize = 2;
                     p.GetArrayElementAtIndex(0).vector2Value = a;

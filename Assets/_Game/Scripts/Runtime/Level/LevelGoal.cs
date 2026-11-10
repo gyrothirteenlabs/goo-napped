@@ -43,15 +43,17 @@ namespace GooNapped
             IsComplete = true;
             Debug.Log($"Level selesai: {piece.Carried.Count} teman dibawa kabur.");
             Completed?.Invoke(this);
-            if (!string.IsNullOrEmpty(nextScene)) StartCoroutine(LoadNext());
+            if (!string.IsNullOrEmpty(nextScene)) GameFlow.Unlock(nextScene);
+            StartCoroutine(LoadNext());
             return true;
         }
 
+        // Level berikutnya, atau menu utama kalau ini level terakhir yang ada.
         private IEnumerator LoadNext()
         {
             yield return new WaitForSeconds(nextDelay);
-            if (Application.CanStreamedLevelBeLoaded(nextScene)) SceneManager.LoadScene(nextScene);
-            else Debug.LogWarning($"LevelGoal: scene '{nextScene}' tidak ada di Build Settings.");
+            if (string.IsNullOrEmpty(nextScene)) GameFlow.LoadMainMenu();
+            else GameFlow.Load(nextScene);
         }
 
         // Dipanggil penjaga saat curiga penuh.
@@ -68,14 +70,7 @@ namespace GooNapped
         private IEnumerator Restart()
         {
             yield return new WaitForSeconds(restartDelay);
-            var scene = SceneManager.GetActiveScene();
-#if UNITY_EDITOR
-            // Scene sandbox tidak ada di Build Settings, jadi di editor dimuat lewat path.
-            UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
-                scene.path, new LoadSceneParameters(LoadSceneMode.Single));
-#else
-            SceneManager.LoadScene(scene.buildIndex);
-#endif
+            GameFlow.ReloadCurrent();
         }
     }
 }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5929014801107240660}
   - component: {fileID: 7776598994333055192}
   - component: {fileID: 2115229182577909811}
+  - component: {fileID: 6992681638921377518}
   m_Layer: 0
   m_Name: LevelSystems
   m_TagString: Untagged
@@ -54,6 +55,12 @@ MonoBehaviour:
   splitAction: Jump
   switchAction: Sprint
   hideAction: Crouch
+  vomitAction: Vomit
+  throwAction: Throw
+  blobSprite: {fileID: -949913054, guid: a02ff90963565754e8a01231793f6669, type: 3}
+  throwDistance: 3.2
+  throwNoiseRadius: 4.5
+  throwCooldown: 5
   pieces: []
   maxPieces: 3
   splitDistance: 0.8
@@ -124,6 +131,25 @@ MonoBehaviour:
   switchPiece: {fileID: 8300000, guid: e8e8359c472dbeb4698771a08658d4c0, type: 3}
   alert: {fileID: 8300000, guid: 4ac2b5eea38b2a641adbb64825fa0da2, type: 3}
   caught: {fileID: 8300000, guid: e808dcda8d73fb348846f24fd14dced9, type: 3}
+  vomit: {fileID: 8300000, guid: 110c499e6790885408014149e4c3683f, type: 3}
+  splat: {fileID: 8300000, guid: f30acfc3fc4d0eb4684f183b1898810e, type: 3}
+  uiClick: {fileID: 8300000, guid: c4a7d625f9e8d834b8ff88e15b9b6639, type: 3}
   sfxVolume: 0.8
   minDistance: 1.5
   maxDistance: 8
+--- !u!114 &6992681638921377518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8371740734739752879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a9a73189e214d248a99d7b0c2ae3b13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.PauseMenu
+  actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  actionMap: Player
+  pauseAction: Pause
+  restartAction: Restart

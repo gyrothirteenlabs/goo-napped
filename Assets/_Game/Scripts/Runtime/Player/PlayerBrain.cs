@@ -20,6 +20,15 @@ namespace GooNapped
         [SerializeField] private string switchAction = "Sprint";
         [Tooltip("Tahan untuk nyamar jadi barang di tempat (tidak bisa bergerak).")]
         [SerializeField] private string hideAction = "Crouch";
+        [SerializeField] private string vomitAction = "Vomit";
+        [SerializeField] private string throwAction = "Throw";
+
+        [Header("Skill: lempar gumpalan (pengalih suara)")]
+        [SerializeField] private Sprite blobSprite;
+        [SerializeField] private float throwDistance = 3.2f;
+        [Tooltip("Radius suara gumpalan mendarat: penjaga di dalamnya datang memeriksa.")]
+        [SerializeField] private float throwNoiseRadius = 4.5f;
+        [SerializeField] private float throwCooldown = 5f;
 
         [Tooltip("Potongan awal. Kosong = semua SlimePiece di scene.")]
         [SerializeField] private List<SlimePiece> pieces = new List<SlimePiece>();
@@ -46,8 +55,11 @@ namespace GooNapped
         [Tooltip("Lama tidak bisa bergerak setelah gabung.")]
         [SerializeField] private float mergeLock = 0.35f;
 
-        private float lockTimer, nextSwitch, nextSplit;
-        private InputAction move, eat, split, switchPiece, hide;
+        private float lockTimer, nextSwitch, nextSplit, nextThrow;
+        private InputAction move, eat, split, switchPiece, hide, vomit, throwBlob;
+
+        // 0 = siap, >0 = detik sampai lempar berikutnya (untuk HUD).
+        public float ThrowCooldownLeft => Mathf.Max(0f, nextThrow - Time.time);
         private int activeIndex;
         private float messageTimer;
         private LevelGoal goal;
@@ -77,6 +89,8 @@ namespace GooNapped
             split = map.FindAction(splitAction, true);
             switchPiece = map.FindAction(switchAction, true);
             hide = map.FindAction(hideAction, true);
+            vomit = map.FindAction(vomitAction, false);
+            throwBlob = map.FindAction(throwAction, false);
             map.Enable();
         }
 
@@ -104,6 +118,12 @@ namespace GooNapped
             {
                 if (split.WasPressedThisFrame() && SplitOrMerge()) return;
                 if (eat.WasPressedThisFrame() && Interact()) return;
+                if (vomit != null && vomit.WasPressedThisFrame())
+                {
+                    if (a.TryVomit()) { Say("Bahan terakhir dimuntahkan."); return; }
+                    Say("Perut kosong.");
+                }
+                if (throwBlob != null && throwBlob.WasPressedThisFrame() && TryThrow()) return;
             }
             a.Move(move.ReadValue<Vector2>());
 
@@ -251,6 +271,36 @@ namespace GooNapped
             if (a.Jelly != null) a.Jelly.Kick(-9f);      // induk memipih saat "memuntahkan" potongan
             a.Motor.Stop();
             pieces.Add(piece);
+            return true;
+        }
+
+        // Lempar gumpalan lendir ke arah hadap; mendarat = bunyi yang memancing penjaga. Cooldown supaya tidak di-spam.
+        public bool TryThrow()
+        {
+            var a = Active;
+            if (a == null || a.IsEating || a.IsTransforming) return false;
+            if (Time.time < nextThrow)
+            {
+                Say("Gumpalan belum siap (" + Mathf.CeilToInt(ThrowCooldownLeft) + " dtk).");
+                return false;
+            }
+            Vector2 dir = a.Facing;
+            Vector2 from = a.Center;
+            float dist = throwDistance;
+            foreach (var h in Physics2D.RaycastAll(from, dir, throwDistance))
+            {
+                if (h.collider.isTrigger || h.collider.GetComponentInParent<SlimePiece>() != null) continue;
+                dist = Mathf.Min(dist, h.distance - 0.3f);
+            }
+            if (dist < 0.6f) { Say("Terlalu dekat tembok untuk melempar."); return false; }
+            var color = a.GetComponent<SlimeSpriteAnimator>().bodyRenderer.sharedMaterial.HasProperty("_Band3")
+                ? a.GetComponent<SlimeSpriteAnimator>().bodyRenderer.sharedMaterial.GetColor("_Band3") : Color.green;
+            GooBlob.Spawn(blobSprite, color, from, from + dir * dist, throwNoiseRadius);
+            nextThrow = Time.time + throwCooldown;
+            lockTimer = 0.25f;
+            a.Motor.Stop();
+            if (a.Jelly != null) a.Jelly.Kick(6f);
+            AudioDirector.Play(AudioDirector.Sfx.Split, from, 0.5f, 0.2f);
             return true;
         }
 

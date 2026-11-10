@@ -17,10 +17,10 @@ namespace GooNapped
         {
             if (brain == null) brain = FindFirstObjectByType<PlayerBrain>();
             if (goal == null) goal = FindFirstObjectByType<LevelGoal>();
-            guards = FindObjectsByType<GolemGuard>(FindObjectsSortMode.None);
+            guards = FindObjectsByType<Guard>(FindObjectsSortMode.None);
         }
 
-        private GolemGuard[] guards = new GolemGuard[0];
+        private Guard[] guards = new Guard[0];
 
         private static string TraitsText(System.Collections.Generic.IEnumerable<Trait> traits)
         {
@@ -39,7 +39,7 @@ namespace GooNapped
             }
             var a = brain.Active;
             sb.Length = 0;
-            sb.AppendLine("WASD gerak | E makan / tukar toples / telan teman | Space belah-gabung | Shift pindah potongan | tahan C nyamar");
+            sb.AppendLine("WASD gerak | E makan/tukar/telan | Space belah-gabung | Shift pindah | tahan C nyamar | Q muntah | F lempar gumpalan | R ulang | Esc jeda");
             if (a != null)
             {
                 sb.Append("Tubuh: ").Append(TraitsText(a.Body.State.Traits));
@@ -48,7 +48,9 @@ namespace GooNapped
                 if (!a.IsDisguised && LightExposure.At(a.Center) >= 0.35f) sb.Append("  <color=#ffc861>[kena cahaya: penjaga di dekat bisa melihat]</color>");
                 if (a.IsDisguised) sb.Append("  [nyamar]");
                 sb.AppendLine();
-                sb.Append("Potongan: ").Append(brain.Pieces.Count).Append("   Teman dibawa: ").Append(a.Carried.Count);
+                sb.Append("Potongan: ").Append(brain.Pieces.Count).Append("   Gumpalan: ")
+                  .Append(brain.ThrowCooldownLeft > 0f ? Mathf.CeilToInt(brain.ThrowCooldownLeft) + " dtk" : "siap")
+                  .Append("   Teman dibawa: ").Append(a.Carried.Count);
                 if (goal != null) sb.Append("/").Append(goal.Required);
                 sb.AppendLine();
                 var jar = brain.NearbyJar;

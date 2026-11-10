@@ -20,16 +20,16 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
      Level: Jar (toples) ─ RecipeData      IngredientPickup ─ IngredientData
             FriendSlime   LevelGoal ─ LevelExit   CameraFollow   LightExposure
                                  │
-     Penjaga: GolemGuard ─ VisionCone (gambar) ─ VisionMath (hitungan murni)
+     Penjaga: Guard (Golem, Familiar, ...) ─ VisionCone ─ VisionMath ─ NoiseBus (suara)
                                  │
-     AudioDirector (BGM, ambience, SFX posisional)      ProtoHud (HUD teks sementara)
+     AudioDirector (BGM, ambience, SFX)   GameFlow (urutan level, progres)   PauseMenu / MainMenuController   ProtoHud
 ```
 
 ## Pemain
 
 | Script | Tugas |
 |---|---|
-| `Player/PlayerBrain` | Baca input, kendalikan **satu** `SlimePiece`. Belah (ancang + cooldown), gabung, Shift (cooldown + "bangun"), interaksi E (telan teman → tukar toples → makan bahan), intip toples. Jeda aksi lewat `lockTimer`. |
+| `Player/PlayerBrain` | Baca input, kendalikan **satu** `SlimePiece`. Skill: muntah (Q, `SlimePiece.TryVomit`) dan lempar gumpalan (F, `TryThrow` → `GooBlob` → `NoiseBus`). Belah (ancang + cooldown), gabung, Shift (cooldown + "bangun"), interaksi E (telan teman → tukar toples → makan bahan), intip toples. Jeda aksi lewat `lockTimer`. |
 | `Slime/SlimePiece` | Satu potongan. Tidak membaca input. Hadap 4 arah, makan, transformasi nyamar bertahap (`disguiseT` 0 → 1), animasi belah (busur) dan terserap (gabung), daftar teman yang dibawa (`Carried`). |
 | `Slime/SlimeMotor` | Gerak: siklus Ancang → Udara → Mendarat → Meluncur. Arah terkunci saat lepas landas (lengket). Event `PhaseEntered` (dipakai untuk suara langkah). `CyclePhase` 0..1 dipakai memilih frame sprite. |
 | `Slime/SlimeJelly` | Pegas squash/stretch berporos di kaki + angkat badan + bayangan mengecil. `Hold()` untuk animasi khusus yang tidak boleh ditimpa gerak. |
@@ -53,7 +53,13 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
 
 ## Penjaga
 
-`Enemies/GolemGuard` (state machine):
+`Enemies/Guard` (state machine, dipakai SEMUA musuh; jenisnya ditentukan setelan prefab):
+
+| Prefab | Setelan |
+|---|---|
+| `Golem_Placeholder` | kerucut sempit & jauh, lambat, langkah berat |
+| `Familiar_Placeholder` | melayang (`hoverHeight`), kerucut lebar, `needsLightToSee` (buta di gelap), `heatSightRange` 7 (melihat yang panas/menyala dari jauh), membawa Light 2D sendiri |
+
 
 | State | Perilaku |
 |---|---|
@@ -69,8 +75,14 @@ Cara slime terdeteksi (laju curiga berbeda-beda):
 2. **Radius sadar**: terlalu dekat dari arah mana pun (anti menguntit dari belakang).
 3. **Cahaya**: slime yang berdiri di cahaya lampu (atau menyala sendiri) terlihat dari segala arah dalam `lightSightRange`.
 
-Potongan yang nyamar tidak terlihat. Potongan nyamar yang menyala/berbau = **umpan**: penjaga mendatanginya tanpa menaikkan curiga.
+Potongan yang nyamar tidak terlihat. Potongan nyamar yang menyala/berbau = **umpan**, dan bunyi dari `NoiseBus.Emit` (gumpalan dilempar) = **pengalih**: penjaga mendatanginya tanpa menaikkan curiga.
 `VisionMath` berisi hitungan murni (kerucut, pengali salah resep, faktor jarak) dan punya test.
+
+## Alur game
+- `Core/GameFlow`: daftar level (`Levels`, urut), progres (PlayerPrefs `gn_unlocked`), `Load`, `ReloadCurrent`, `LoadMainMenu`. **Level baru wajib ditambahkan di `GameFlow.Levels` dan Build Settings.**
+- `Core/BootLoader` (scene Boot) → menu utama. `UI/MainMenuController` (scene MainMenu): Mulai/Lanjut, Pilih level (terkunci sampai level sebelumnya selesai), Reset progres.
+- `UI/PauseMenu` (di LevelSystems): Esc jeda, R ulang. Tampilan OnGUI = placeholder sampai UI desainer.
+- `LevelGoal`: selesai → buka level berikutnya → muat; level terakhir → menu utama.
 
 ## Audio
 `Audio/AudioDirector` ada di prefab `LevelSystems`: BGM + ambience (2D), SFX posisional (pool 12 AudioSource). Panggil `AudioDirector.Play(AudioDirector.Sfx.X, posisi)` dari mana saja (aman walau tidak ada director). Pendengar dipindah ke bidang permainan (z = 0) supaya jarak suara = jarak di layar. Lentera punya AudioSource loop sendiri (kretek obor).
@@ -99,7 +111,7 @@ Potongan yang nyamar tidak terlihat. Potongan nyamar yang menyala/berbau = **ump
 `Tests/EditMode`: state tubuh, resep, urutan makan, gabung, hitungan penglihatan, smoke test proyek. Jalankan lewat Window > General > Test Runner. Tambah test untuk setiap logika murni baru.
 
 ## Menambah musuh baru (pola)
-1. Buat `Enemies/<Nama>Guard.cs`. Pakai ulang `VisionMath`, `VisionCone`, `LightExposure`, dan pola deteksi `GolemGuard` (kerucut/radius/cahaya → curiga → `LevelGoal.Fail`).
+1. Kalau cukup beda setelan (jarak, sudut, buta gelap, panas, melayang): duplikat prefab `Familiar_Placeholder`/`Golem_Placeholder`, ubah field `Guard`. Kalau butuh perilaku baru (misal mengendus jejak): tambah opsi di `Guard` atau komponen pendamping, jangan menyalin state machine.
 2. Cara diakali harus lewat sifat musuh itu (CLAUDE.md bagian Musuh), bukan menyerang.
 3. Prefab di `Prefabs/Enemies/`, sprite placeholder dari `art/tools/make_placeholder_enemies.py`.
 4. Tambah huruf di legenda `LevelBlockout` kalau musuhnya dipakai di blockout.

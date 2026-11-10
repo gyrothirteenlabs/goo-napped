@@ -16,6 +16,11 @@ namespace GooNapped
         [SerializeField] private float eatDuration = 0.85f;
         [SerializeField] private LayerMask pickupMask = ~0;
 
+        [Header("Muntah")]
+        [Tooltip("Prefab bahan yang muncul saat bahan terakhir dimuntahkan.")]
+        [SerializeField] private IngredientPickup pickupPrefab;
+        [SerializeField] private float vomitDuration = 0.6f;
+
         [Header("Nyamar")]
         [Tooltip("Renderer barang samaran (anak objek). Aktif saat potongan nyamar, body/face disembunyikan.")]
         [SerializeField] private SpriteRenderer disguiseRenderer;
@@ -146,6 +151,25 @@ namespace GooNapped
             Motor.Stop();
             if (Jelly != null) Jelly.Kick(6f);                // mulut membuka
             AudioDirector.Play(AudioDirector.Sfx.Eat, Center);
+            return true;
+        }
+
+        // Muntahkan bahan terakhir ke lantai di depan: koreksi resep yang salah, atau jadikan bahan umpan di tempat lain.
+        public bool TryVomit()
+        {
+            if (IsEating || IsTransforming || Body.State.Eaten.Count == 0) return false;
+            var ing = Body.Vomit();
+            if (ing == null) return false;
+            eatTimer = vomitDuration;
+            Motor.Stop();
+            if (Jelly != null) Jelly.Kick(8f);
+            if (pickupPrefab != null)
+            {
+                var pos = transform.position + (Vector3)(Vector2)Facing * 0.6f;
+                var p = Instantiate(pickupPrefab, pos, Quaternion.identity);
+                p.Init(ing);
+            }
+            AudioDirector.Play(AudioDirector.Sfx.Vomit, Center);
             return true;
         }
 

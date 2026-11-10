@@ -590,6 +590,8 @@ MonoBehaviour:
   pickupMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  pickupPrefab: {fileID: 6664777561426098721, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
+  vomitDuration: 0.6
   disguiseRenderer: {fileID: 7833935424039824229}
   disguiseSprite: {fileID: 392537881, guid: 590a0d7934c1e364899262d8fe1887f6, type: 3}
   disguiseTime: 0.45

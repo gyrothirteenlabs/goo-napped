@@ -3,17 +3,33 @@ using UnityEngine;
 
 namespace GooNapped
 {
-    // Golem Batu: patroli lambat, melihat LURUS ke depan (kerucut sempit, jauh).
+    // Penjaga umum. Tiap musuh = Guard dengan setelan berbeda (prefab):
+    //   Golem Batu   : kerucut sempit & jauh ("melihat lurus"), lambat, langkah berat.
+    //   Familiar Api : melayang, kerucut lebar, BUTA DI GELAP (needsLightToSee) tapi melihat yang PANAS/menyala
+    //                  dari jauh (heatSightRange). Membawa cahaya sendiri, jadi slime di dekatnya ikut terang.
+    // Perilaku bersama:
     //   - Lihat slime  : berhenti, menoleh, curiga naik.
-    //   - Hilang dari pandangan setelah cukup curiga: jalan ke tempat terakhir slime terlihat,
-    //     diam di sana sambil menyapu pandangan kiri-kanan, lalu kembali patroli.
-    //   - Radius sadar : slime yang terlalu dekat (termasuk di belakang) membuat golem menoleh,
-    //     jadi tidak bisa terus menguntit dari belakang.
-    //   - Potongan nyamar menghalangi jalan: golem berhenti, menatap, lalu putar balik.
+    //   - Hilang dari pandangan setelah cukup curiga: datangi tempat terakhir slime terlihat,
+    //     diam sambil menyapu pandangan, lalu kembali patroli.
+    //   - Radius sadar : slime yang terlalu dekat (termasuk di belakang) membuat penjaga menoleh.
+    //   - Cahaya       : slime di cahaya terlihat dari segala arah dalam jarak tertentu.
+    //   - Umpan / suara: didatangi dan diperiksa tanpa menaikkan curiga.
+    //   - Potongan nyamar menghalangi jalan: berhenti, menatap, lalu putar balik.
     [RequireComponent(typeof(Rigidbody2D), typeof(SlimeSpriteAnimator))]
-    public class GolemGuard : MonoBehaviour
+    public class Guard : MonoBehaviour
     {
         private enum State { Patrol, Wait, Alert, Search, LookAround, Blocked, Caught }
+
+        [Header("Jenis")]
+        [Tooltip("Nama untuk pesan 'Ketahuan ...'.")]
+        [SerializeField] private string guardName = "Golem Batu";
+        [Tooltip("Familiar Api: slime di kerucut hanya terlihat kalau terang atau panas/menyala.")]
+        [SerializeField] private bool needsLightToSee;
+        [Tooltip("Slime panas/menyala di dalam kerucut terlihat sejauh ini (0 = pakai View Range biasa).")]
+        [SerializeField] private float heatSightRange;
+        [Tooltip("Melayang naik-turun (unit). 0 = berjalan di tanah.")]
+        [SerializeField] private float hoverHeight;
+        [SerializeField] private float hoverSpeed = 3f;
 
         [Header("Patroli (posisi dunia)")]
         [SerializeField] private List<Vector2> patrolPoints = new List<Vector2>();
@@ -139,7 +155,7 @@ namespace GooNapped
         }
 
         private static bool IsSeeThrough(Collider2D c) =>
-            c == null || c.isTrigger || c.GetComponentInParent<SlimePiece>() != null || c.GetComponentInParent<GolemGuard>() != null;
+            c == null || c.isTrigger || c.GetComponentInParent<SlimePiece>() != null || c.GetComponentInParent<Guard>() != null;
 
         // Jarak tembus pandang ke arah `delta` (berhenti di dinding/prop).
         private float Clip(Vector2 from, Vector2 delta)
@@ -152,16 +168,39 @@ namespace GooNapped
 
         private bool LineOfSight(Vector2 from, Vector2 to) => Clip(from, to - from) >= Vector2.Distance(from, to) - 0.05f;
 
-        private float RangeFor(SlimePiece p) => viewRange * (p.Body.State.EmitsLight ? glowRangeMultiplier : 1f);
+        // Panas atau menyala (Ramuan Api, Lumut Pendar, ...): dilihat Familiar Api dari jauh.
+        private static bool IsHot(SlimePiece p) =>
+            p.Body.State.EmitsLight || p.Body.State.Get(TraitKind.Temperature) == "panas";
+
+        private float RangeFor(SlimePiece p)
+        {
+            float r = viewRange * (p.Body.State.EmitsLight ? glowRangeMultiplier : 1f);
+            if (heatSightRange > 0f && IsHot(p)) r = Mathf.Max(r, heatSightRange);
+            return r;
+        }
 
         private bool CanSee(SlimePiece p, out float distance)
         {
             distance = 0f;
             if (p == null || p.IsDisguised) return false;   // potongan yang nyamar tidak terlihat
             if (!VisionMath.InCone(Eye, forward, p.Center, RangeFor(p), viewAngle)) return false;
+            // buta di gelap: hanya melihat yang terang atau panas
+            if (needsLightToSee && !IsHot(p) && LightExposure.At(p.Center) < litThreshold) return false;
             distance = Vector2.Distance(Eye, p.Center);
             return LineOfSight(Eye, p.Center);
         }
+
+        // Suara (gumpalan dilempar, dsb.): datangi dan periksa, curiga tidak naik.
+        private void OnNoise(Vector2 position, float radius)
+        {
+            if (state == State.Caught || state == State.Alert) return;
+            if (Vector2.Distance(Body, position) > radius) return;
+            lastSeen = position;
+            state = State.Search;
+        }
+
+        private void OnEnable() => NoiseBus.Noise += OnNoise;
+        private void OnDisable() => NoiseBus.Noise -= OnNoise;
 
         // Umpan (potongan nyamar yang menyala/berbau) di dalam kerucut. Umpan yang baru diperiksa diabaikan sebentar.
         private bool TryNoticeBait(out SlimePiece bait)
@@ -224,7 +263,7 @@ namespace GooNapped
                 {
                     state = State.Caught;
                     AudioDirector.Play(AudioDirector.Sfx.Caught, Body);
-                    if (goal != null) goal.Fail("Ketahuan Golem Batu");
+                    if (goal != null) goal.Fail("Ketahuan " + guardName);
                     UpdateVisuals();
                     return;
                 }
@@ -353,13 +392,33 @@ namespace GooNapped
 
         private void LateUpdate()
         {
-            // langkah berat golem
-            if (!moving) { stepTimer = 0f; return; }
+            if (hoverHeight > 0f) Hover();
+            // langkah (golem). Penjaga melayang: stepInterval 0 = tanpa langkah
+            if (!moving || stepInterval <= 0f) { stepTimer = 0f; return; }
             if ((stepTimer -= Time.deltaTime) <= 0f)
             {
                 stepTimer = stepInterval;
                 AudioDirector.Play(AudioDirector.Sfx.GolemStep, Body, 0.8f);
             }
+        }
+
+        private Transform[] hoverParts;
+        private Vector3[] hoverBase;
+
+        private void Hover()
+        {
+            if (hoverParts == null)
+            {
+                var list = new List<Transform>();
+                if (anim.bodyRenderer != null) list.Add(anim.bodyRenderer.transform);
+                if (anim.faceRenderer != null && anim.faceRenderer.transform != transform) list.Add(anim.faceRenderer.transform);
+                hoverParts = list.ToArray();
+                hoverBase = new Vector3[hoverParts.Length];
+                for (int i = 0; i < hoverParts.Length; i++) hoverBase[i] = hoverParts[i].localPosition;
+            }
+            float y = hoverHeight * (1f + Mathf.Sin(Time.time * hoverSpeed)) * 0.5f;
+            for (int i = 0; i < hoverParts.Length; i++)
+                hoverParts[i].localPosition = hoverBase[i] + Vector3.up * y;
         }
 
         private void FixedUpdate()

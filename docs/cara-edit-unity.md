@@ -22,9 +22,10 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `b` `l` `w` `r` | Serbuk Batu, Lumut Pendar, Air Embun, Ramuan Api |
    | `L` | lentera |
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |
+   | `f`/`F`, `v`/`V` | titik awal/akhir patroli Familiar Api 1, 2 |
 
 3. Unity: menu **GooNapped > Blockout > C1_L0x** (atau **Semua chapter 1**). Scene diisi ulang dan disimpan.
-4. Level baru: salin satu `Config`, ganti `scene`, `recipe`, `next`, `note`, tambah `[MenuItem]`.
+4. Level baru: salin satu `Config`, ganti `scene`, `recipe`, `next`, `note`, tambah `[MenuItem]`. Lalu **tambahkan nama scene di `GameFlow.Levels`** (urutan pilih level) dan pastikan scene ada di Build Settings.
 
 ### Cara manual (desain final)
 - **Lantai/tembok**: buka Tile Palette (Window > 2D > Tile Palette), gambar di Tilemap `Grid/Floor` dan `Grid/Walls`. `Walls` punya collider + bayangan otomatis.
@@ -68,10 +69,11 @@ Material `Art/Materials/Slime_*` memakai shader `GooNapped/PixelToonLit` dengan 
 Bahan baru dengan warna baru: duplikat `Slime_Normal.mat`, ubah band, pasang di `Body Material` bahan.
 
 ## 5. Menyetel penjaga
-Inspector `GolemGuard`:
+Inspector `Guard` (Golem dan Familiar memakai komponen yang sama):
 
 | Bagian | Field penting |
 |---|---|
+| Jenis | `Guard Name`, `Needs Light To See` (buta di gelap), `Heat Sight Range` (lihat panas dari jauh), `Hover Height` |
 | Patroli | `Patrol Points`, `Speed`, `Wait At Point` |
 | Penglihatan | `View Range`, `View Angle` (lebar kerucut), `Awareness Radius` (radius sadar) |
 | Cahaya | `Light Sight Range`, `Lit Threshold`, `Light Rate` |
@@ -83,7 +85,7 @@ Prefab `Characters/Slime_Player`:
 - **`SlimeJelly`**: `Stiffness`, `Damping`, `Max Stretch`.
 - **`SlimePiece`**: `Eat Duration`, `Disguise Time`, `Reveal Time`, sprite samaran (`Disguise Sprite`).
 
-Jeda aksi (anti spam) ada di `LevelSystems > PlayerBrain`: `Switch Cooldown`, `Split Windup`, `Split Cooldown`, `Merge Lock`.
+Jeda aksi (anti spam) ada di `LevelSystems > PlayerBrain`: `Switch Cooldown`, `Split Windup`, `Split Cooldown`, `Merge Lock`, dan skill gumpalan: `Throw Distance`, `Throw Noise Radius`, `Throw Cooldown`.
 
 ## 7. Suara
 - Komponen **`AudioDirector`** di prefab `Systems/LevelSystems`: drag klip ke slot `Music`, `Ambience`, dan tiap efek (langkah slime, langkah golem, makan, belah, gabung, nyamar, Shift, waspada, ketahuan).

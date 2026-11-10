@@ -7,7 +7,7 @@ namespace GooNapped
     // klip di Inspector komponen ini, kode tidak perlu diubah.
     public class AudioDirector : MonoBehaviour
     {
-        public enum Sfx { SlimeStep, GolemStep, Eat, Split, Merge, Disguise, Reveal, Switch, Alert, Caught }
+        public enum Sfx { SlimeStep, GolemStep, Eat, Split, Merge, Disguise, Reveal, Switch, Alert, Caught, Vomit, Splat, UiClick }
 
         [Header("Loop")]
         [SerializeField] private AudioClip music;
@@ -26,6 +26,9 @@ namespace GooNapped
         [SerializeField] private AudioClip switchPiece;
         [SerializeField] private AudioClip alert;
         [SerializeField] private AudioClip caught;
+        [SerializeField] private AudioClip vomit;
+        [SerializeField] private AudioClip splat;
+        [SerializeField] private AudioClip uiClick;
         [SerializeField, Range(0f, 1f)] private float sfxVolume = 0.8f;
 
         [Header("Jarak dengar (unit)")]
@@ -108,6 +111,9 @@ namespace GooNapped
                 case Sfx.Switch: return switchPiece;
                 case Sfx.Alert: return alert;
                 case Sfx.Caught: return caught;
+                case Sfx.Vomit: return vomit;
+                case Sfx.Splat: return splat;
+                case Sfx.UiClick: return uiClick;
             }
             return null;
         }

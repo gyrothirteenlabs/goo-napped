@@ -49,7 +49,7 @@ namespace GooNapped
                 var c = h.collider;
                 if (c == null || c.isTrigger) continue;
                 if (c.transform == owner || c.transform.IsChildOf(owner)) continue;   // tiang lentera sendiri
-                if (c.GetComponentInParent<SlimePiece>() != null || c.GetComponentInParent<GolemGuard>() != null) continue;
+                if (c.GetComponentInParent<SlimePiece>() != null || c.GetComponentInParent<Guard>() != null) continue;
                 return true;
             }
             return false;

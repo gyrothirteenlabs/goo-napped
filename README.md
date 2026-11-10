@@ -10,7 +10,7 @@ Engine **Unity 6 (6000.3.28f1)**, URP 2D. Art dibuat di **Blender** lalu dirende
 
 1. Install **Unity 6000.3.28f1** (Unity Hub) dan **Git LFS** (`git lfs install`). Sprite, `.blend`, dan audio disimpan lewat LFS.
 2. Clone repo, buka folder ini di Unity Hub.
-3. Buka scene `Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity`, tekan **Play**. Level chapter 1 bersambung otomatis sampai C1_L04.
+3. Buka scene `Assets/_Game/Scenes/Boot/Boot.unity`, tekan **Play** (masuk menu utama → Mulai / Pilih level). Atau buka scene level langsung, misal `Scenes/Levels/Chapter1/C1_L01.unity`. Level bersambung otomatis: C1_L01 → C1_L04 → C2_L01.
 
 ### Kontrol
 | Tombol | Aksi |
@@ -20,6 +20,10 @@ Engine **Unity 6 (6000.3.28f1)**, URP 2D. Art dibuat di **Blender** lalu dirende
 | Space | Belah diri (ke arah hadap) / gabung kalau menyentuh potongan lain |
 | Shift | Pindah kendali ke potongan lain (yang ditinggal otomatis nyamar) |
 | Tahan C | Nyamar jadi barang di tempat |
+| Q | Muntahkan bahan terakhir (tubuh kembali seperti sebelumnya, bahan jatuh ke lantai) |
+| F | Lempar gumpalan lendir: bunyinya memancing penjaga (cooldown 5 detik) |
+| R | Ulang level |
+| Esc | Jeda (lanjut / ulang / menu utama) |
 
 ### Alur satu level
 Intip toples (lihat resep) → makan bahan sesuai resep (urutan penting: ciri sejenis tertimpa) → belah → potongan masuk toples jadi tiruan → telan teman → kabur ke exit (kotak hijau). Ketahuan penjaga = level diulang.
