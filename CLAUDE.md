@@ -13,7 +13,8 @@ Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double
 ## Status (10 Nov 2026, minggu 2)
 - Sudah: konsep gameplay, lore, objektif. Pipeline sprite Blender → Unity (template + add-on v1.1). Lighting real-time (normal map + toon band). Struktur project + 18 scene placeholder. Placeholder 4 musuh (bukan desain final).
 - Prototipe mekanik (branch `feat/prototipe-mekanik`, scene `Sandbox/ProtoMekanik`): gerak analog berdenyut, makan bahan + state tubuh, belah/gabung, Shift antar potongan.
-- Belum: desain slime final (tim desainer), toples & resep, penjaga, tileset level, art bahan.
+- Toples + resep + exit juga sudah jalan di sandbox (alur intip → makan → belah → tukar → telan → exit).
+- Belum: desain slime final (tim desainer), penjaga, tileset level, art bahan/toples, UI (sekarang HUD teks sementara `ProtoHud`).
 - Mood: **gelap** (disetujui 10 Nov, lihat `art/CLAUDE.md`). `art/palette.hex` masih USULAN.
 - Usulan urutan chapter/level: `docs/rundown-level.md` (belum disepakati tim).
 
@@ -131,6 +132,6 @@ Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, 
 - Kerjaan teknis (kode, scene, shader, tooling, pipeline render) langsung kerjakan. Kerjaan desain art: bantu eksekusi kalau ada arahan dari tim desainer.
 
 ## Next step
-- Programmer: toples & resep (ScriptableObject di `Data/`), 1 penjaga (Golem, gerak analog + cone lurus), lalu kamera/level loader. Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
+- Programmer: 1 penjaga (Golem, gerak analog + cone lurus), lalu kamera/level loader. Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
 - Desainer: desain final slime + palet state bahan, tileset chapter 1 (albedo flat + normal), toples, Golem Batu.
 - Tim: daftar bahan + ciri, slime teman per chapter, daftar level.

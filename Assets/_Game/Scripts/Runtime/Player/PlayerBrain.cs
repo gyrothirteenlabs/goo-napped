@@ -27,9 +27,21 @@ namespace GooNapped
         [Tooltip("Celah maksimum antar tepi dua potongan supaya dianggap bersentuhan (unit).")]
         [SerializeField] private float mergeGap = 0.15f;
 
+        [Tooltip("Jarak interaksi E ke toples/teman (dari pusat collider).")]
+        [SerializeField] private float interactRadius = 0.85f;
+        [Tooltip("Jarak mengintip isi toples.")]
+        [SerializeField] private float peekRadius = 1.3f;
+
         private InputAction move, eat, split, switchPiece;
         private int activeIndex;
+        private float messageTimer;
         private readonly Collider2D[] hits = new Collider2D[8];
+        private readonly Collider2D[] near = new Collider2D[16];
+
+        // Toples yang sedang diintip (dekat potongan aktif), atau null.
+        public Jar NearbyJar { get; private set; }
+        // Pesan singkat untuk HUD (alasan aksi ditolak, hasil tukar).
+        public string Message { get; private set; } = "";
 
         public IReadOnlyList<SlimePiece> Pieces => pieces;
         public SlimePiece Active => pieces.Count > 0 ? pieces[Mathf.Clamp(activeIndex, 0, pieces.Count - 1)] : null;
@@ -67,9 +79,80 @@ namespace GooNapped
             if (!a.IsEating)
             {
                 if (split.WasPressedThisFrame() && SplitOrMerge()) return;
-                if (eat.WasPressedThisFrame() && a.TryEat()) return;
+                if (eat.WasPressedThisFrame() && Interact()) return;
             }
             a.Move(move.ReadValue<Vector2>());
+
+            // Objektif 1: mendekat ke toples = mengintip isinya.
+            NearbyJar = FindNear<Jar>(a, peekRadius);
+            if (NearbyJar != null) NearbyJar.Peek();
+            if (messageTimer > 0f && (messageTimer -= Time.deltaTime) <= 0f) Message = "";
+        }
+
+        private T FindNear<T>(SlimePiece a, float radius) where T : Component
+        {
+            var filter = new ContactFilter2D { useTriggers = true };
+            int n = Physics2D.OverlapCircle(a.Center, radius, filter, near);
+            T best = null;
+            float bestD = float.MaxValue;
+            for (int i = 0; i < n; i++)
+            {
+                var c = near[i].GetComponentInParent<T>();
+                if (c == null) continue;
+                float d = ((Vector2)near[i].bounds.center - a.Center).sqrMagnitude;
+                if (d < bestD) { bestD = d; best = c; }
+            }
+            return best;
+        }
+
+        private void Say(string text)
+        {
+            Message = text;
+            messageTimer = 3f;
+        }
+
+        // Tombol E. Urutan: telan teman -> tukar dengan isi toples -> makan bahan.
+        public bool Interact()
+        {
+            var a = Active;
+            if (a == null || a.IsEating) return false;
+
+            var friend = FindNear<FriendSlime>(a, interactRadius);
+            if (friend != null)
+            {
+                var r = friend.Swallow();
+                a.Carried.Add(r);
+                Say(r != null ? r.FriendName + " ditelan. Bawa ke exit." : "Teman ditelan.");
+                return true;
+            }
+
+            var jar = FindNear<Jar>(a, interactRadius);
+            if (jar != null && jar.HasFriend) return SwapWithJar(a, jar);
+
+            return a.TryEat();
+        }
+
+        // Objektif 4: potongan aktif masuk toples sebagai tiruan, teman keluar di tempat potongan itu berdiri.
+        private bool SwapWithJar(SlimePiece a, Jar jar)
+        {
+            if (pieces.Count < 2)
+            {
+                Say("Belah dulu (Space): satu potongan masuk toples, potongan lain membawa teman.");
+                return true;
+            }
+            if (a.Carried.Count > 0)
+            {
+                Say("Potongan ini sedang membawa teman. Pakai potongan lain (Shift).");
+                return true;
+            }
+            int miss = jar.MismatchOf(a.Body.State);
+            jar.Swap(a.Body.State, a.transform.position);
+            pieces.Remove(a);
+            Destroy(a.gameObject);
+            SetActive(0);
+            Say(miss == 0 ? "Tiruan sempurna. Telan temanmu (E) lalu kabur."
+                          : "Tiruan masuk, tapi " + miss + " ciri salah: penjaga akan lebih cepat curiga.");
+            return true;
         }
 
         // Potongan lain yang sedang bersentuhan dengan potongan aktif (paling dekat), atau null.
@@ -131,6 +214,7 @@ namespace GooNapped
             if (a == null || other == null || other == a) return false;
             if (Vector2.Distance(a.Center, other.Center) > a.Radius + other.Radius + mergeGap) return false;
             a.Body.Absorb(other.Body.State);
+            a.Carried.AddRange(other.Carried);           // teman yang dibawa ikut pindah
             pieces.Remove(other);
             activeIndex = pieces.IndexOf(a);
             Destroy(other.gameObject);

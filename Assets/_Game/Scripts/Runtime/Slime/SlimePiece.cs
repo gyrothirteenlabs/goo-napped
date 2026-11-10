@@ -31,6 +31,8 @@ namespace GooNapped
         public bool IsControlled { get; private set; }
         public bool IsDisguised => !IsControlled;
         public bool IsEating => eatTimer > 0f;
+        // Teman yang sudah ditelan potongan ini (dibawa ke exit).
+        public System.Collections.Generic.List<RecipeData> Carried { get; } = new System.Collections.Generic.List<RecipeData>();
         public Vector2 Center => col != null ? (Vector2)col.bounds.center : (Vector2)transform.position;
         public float Radius => col != null ? col.bounds.extents.x : 0.28f;
 

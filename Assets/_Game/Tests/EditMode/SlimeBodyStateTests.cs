@@ -101,5 +101,20 @@ namespace GooNapped.Tests
             Assert.AreEqual("berat", a.Get(TraitKind.Weight), "berat diserap dari potongan lain");
             Assert.AreEqual(0.6f, a.SpeedMultiplier, 1e-5f);
         }
+        [Test]
+        public void Resep_UrutanMakanMenentukanCocok()
+        {
+            // resep: merah + berat. Serbuk batu ikut memberi warna abu, jadi harus dimakan SEBELUM ramuan api.
+            var resep = RecipeData.Create("teman", new[] { new Trait(TraitKind.Color, "merah"), new Trait(TraitKind.Weight, "berat") });
+            var benar = new SlimeBodyState();
+            benar.Eat(SerbukBatu());
+            benar.Eat(RamuanApi());
+            Assert.AreEqual(0, benar.MismatchCount(resep.Traits));
+
+            var salah = new SlimeBodyState();
+            salah.Eat(RamuanApi());
+            salah.Eat(SerbukBatu());
+            Assert.AreEqual(1, salah.MismatchCount(resep.Traits), "warna tertimpa abu");
+        }
     }
 }
