@@ -18,6 +18,8 @@ namespace GooNapped
         [SerializeField] private string eatAction = "Interact";
         [SerializeField] private string splitAction = "Jump";
         [SerializeField] private string switchAction = "Sprint";
+        [Tooltip("Tahan untuk nyamar jadi barang di tempat (tidak bisa bergerak).")]
+        [SerializeField] private string hideAction = "Crouch";
 
         [Tooltip("Potongan awal. Kosong = semua SlimePiece di scene.")]
         [SerializeField] private List<SlimePiece> pieces = new List<SlimePiece>();
@@ -32,7 +34,7 @@ namespace GooNapped
         [Tooltip("Jarak mengintip isi toples.")]
         [SerializeField] private float peekRadius = 1.3f;
 
-        private InputAction move, eat, split, switchPiece;
+        private InputAction move, eat, split, switchPiece, hide;
         private int activeIndex;
         private float messageTimer;
         private LevelGoal goal;
@@ -61,6 +63,7 @@ namespace GooNapped
             eat = map.FindAction(eatAction, true);
             split = map.FindAction(splitAction, true);
             switchPiece = map.FindAction(switchAction, true);
+            hide = map.FindAction(hideAction, true);
             map.Enable();
         }
 
@@ -79,6 +82,8 @@ namespace GooNapped
             if (a == null) return;
             if (goal != null && (goal.IsFailed || goal.IsComplete)) { a.Move(Vector2.zero); return; }
             if (switchPiece.WasPressedThisFrame()) { SwitchNext(); return; }
+            a.HideRequested = hide.IsPressed();
+            if (a.IsDisguised) { a.Move(Vector2.zero); return; }
             if (!a.IsEating)
             {
                 if (split.WasPressedThisFrame() && SplitOrMerge()) return;

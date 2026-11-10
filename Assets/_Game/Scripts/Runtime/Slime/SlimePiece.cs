@@ -15,6 +15,12 @@ namespace GooNapped
         [SerializeField] private float eatDuration = 0.6f;
         [SerializeField] private LayerMask pickupMask = ~0;
 
+        [Header("Nyamar")]
+        [Tooltip("Renderer barang samaran (anak objek). Aktif saat potongan nyamar, body/face disembunyikan.")]
+        [SerializeField] private SpriteRenderer disguiseRenderer;
+        [Tooltip("Sprite barang samaran untuk lokasi ini (chapter 1: batu). Placeholder sampai ada art tim.")]
+        [SerializeField] private Sprite disguiseSprite;
+
         [Header("Animasi")]
         [Tooltip("Tempo animasi jalan mengikuti kecepatan: batas bawah dan atas pengali fps.")]
         [SerializeField] private Vector2 moveAnimSpeed = new Vector2(0.6f, 1.4f);
@@ -29,7 +35,11 @@ namespace GooNapped
         // Arah hadap (4 arah, untuk sprite dan arah belah).
         public Vector2Int Facing { get; private set; } = Vector2Int.down;
         public bool IsControlled { get; private set; }
-        public bool IsDisguised => !IsControlled;
+        // Diminta pemain (tahan tombol nyamar). Potongan yang tidak dikendalikan selalu nyamar.
+        public bool HideRequested { get; set; }
+        public bool IsDisguised => !IsControlled || (HideRequested && !IsEating);
+        // Umpan: barang samaran yang menyala/berbau menarik perhatian penjaga (tanpa menaikkan curiga).
+        public bool IsBait => IsDisguised && (Body.State.EmitsLight || Body.State.SmellRadius > 0f);
         public bool IsEating => eatTimer > 0f;
         // Teman yang sudah ditelan potongan ini (dibawa ke exit).
         public System.Collections.Generic.List<RecipeData> Carried { get; } = new System.Collections.Generic.List<RecipeData>();
@@ -55,9 +65,27 @@ namespace GooNapped
         public void SetControlled(bool on)
         {
             IsControlled = on;
+            HideRequested = false;
             Motor.SetFrozen(!on);
-            // Placeholder nyamar: wajah disembunyikan. Sprite "jadi barang" menyusul dari tim desainer.
-            if (anim != null && anim.faceRenderer != null) anim.faceRenderer.enabled = on;
+            ApplyDisguiseVisual();
+        }
+
+        private void ApplyDisguiseVisual()
+        {
+            bool hidden = IsDisguised && disguiseRenderer != null && disguiseSprite != null;
+            if (disguiseRenderer != null)
+            {
+                disguiseRenderer.enabled = hidden;
+                disguiseRenderer.sprite = disguiseSprite;
+                // umpan menyala: barang samaran ikut berpendar hangat supaya pemain tahu ini umpan
+                disguiseRenderer.color = hidden && Body.State.EmitsLight ? new Color(1f, 0.8f, 0.55f) : Color.white;
+            }
+            if (anim != null)
+            {
+                if (anim.bodyRenderer != null) anim.bodyRenderer.enabled = !hidden;
+                // tanpa sprite samaran (fallback lama): body tetap, wajah disembunyikan
+                if (anim.faceRenderer != null) anim.faceRenderer.enabled = !IsDisguised;
+            }
         }
 
         public void Face(Vector2Int dir)
@@ -68,7 +96,7 @@ namespace GooNapped
         // Dipanggil PlayerBrain tiap frame untuk potongan yang dikendalikan.
         public void Move(Vector2 input)
         {
-            if (!IsControlled || IsEating) { Motor.MoveInput = Vector2.zero; return; }
+            if (!IsControlled || IsEating || IsDisguised) { Motor.Stop(); return; }
             Motor.MoveInput = input;
             if (input.sqrMagnitude < 0.04f) return;
             Face(Mathf.Abs(input.x) > Mathf.Abs(input.y)
@@ -107,6 +135,7 @@ namespace GooNapped
         private void Update()
         {
             if (eatTimer > 0f) eatTimer -= Time.deltaTime;
+            ApplyDisguiseVisual();
             string dir = Facing.x != 0 ? "side" : (Facing.y > 0 ? "back" : "front");
             bool left = Facing.x != 0 ? Facing.x < 0 : anim.faceLeft;
             bool moving = IsControlled && !IsEating && Motor.MoveInput.sqrMagnitude > 0.04f;

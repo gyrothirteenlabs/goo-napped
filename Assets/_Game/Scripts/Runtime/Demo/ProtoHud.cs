@@ -39,7 +39,7 @@ namespace GooNapped
             }
             var a = brain.Active;
             sb.Length = 0;
-            sb.AppendLine("WASD gerak | E makan / tukar toples / telan teman | Space belah-gabung | Shift pindah potongan");
+            sb.AppendLine("WASD gerak | E makan / tukar toples / telan teman | Space belah-gabung | Shift pindah potongan | tahan C nyamar");
             if (a != null)
             {
                 sb.Append("Tubuh: ").Append(TraitsText(a.Body.State.Traits));

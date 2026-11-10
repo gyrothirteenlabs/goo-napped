@@ -15,6 +15,7 @@ Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double
 - Prototipe mekanik (branch `feat/prototipe-mekanik`, scene `Sandbox/ProtoMekanik`): gerak analog berdenyut, makan bahan + state tubuh, belah/gabung, Shift antar potongan.
 - Toples + resep + exit juga sudah jalan di sandbox (alur intip → makan → belah → tukar → telan → exit).
 - Penjaga Golem Batu (patroli, kerucut lurus, tingkat curiga, ketahuan = ulang level) jalan di sandbox.
+- Nyamar jadi barang (tahan C, potongan yang ditinggal otomatis) + umpan (potongan nyamar yang menyala didatangi penjaga). Golem: datangi + sapu pandangan, radius sadar.
 - Blockout C1_L01 (tutorial) + C1_L02 (Golem) bisa dimainkan berurutan; kamera ikut potongan aktif. Dibangun dari peta teks: menu GooNapped > Blockout (`Scripts/Editor/Level/LevelBlockout.cs`).
 - Belum: desain slime final (tim desainer), musuh lain, tileset level final, art bahan/toples, UI (sekarang HUD teks sementara `ProtoHud`).
 - Mood: **gelap** (disetujui 10 Nov, lihat `art/CLAUDE.md`). `art/palette.hex` masih USULAN.
@@ -134,6 +135,6 @@ Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, 
 - Kerjaan teknis (kode, scene, shader, tooling, pipeline render) langsung kerjakan. Kerjaan desain art: bantu eksekusi kalau ada arahan dari tim desainer.
 
 ## Next step
-- Programmer: blockout C1_L03–L04, lalu nyamar jadi barang + umpan. Sudah ada: `GolemGuard` + `VisionCone` (penjaga), `Jar`/`RecipeData`/`LevelGoal` (objektif). Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
+- Programmer: blockout C1_L03–L04, lalu musuh ke-2 (Familiar Api). Sudah ada: `GolemGuard` + `VisionCone` (penjaga), `Jar`/`RecipeData`/`LevelGoal` (objektif). Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
 - Desainer: desain final slime + palet state bahan, tileset chapter 1 (albedo flat + normal), toples, Golem Batu.
 - Tim: daftar bahan + ciri, slime teman per chapter, daftar level.

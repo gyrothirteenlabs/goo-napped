@@ -49,6 +49,11 @@ namespace GooNapped
         [Tooltip("Sudut sapuan pandangan kiri-kanan (derajat).")]
         [SerializeField] private float lookAroundAngle = 75f;
 
+        [Tooltip("Golem berhenti sejauh ini dari titik yang diperiksa (tidak menimpa potongan/umpan).")]
+        [SerializeField] private float searchStopDistance = 0.8f;
+        [Tooltip("Umpan yang sudah diperiksa diabaikan selama ini (detik).")]
+        [SerializeField] private float baitIgnoreTime = 8f;
+
         [Header("Terhalang potongan")]
         [SerializeField] private float blockDistance = 0.75f;
         [SerializeField] private float blockedStare = 1.5f;
@@ -71,6 +76,8 @@ namespace GooNapped
         private Vector2 moveTarget;
         private float moveSpeed;
         private bool moving;
+        private SlimePiece lastBait;
+        private float baitCooldown;
         private readonly RaycastHit2D[] castHits = new RaycastHit2D[8];
 
         public float Suspicion { get; private set; }
@@ -134,15 +141,31 @@ namespace GooNapped
         private bool CanSee(SlimePiece p, out float distance)
         {
             distance = 0f;
-            if (p == null || !p.IsControlled) return false;   // potongan yang nyamar tidak terlihat
+            if (p == null || p.IsDisguised) return false;   // potongan yang nyamar tidak terlihat
             if (!VisionMath.InCone(Eye, forward, p.Center, RangeFor(p), viewAngle)) return false;
             distance = Vector2.Distance(Eye, p.Center);
             return LineOfSight(Eye, p.Center);
         }
 
+        // Umpan (potongan nyamar yang menyala/berbau) di dalam kerucut. Umpan yang baru diperiksa diabaikan sebentar.
+        private bool TryNoticeBait(out SlimePiece bait)
+        {
+            bait = null;
+            if (brain == null) return false;
+            foreach (var p in brain.Pieces)
+            {
+                if (p == null || !p.IsBait || (p == lastBait && baitCooldown > 0f)) continue;
+                if (!VisionMath.InCone(Eye, forward, p.Center, RangeFor(p), viewAngle)) continue;
+                if (!LineOfSight(Eye, p.Center)) continue;
+                bait = p;
+                return true;
+            }
+            return false;
+        }
+
         private bool CanSense(SlimePiece p)
         {
-            if (p == null || !p.IsControlled) return false;
+            if (p == null || p.IsDisguised) return false;
             return Vector2.Distance(Body, p.Center) <= awarenessRadius && LineOfSight(Body, p.Center);
         }
 
@@ -155,6 +178,7 @@ namespace GooNapped
                 return;
             }
 
+            if (baitCooldown > 0f) baitCooldown -= Time.deltaTime;
             var target = brain != null ? brain.Active : null;
             SeesTarget = CanSee(target, out float dist);
             Senses = !SeesTarget && CanSense(target);
@@ -173,6 +197,14 @@ namespace GooNapped
                     UpdateVisuals();
                     return;
                 }
+            }
+            else if (state != State.Search && state != State.Blocked && TryNoticeBait(out var bait))
+            {
+                // umpan menyala di depan mata: datangi dan periksa, curiga ke pemain tidak naik
+                lastSeen = bait.Center;
+                lastBait = bait;
+                baitCooldown = baitIgnoreTime;
+                state = State.Search;
             }
             else
             {
@@ -195,7 +227,7 @@ namespace GooNapped
                 case State.Search:
                     // datangi tempat terakhir slime terlihat
                     var toSeen = lastSeen - Body;
-                    if (toSeen.magnitude < 0.4f || !TryMove(lastSeen - (Vector2.up * 0.22f), speed * searchSpeedMultiplier))
+                    if (toSeen.magnitude < searchStopDistance ||!TryMove(lastSeen - (Vector2.up * 0.22f), speed * searchSpeedMultiplier))
                     {
                         state = State.LookAround;
                         timer = lookAroundTime;
