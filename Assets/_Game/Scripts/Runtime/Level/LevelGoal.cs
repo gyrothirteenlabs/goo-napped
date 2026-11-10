@@ -17,6 +17,9 @@ namespace GooNapped
         [Tooltip("Ulang level otomatis setelah ketahuan.")]
         [SerializeField] private bool restartOnFail = true;
         [SerializeField] private float restartDelay = 1.5f;
+        [Tooltip("Nama scene berikutnya (harus ada di Build Settings). Kosong = tetap di level ini.")]
+        [SerializeField] private string nextScene = "";
+        [SerializeField] private float nextDelay = 2f;
 
         public IReadOnlyList<Jar> Jars => jars;
         public int Required => requiredFriends > 0 ? requiredFriends : jars.Count;
@@ -40,7 +43,15 @@ namespace GooNapped
             IsComplete = true;
             Debug.Log($"Level selesai: {piece.Carried.Count} teman dibawa kabur.");
             Completed?.Invoke(this);
+            if (!string.IsNullOrEmpty(nextScene)) StartCoroutine(LoadNext());
             return true;
+        }
+
+        private IEnumerator LoadNext()
+        {
+            yield return new WaitForSeconds(nextDelay);
+            if (Application.CanStreamedLevelBeLoaded(nextScene)) SceneManager.LoadScene(nextScene);
+            else Debug.LogWarning($"LevelGoal: scene '{nextScene}' tidak ada di Build Settings.");
         }
 
         // Dipanggil penjaga saat curiga penuh.

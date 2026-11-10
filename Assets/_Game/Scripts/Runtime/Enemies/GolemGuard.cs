@@ -9,7 +9,7 @@ namespace GooNapped
     [RequireComponent(typeof(Rigidbody2D), typeof(SlimeSpriteAnimator))]
     public class GolemGuard : MonoBehaviour
     {
-        private enum State { Patrol, Wait, Investigate, Caught }
+        private enum State { Patrol, Wait, Investigate, Blocked, Caught }
 
         [Header("Patroli (posisi dunia)")]
         [SerializeField] private List<Vector2> patrolPoints = new List<Vector2>();
@@ -35,6 +35,12 @@ namespace GooNapped
         [SerializeField] private float mismatchBonus = 0.35f;
         [Tooltip("Lama menatap tempat terakhir target terlihat sebelum kembali patroli.")]
         [SerializeField] private float investigateTime = 2f;
+
+        [Header("Terhalang potongan")]
+        [Tooltip("Jarak (pusat ke pusat) saat golem berhenti karena ada potongan slime di depannya.")]
+        [SerializeField] private float blockDistance = 0.75f;
+        [Tooltip("Lama golem menatap penghalang sebelum putar balik.")]
+        [SerializeField] private float blockedStare = 1.5f;
 
         [Header("Tampilan")]
         [SerializeField] private Material coneMaterial;
@@ -172,11 +178,43 @@ namespace GooNapped
                         break;
                     }
                     TurnTowards(to);
+                    // ada potongan slime (nyamar) menghalangi: berhenti, menatap, lalu putar balik
+                    var blocker = PieceAhead(to);
+                    if (blocker != null)
+                    {
+                        lastSeen = blocker.Center;
+                        state = State.Blocked;
+                        timer = blockedStare;
+                        break;
+                    }
                     // jalan hanya kalau sudah kurang lebih menghadap tujuan (golem kaku)
                     moving = Vector2.Angle(forward, to) < 20f;
                     break;
+                case State.Blocked:
+                    TurnTowards(lastSeen - Eye);
+                    if ((timer -= Time.deltaTime) <= 0f)
+                    {
+                        // patroli dibalik: kembali ke titik sebelumnya
+                        pointIndex = (pointIndex - 1 + patrolPoints.Count) % patrolPoints.Count;
+                        state = State.Patrol;
+                    }
+                    break;
             }
             UpdateVisuals();
+        }
+
+        // Potongan slime tepat di jalur menuju tujuan (jarak badan), atau null.
+        // Dicek terhadap arah TUJUAN, bukan arah hadap: setelah putar balik, golem tidak tersangkut lagi.
+        private SlimePiece PieceAhead(Vector2 toward)
+        {
+            if (brain == null) return null;
+            foreach (var p in brain.Pieces)
+            {
+                if (p == null) continue;
+                var d = p.Center - (rb.position + Vector2.up * 0.22f);
+                if (d.magnitude < blockDistance && Vector2.Angle(toward, d) < 50f) return p;
+            }
+            return null;
         }
 
         private void FixedUpdate()
