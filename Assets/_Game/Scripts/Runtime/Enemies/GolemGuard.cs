@@ -3,20 +3,24 @@ using UnityEngine;
 
 namespace GooNapped
 {
-    // Golem Batu: patroli lambat, melihat LURUS ke depan (kerucut sempit, jauh), berbelok pelan.
-    // Cara mengakali: nyamar (potongan yang tidak dikendalikan tidak terlihat), lewat di belakangnya,
-    // atau pakai potongan umpan supaya dia berhenti dan menoleh.
+    // Golem Batu: patroli lambat, melihat LURUS ke depan (kerucut sempit, jauh).
+    //   - Lihat slime  : berhenti, menoleh, curiga naik.
+    //   - Hilang dari pandangan setelah cukup curiga: jalan ke tempat terakhir slime terlihat,
+    //     diam di sana sambil menyapu pandangan kiri-kanan, lalu kembali patroli.
+    //   - Radius sadar : slime yang terlalu dekat (termasuk di belakang) membuat golem menoleh,
+    //     jadi tidak bisa terus menguntit dari belakang.
+    //   - Potongan nyamar menghalangi jalan: golem berhenti, menatap, lalu putar balik.
     [RequireComponent(typeof(Rigidbody2D), typeof(SlimeSpriteAnimator))]
     public class GolemGuard : MonoBehaviour
     {
-        private enum State { Patrol, Wait, Investigate, Blocked, Caught }
+        private enum State { Patrol, Wait, Alert, Search, LookAround, Blocked, Caught }
 
         [Header("Patroli (posisi dunia)")]
         [SerializeField] private List<Vector2> patrolPoints = new List<Vector2>();
-        [SerializeField] private float speed = 0.9f;
-        [SerializeField] private float waitAtPoint = 1.2f;
-        [Tooltip("Derajat per detik. Golem kaku: berbelok pelan.")]
-        [SerializeField] private float turnSpeed = 70f;
+        [SerializeField] private float speed = 1.0f;
+        [SerializeField] private float waitAtPoint = 1.0f;
+        [Tooltip("Derajat per detik saat patroli.")]
+        [SerializeField] private float turnSpeed = 140f;
 
         [Header("Penglihatan")]
         [SerializeField] private float viewRange = 3.6f;
@@ -24,22 +28,29 @@ namespace GooNapped
         [SerializeField] private float viewAngle = 40f;
         [Tooltip("Tinggi mata dari titik kaki (unit).")]
         [SerializeField] private float eyeHeight = 0.45f;
-        [Tooltip("Slime yang menyala (Ramuan Api) terlihat dari lebih jauh.")]
+        [Tooltip("Slime yang menyala terlihat dari lebih jauh.")]
         [SerializeField] private float glowRangeMultiplier = 1.4f;
+        [Tooltip("Radius sadar ke segala arah (termasuk belakang).")]
+        [SerializeField] private float awarenessRadius = 1.1f;
+        [Tooltip("Laju curiga di radius sadar dibanding terlihat langsung.")]
+        [SerializeField] private float awarenessRate = 0.5f;
 
         [Header("Curiga")]
         [Tooltip("Detik sampai ketahuan kalau target terlihat di jarak menengah.")]
-        [SerializeField] private float fillTime = 1.4f;
-        [SerializeField] private float decayPerSecond = 0.3f;
+        [SerializeField] private float fillTime = 1.6f;
+        [SerializeField] private float decayPerSecond = 0.2f;
         [Tooltip("Tambahan laju curiga per ciri tiruan yang salah di toples level ini.")]
         [SerializeField] private float mismatchBonus = 0.35f;
-        [Tooltip("Lama menatap tempat terakhir target terlihat sebelum kembali patroli.")]
-        [SerializeField] private float investigateTime = 2f;
+        [Tooltip("Di atas nilai ini, golem mendatangi tempat terakhir slime terlihat.")]
+        [SerializeField] private float searchThreshold = 0.3f;
+        [SerializeField] private float searchSpeedMultiplier = 1.3f;
+        [Tooltip("Lama diam sambil menyapu pandangan di tempat terakhir slime terlihat.")]
+        [SerializeField] private float lookAroundTime = 3.5f;
+        [Tooltip("Sudut sapuan pandangan kiri-kanan (derajat).")]
+        [SerializeField] private float lookAroundAngle = 75f;
 
         [Header("Terhalang potongan")]
-        [Tooltip("Jarak (pusat ke pusat) saat golem berhenti karena ada potongan slime di depannya.")]
         [SerializeField] private float blockDistance = 0.75f;
-        [Tooltip("Lama golem menatap penghalang sebelum putar balik.")]
         [SerializeField] private float blockedStare = 1.5f;
 
         [Header("Tampilan")]
@@ -56,13 +67,18 @@ namespace GooNapped
         private int pointIndex;
         private float timer;
         private Vector2 forward = Vector2.down;
-        private Vector2 lastSeen;
+        private Vector2 lastSeen, lookBase;
+        private Vector2 moveTarget;
+        private float moveSpeed;
         private bool moving;
+        private readonly RaycastHit2D[] castHits = new RaycastHit2D[8];
 
         public float Suspicion { get; private set; }
         public bool SeesTarget { get; private set; }
+        public bool Senses { get; private set; }
         public Vector2 Forward => forward;
         public Vector2 Eye => (Vector2)transform.position + Vector2.up * eyeHeight;
+        private Vector2 Body => rb.position + Vector2.up * 0.22f;
 
         private void Awake()
         {
@@ -99,68 +115,104 @@ namespace GooNapped
             return m;
         }
 
-        // Jarak tembus pandang ke arah `delta` (berhenti di dinding/prop). Slime, penjaga, dan trigger tidak menghalangi.
+        private static bool IsSeeThrough(Collider2D c) =>
+            c == null || c.isTrigger || c.GetComponentInParent<SlimePiece>() != null || c.GetComponentInParent<GolemGuard>() != null;
+
+        // Jarak tembus pandang ke arah `delta` (berhenti di dinding/prop).
         private float Clip(Vector2 from, Vector2 delta)
         {
             float best = delta.magnitude;
             foreach (var h in Physics2D.RaycastAll(from, delta.normalized, best))
-            {
-                var c = h.collider;
-                if (c == null || c.isTrigger) continue;
-                if (c.GetComponentInParent<SlimePiece>() != null || c.GetComponentInParent<GolemGuard>() != null) continue;
-                best = Mathf.Min(best, h.distance);
-            }
+                if (!IsSeeThrough(h.collider)) best = Mathf.Min(best, h.distance);
             return best;
         }
+
+        private bool LineOfSight(Vector2 from, Vector2 to) => Clip(from, to - from) >= Vector2.Distance(from, to) - 0.05f;
+
+        private float RangeFor(SlimePiece p) => viewRange * (p.Body.State.EmitsLight ? glowRangeMultiplier : 1f);
 
         private bool CanSee(SlimePiece p, out float distance)
         {
             distance = 0f;
             if (p == null || !p.IsControlled) return false;   // potongan yang nyamar tidak terlihat
-            float range = viewRange * (p.Body.State.EmitsLight ? glowRangeMultiplier : 1f);
-            var target = p.Center;
-            if (!VisionMath.InCone(Eye, forward, target, range, viewAngle)) return false;
-            distance = Vector2.Distance(Eye, target);
-            return Clip(Eye, target - Eye) >= distance - 0.05f;
+            if (!VisionMath.InCone(Eye, forward, p.Center, RangeFor(p), viewAngle)) return false;
+            distance = Vector2.Distance(Eye, p.Center);
+            return LineOfSight(Eye, p.Center);
+        }
+
+        private bool CanSense(SlimePiece p)
+        {
+            if (p == null || !p.IsControlled) return false;
+            return Vector2.Distance(Body, p.Center) <= awarenessRadius && LineOfSight(Body, p.Center);
         }
 
         private void Update()
         {
+            moving = false;
             if (state == State.Caught || (goal != null && (goal.IsComplete || goal.IsFailed)))
             {
-                moving = false;
                 UpdateVisuals();
                 return;
             }
 
             var target = brain != null ? brain.Active : null;
             SeesTarget = CanSee(target, out float dist);
-            if (SeesTarget)
+            Senses = !SeesTarget && CanSense(target);
+
+            if (SeesTarget || Senses)
             {
-                float range = viewRange * (target.Body.State.EmitsLight ? glowRangeMultiplier : 1f);
-                float rate = VisionMath.DistanceFactor(dist, range) * VisionMath.MismatchMultiplier(TotalMismatch(), mismatchBonus);
+                float rate = SeesTarget ? VisionMath.DistanceFactor(dist, RangeFor(target)) : awarenessRate;
+                rate *= VisionMath.MismatchMultiplier(TotalMismatch(), mismatchBonus);
                 Suspicion = Mathf.Min(1f, Suspicion + Time.deltaTime * rate / Mathf.Max(0.05f, fillTime));
                 lastSeen = target.Center;
-                state = State.Investigate;
-                timer = investigateTime;
+                state = State.Alert;
                 if (Suspicion >= 1f)
                 {
                     state = State.Caught;
                     if (goal != null) goal.Fail("Ketahuan Golem Batu");
+                    UpdateVisuals();
+                    return;
                 }
             }
             else
             {
-                Suspicion = Mathf.Max(0f, Suspicion - decayPerSecond * Time.deltaTime);
+                float decay = state == State.Search || state == State.LookAround ? decayPerSecond * 0.4f : decayPerSecond;
+                Suspicion = Mathf.Max(0f, Suspicion - decay * Time.deltaTime);
             }
 
-            moving = false;
             switch (state)
             {
-                case State.Investigate:
-                    TurnTowards(lastSeen - Eye);
-                    if (!SeesTarget && (timer -= Time.deltaTime) <= 0f) state = State.Patrol;
+                case State.Alert:
+                    // menoleh cepat ke arah slime
+                    TurnTowards(lastSeen - Eye, turnSpeed * 1.6f);
+                    if (!SeesTarget && !Senses)
+                    {
+                        if (Suspicion >= searchThreshold) { state = State.Search; }
+                        else { state = State.LookAround; timer = lookAroundTime * 0.5f; lookBase = forward; }
+                    }
                     break;
+
+                case State.Search:
+                    // datangi tempat terakhir slime terlihat
+                    var toSeen = lastSeen - Body;
+                    if (toSeen.magnitude < 0.4f || !TryMove(lastSeen - (Vector2.up * 0.22f), speed * searchSpeedMultiplier))
+                    {
+                        state = State.LookAround;
+                        timer = lookAroundTime;
+                        lookBase = forward;
+                    }
+                    break;
+
+                case State.LookAround:
+                    // diam sambil menyapu pandangan kiri-kanan
+                    timer -= Time.deltaTime;
+                    float phase = (lookAroundTime - timer) / lookAroundTime * Mathf.PI * 2f;
+                    float baseA = Mathf.Atan2(lookBase.y, lookBase.x) * Mathf.Rad2Deg;
+                    float want = baseA + Mathf.Sin(phase) * lookAroundAngle;
+                    TurnTowards(new Vector2(Mathf.Cos(want * Mathf.Deg2Rad), Mathf.Sin(want * Mathf.Deg2Rad)), turnSpeed);
+                    if (timer <= 0f) state = State.Patrol;
+                    break;
+
                 case State.Wait:
                     if ((timer -= Time.deltaTime) <= 0f)
                     {
@@ -168,6 +220,16 @@ namespace GooNapped
                         state = State.Patrol;
                     }
                     break;
+
+                case State.Blocked:
+                    TurnTowards(lastSeen - Eye, turnSpeed);
+                    if ((timer -= Time.deltaTime) <= 0f)
+                    {
+                        pointIndex = (pointIndex - 1 + patrolPoints.Count) % patrolPoints.Count;
+                        state = State.Patrol;
+                    }
+                    break;
+
                 case State.Patrol:
                     if (patrolPoints.Count == 0) break;
                     var to = patrolPoints[pointIndex] - rb.position;
@@ -177,8 +239,6 @@ namespace GooNapped
                         timer = waitAtPoint;
                         break;
                     }
-                    TurnTowards(to);
-                    // ada potongan slime (nyamar) menghalangi: berhenti, menatap, lalu putar balik
                     var blocker = PieceAhead(to);
                     if (blocker != null)
                     {
@@ -187,20 +247,30 @@ namespace GooNapped
                         timer = blockedStare;
                         break;
                     }
-                    // jalan hanya kalau sudah kurang lebih menghadap tujuan (golem kaku)
-                    moving = Vector2.Angle(forward, to) < 20f;
-                    break;
-                case State.Blocked:
-                    TurnTowards(lastSeen - Eye);
-                    if ((timer -= Time.deltaTime) <= 0f)
-                    {
-                        // patroli dibalik: kembali ke titik sebelumnya
-                        pointIndex = (pointIndex - 1 + patrolPoints.Count) % patrolPoints.Count;
-                        state = State.Patrol;
-                    }
+                    TryMove(patrolPoints[pointIndex], speed);
                     break;
             }
             UpdateVisuals();
+        }
+
+        // Menoleh ke tujuan lalu jalan; melambat saat masih berbelok. false = jalan tertutup tembok.
+        private bool TryMove(Vector2 dest, float spd)
+        {
+            var d = dest - rb.position;
+            if (d.sqrMagnitude < 1e-4f) return true;
+            TurnTowards(d, turnSpeed);
+            float facing = Mathf.Clamp01(Mathf.Cos(Vector2.Angle(forward, d) * Mathf.Deg2Rad));
+            if (facing < 0.3f) return true;   // masih berbelok di tempat
+            float step = spd * facing * Time.deltaTime;
+            // cek tembok di depan. Hit dengan jarak 0 = sudah bersinggungan dari awal (lorong sempit): abaikan,
+            // kalau tidak golem tersangkut di lorong selebar 1 tile.
+            int n = Physics2D.CircleCast(Body, 0.15f, d.normalized, new ContactFilter2D { useTriggers = false }, castHits, step + 0.05f);
+            for (int i = 0; i < n; i++)
+                if (castHits[i].distance > 0f && !IsSeeThrough(castHits[i].collider)) return false;
+            moveTarget = dest;
+            moveSpeed = spd * facing;
+            moving = true;
+            return true;
         }
 
         // Potongan slime tepat di jalur menuju tujuan (jarak badan), atau null.
@@ -211,7 +281,7 @@ namespace GooNapped
             foreach (var p in brain.Pieces)
             {
                 if (p == null) continue;
-                var d = p.Center - (rb.position + Vector2.up * 0.22f);
+                var d = p.Center - Body;
                 if (d.magnitude < blockDistance && Vector2.Angle(toward, d) < 50f) return p;
             }
             return null;
@@ -219,17 +289,16 @@ namespace GooNapped
 
         private void FixedUpdate()
         {
-            if (!moving || patrolPoints.Count == 0) return;
-            var target = patrolPoints[pointIndex];
-            rb.MovePosition(Vector2.MoveTowards(rb.position, target, speed * Time.fixedDeltaTime));
+            if (!moving) return;
+            rb.MovePosition(Vector2.MoveTowards(rb.position, moveTarget, moveSpeed * Time.fixedDeltaTime));
         }
 
-        private void TurnTowards(Vector2 dir)
+        private void TurnTowards(Vector2 dir, float degPerSec)
         {
             if (dir.sqrMagnitude < 1e-4f) return;
             float cur = Mathf.Atan2(forward.y, forward.x) * Mathf.Rad2Deg;
             float want = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            float a = Mathf.MoveTowardsAngle(cur, want, turnSpeed * Time.deltaTime) * Mathf.Deg2Rad;
+            float a = Mathf.MoveTowardsAngle(cur, want, degPerSec * Time.deltaTime) * Mathf.Deg2Rad;
             forward = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
         }
 
@@ -237,7 +306,7 @@ namespace GooNapped
         {
             string dir = Mathf.Abs(forward.x) > Mathf.Abs(forward.y) ? "side" : (forward.y > 0 ? "back" : "front");
             anim.Play(moving ? "move" : "idle", dir, forward.x < 0);
-            if (cone != null) cone.Draw(Eye, forward, viewRange, viewAngle, Suspicion, Clip);
+            if (cone != null) cone.Draw(Eye, forward, viewRange, viewAngle, Suspicion, Clip, Body, awarenessRadius);
         }
 
         private void OnDrawGizmosSelected()
@@ -248,6 +317,8 @@ namespace GooNapped
                 Gizmos.DrawWireSphere(patrolPoints[i], 0.1f);
                 if (patrolPoints.Count > 1) Gizmos.DrawLine(patrolPoints[i], patrolPoints[(i + 1) % patrolPoints.Count]);
             }
+            Gizmos.color = new Color(1f, 0.5f, 0.2f, 0.6f);
+            Gizmos.DrawWireSphere(transform.position + Vector3.up * 0.22f, awarenessRadius);
         }
     }
 }

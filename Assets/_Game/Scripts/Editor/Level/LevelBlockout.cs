@@ -147,6 +147,14 @@ namespace GooNapped.EditorTools
             floor.GetComponent<TilemapRenderer>().sortingOrder = -100;
             walls.GetComponent<TilemapRenderer>().sharedMaterial = envMat;
             walls.GetComponent<TilemapRenderer>().sortingOrder = -90;
+            // cahaya lentera tidak tembus tembok: ShadowCaster2D dari TilemapCollider2D (tipe dicari lewat nama
+            // supaya editor asmdef tidak butuh referensi ke assembly URP 2D)
+            var casterType = System.Type.GetType("UnityEngine.Rendering.Universal.ShadowCaster2D, Unity.RenderPipelines.Universal.2D.Runtime");
+            if (casterType != null && walls.GetComponent(casterType) == null)
+            {
+                var caster = walls.gameObject.AddComponent(casterType);
+                Set(caster, "m_CastingOption", p => p.enumValueIndex = 1);   // CastShadow: tembok sendiri tetap terang
+            }
 
             var actors = Find(scene, "Actors");
             var spawn = Find(scene, "Actors/PlayerSpawn");
@@ -254,7 +262,7 @@ namespace GooNapped.EditorTools
             // supaya editor asmdef tidak perlu referensi ke assembly URP 2D.
             foreach (var comp in Find(scene, "Global Light 2D").GetComponents<Component>())
                 if (comp != null && comp.GetType().Name == "Light2D")
-                    Set(comp, "m_Intensity", p => p.floatValue = 0.16f);
+                    Set(comp, "m_Intensity", p => p.floatValue = 0.1f);
 
             var note = Object.FindFirstObjectByType<SceneNote>();
             if (note != null) Set(note, "note", p => p.stringValue = c.note);

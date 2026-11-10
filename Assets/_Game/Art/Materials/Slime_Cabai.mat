@@ -40,7 +40,8 @@ Material:
     m_Floats:
     - _LightInfluence: 1
     - _LightTint: 0.6
-    - _MinLight: 0.45
+    - _MinLight: 0.2
+    - _ShadeGradient: 1
     - _Steps: 4
     - _UseGradient: 1
     m_Colors:
