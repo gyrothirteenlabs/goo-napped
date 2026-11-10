@@ -17,7 +17,10 @@ namespace GooNapped
         {
             if (brain == null) brain = FindFirstObjectByType<PlayerBrain>();
             if (goal == null) goal = FindFirstObjectByType<LevelGoal>();
+            guards = FindObjectsByType<Guard>(FindObjectsSortMode.None);
         }
+
+        private Guard[] guards = new Guard[0];
 
         private static string TraitsText(System.Collections.Generic.IEnumerable<Trait> traits)
         {
@@ -36,14 +39,18 @@ namespace GooNapped
             }
             var a = brain.Active;
             sb.Length = 0;
-            sb.AppendLine("WASD gerak | E makan / tukar toples / telan teman | Space belah-gabung | Shift pindah potongan");
+            sb.AppendLine("WASD gerak | E makan/tukar/telan | Space belah-gabung | Shift pindah | tahan C nyamar | Q muntah | F lempar gumpalan | R ulang | Esc jeda");
             if (a != null)
             {
                 sb.Append("Tubuh: ").Append(TraitsText(a.Body.State.Traits));
                 if (a.Body.State.EmitsLight) sb.Append("  [menyala]");
                 if (a.Body.State.SpeedMultiplier < 1f) sb.Append("  [lambat]");
+                if (!a.IsDisguised && LightExposure.At(a.Center) >= 0.35f) sb.Append("  <color=#ffc861>[kena cahaya: penjaga di dekat bisa melihat]</color>");
+                if (a.IsDisguised) sb.Append("  [nyamar]");
                 sb.AppendLine();
-                sb.Append("Potongan: ").Append(brain.Pieces.Count).Append("   Teman dibawa: ").Append(a.Carried.Count);
+                sb.Append("Potongan: ").Append(brain.Pieces.Count).Append("   Gumpalan: ")
+                  .Append(brain.ThrowCooldownLeft > 0f ? Mathf.CeilToInt(brain.ThrowCooldownLeft) + " dtk" : "siap")
+                  .Append("   Teman dibawa: ").Append(a.Carried.Count);
                 if (goal != null) sb.Append("/").Append(goal.Required);
                 sb.AppendLine();
                 var jar = brain.NearbyJar;
@@ -56,8 +63,17 @@ namespace GooNapped
                         sb.Append("Toples berisi tiruan (ciri salah: ").Append(jar.DecoyMismatch).AppendLine(")");
                 }
             }
+            foreach (var g in guards)
+            {
+                if (g == null) continue;
+                int n = Mathf.RoundToInt(g.Suspicion * 10);
+                sb.Append(g.SeesTarget || g.Senses ? "<color=#ff5a5f>" : "<color=#8a92a0>").Append("Curiga ")
+                  .Append(new string('#', n)).Append(new string('.', 10 - n))
+                  .Append(g.InLight ? "  (kamu di cahaya)" : "").AppendLine("</color>");
+            }
             if (!string.IsNullOrEmpty(brain.Message)) sb.Append("<color=#ffc861>").Append(brain.Message).AppendLine("</color>");
             if (goal != null && goal.IsComplete) sb.AppendLine("<color=#6fd27e><b>LEVEL SELESAI</b></color>");
+            if (goal != null && goal.IsFailed) sb.Append("<color=#ff5a5f><b>").Append(goal.FailReason).AppendLine(" - ulang...</b></color>");
             GUI.Label(new Rect(10, 8, Screen.width - 20, 200), sb.ToString(), style);
         }
     }

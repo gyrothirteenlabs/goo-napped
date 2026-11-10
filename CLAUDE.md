@@ -14,7 +14,11 @@ Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double
 - Sudah: konsep gameplay, lore, objektif. Pipeline sprite Blender → Unity (template + add-on v1.1). Lighting real-time (normal map + toon band). Struktur project + 18 scene placeholder. Placeholder 4 musuh (bukan desain final).
 - Prototipe mekanik (branch `feat/prototipe-mekanik`, scene `Sandbox/ProtoMekanik`): gerak analog berdenyut, makan bahan + state tubuh, belah/gabung, Shift antar potongan.
 - Toples + resep + exit juga sudah jalan di sandbox (alur intip → makan → belah → tukar → telan → exit).
-- Belum: desain slime final (tim desainer), penjaga, tileset level, art bahan/toples, UI (sekarang HUD teks sementara `ProtoHud`).
+- Penjaga Golem Batu (patroli, kerucut lurus, tingkat curiga, ketahuan = ulang level) jalan di sandbox.
+- Nyamar jadi barang (tahan C, potongan yang ditinggal otomatis) + umpan (potongan nyamar yang menyala didatangi penjaga). Golem: datangi + sapu pandangan, radius sadar.
+- Blockout chapter 1 lengkap (C1_L01 tutorial, L02 kenalan Golem, L03 urutan makan + 2 golem, L04 umpan + gerbang), bisa dimainkan berurutan; kamera ikut potongan aktif. Dibangun dari peta teks: menu GooNapped > Blockout (`Scripts/Editor/Level/LevelBlockout.cs`).
+- Musuh ke-2 Familiar Api (C2_L01). Skill muntah (Q) + lempar gumpalan (F). Menu utama, pilih level, pause, restart, progres.
+- Belum: desain slime final (tim desainer), Anjing Lendir, Mata Penyihir, tileset level final, art bahan/toples, UI (sekarang HUD teks sementara `ProtoHud`).
 - Mood: **gelap** (disetujui 10 Nov, lihat `art/CLAUDE.md`). `art/palette.hex` masih USULAN.
 - Usulan urutan chapter/level: `docs/rundown-level.md` (belum disepakati tim).
 
@@ -93,10 +97,12 @@ Puzzle stealth 2D top-down, level pendek (2–4 menit). Referensi feel: Robbery 
 Alkemis tidak sadar karena toples masih berisi slime (hanya slime yang bisa menggantikan slime).
 
 ## Mekanik
-- Gerak analog. Kecepatan dan tempo animasi mengikuti sifat tubuh.
+- Gerak analog berupa lompatan kecil yang merayap (ancang, lompat rendah, meluncur) + squash/stretch halus di engine. Bahan berat = lompatan pendek dan lambat. Spek frame sprite: `docs/panduan-blender-3d.md` C.1.
 - Makan bahan alkemi: tubuh berubah sesuai bahan (Ramuan Api = merah + panas + menyala, Serbuk Batu = abu + berat, dll). Daftar final oleh tim.
 - Belah diri: potongan mewarisi sifat tubuh saat itu. Bisa dipakai jadi tiruan di toples ATAU umpan.
-- Nyamar jadi barang untuk ngumpet dari penjaga.
+- Nyamar jadi barang untuk ngumpet dari penjaga (butuh waktu berubah; selama berubah masih bisa ketahuan).
+- Aksi punya jeda anti-spam: belah (ancang + cooldown), Shift (cooldown + potongan baru "bangun"), makan (diam ±0.85 detik).
+- Cahaya = bahaya: slime yang berdiri di cahaya lampu (atau menyala sendiri) terlihat penjaga di dekatnya dari segala arah, walau di luar kerucut.
 - Tombol Shift untuk ganti kontrol antar potongan. Potongan yang ditinggal otomatis nyamar.
 - Gabung lagi hanya bisa kalau potongan bersentuhan langsung.
 - Resep tiruan: tiap slime di toples punya 2–3 ciri (warna, suhu, berat, kilau, bau).
@@ -132,6 +138,6 @@ Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, 
 - Kerjaan teknis (kode, scene, shader, tooling, pipeline render) langsung kerjakan. Kerjaan desain art: bantu eksekusi kalau ada arahan dari tim desainer.
 
 ## Next step
-- Programmer: 1 penjaga (Golem, gerak analog + cone lurus), lalu kamera/level loader. Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
+- Programmer: lihat `docs/backlog.md` (berikutnya: blockout C2_L02–L04, Anjing Lendir + bahan bau, UI asli). Sudah ada: `GolemGuard` + `VisionCone` (penjaga), `Jar`/`RecipeData`/`LevelGoal` (objektif). Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
 - Desainer: desain final slime + palet state bahan, tileset chapter 1 (albedo flat + normal), toples, Golem Batu.
 - Tim: daftar bahan + ciri, slime teman per chapter, daftar level.

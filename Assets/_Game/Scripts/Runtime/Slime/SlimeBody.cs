@@ -34,6 +34,13 @@ namespace GooNapped
             Refresh();
         }
 
+        public IngredientData Vomit()
+        {
+            var i = State.Vomit();
+            if (i != null) Refresh();
+            return i;
+        }
+
         // Gabung: serap ciri potongan lain (ciri sendiri tidak tertimpa).
         public void Absorb(SlimeBodyState other)
         {

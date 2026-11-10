@@ -18,6 +18,17 @@ namespace GooNapped
         [SerializeField] private string eatAction = "Interact";
         [SerializeField] private string splitAction = "Jump";
         [SerializeField] private string switchAction = "Sprint";
+        [Tooltip("Tahan untuk nyamar jadi barang di tempat (tidak bisa bergerak).")]
+        [SerializeField] private string hideAction = "Crouch";
+        [SerializeField] private string vomitAction = "Vomit";
+        [SerializeField] private string throwAction = "Throw";
+
+        [Header("Skill: lempar gumpalan (pengalih suara)")]
+        [SerializeField] private Sprite blobSprite;
+        [SerializeField] private float throwDistance = 3.2f;
+        [Tooltip("Radius suara gumpalan mendarat: penjaga di dalamnya datang memeriksa.")]
+        [SerializeField] private float throwNoiseRadius = 4.5f;
+        [SerializeField] private float throwCooldown = 5f;
 
         [Tooltip("Potongan awal. Kosong = semua SlimePiece di scene.")]
         [SerializeField] private List<SlimePiece> pieces = new List<SlimePiece>();
@@ -32,9 +43,26 @@ namespace GooNapped
         [Tooltip("Jarak mengintip isi toples.")]
         [SerializeField] private float peekRadius = 1.3f;
 
-        private InputAction move, eat, split, switchPiece;
+        [Header("Jeda aksi (anti spam)")]
+        [Tooltip("Jeda minimum antar Shift (detik).")]
+        [SerializeField] private float switchCooldown = 0.7f;
+        [Tooltip("Lama tidak bisa bergerak setelah Shift (potongan baru 'bangun').")]
+        [SerializeField] private float switchLock = 0.3f;
+        [Tooltip("Ancang-ancang sebelum potongan keluar (detik). Selama itu diam dan masih bisa ketahuan.")]
+        [SerializeField] private float splitWindup = 0.3f;
+        [Tooltip("Jeda minimum antar belah (detik).")]
+        [SerializeField] private float splitCooldown = 1.2f;
+        [Tooltip("Lama tidak bisa bergerak setelah gabung.")]
+        [SerializeField] private float mergeLock = 0.35f;
+
+        private float lockTimer, nextSwitch, nextSplit, nextThrow;
+        private InputAction move, eat, split, switchPiece, hide, vomit, throwBlob;
+
+        // 0 = siap, >0 = detik sampai lempar berikutnya (untuk HUD).
+        public float ThrowCooldownLeft => Mathf.Max(0f, nextThrow - Time.time);
         private int activeIndex;
         private float messageTimer;
+        private LevelGoal goal;
         private readonly Collider2D[] hits = new Collider2D[8];
         private readonly Collider2D[] near = new Collider2D[16];
 
@@ -60,6 +88,9 @@ namespace GooNapped
             eat = map.FindAction(eatAction, true);
             split = map.FindAction(splitAction, true);
             switchPiece = map.FindAction(switchAction, true);
+            hide = map.FindAction(hideAction, true);
+            vomit = map.FindAction(vomitAction, false);
+            throwBlob = map.FindAction(throwAction, false);
             map.Enable();
         }
 
@@ -68,6 +99,7 @@ namespace GooNapped
             pieces.RemoveAll(p => p == null);
             if (pieces.Count == 0)
                 pieces.AddRange(FindObjectsByType<SlimePiece>(FindObjectsSortMode.None));
+            goal = FindFirstObjectByType<LevelGoal>();
             SetActive(0);
         }
 
@@ -75,18 +107,29 @@ namespace GooNapped
         {
             var a = Active;
             if (a == null) return;
-            if (switchPiece.WasPressedThisFrame()) { SwitchNext(); return; }
+            if (goal != null && (goal.IsFailed || goal.IsComplete)) { a.Move(Vector2.zero); return; }
+            if (messageTimer > 0f && (messageTimer -= Time.deltaTime) <= 0f) Message = "";
+            // jeda setelah aksi (belah, gabung, Shift): tidak bisa bergerak/aksi lain, supaya tidak bisa di-spam
+            if (lockTimer > 0f) { lockTimer -= Time.deltaTime; a.Move(Vector2.zero); return; }
+            if (switchPiece.WasPressedThisFrame() && Time.time >= nextSwitch) { SwitchNext(); return; }
+            a.HideRequested = hide.IsPressed();
+            if (a.IsTransforming) { a.Move(Vector2.zero); return; }
             if (!a.IsEating)
             {
                 if (split.WasPressedThisFrame() && SplitOrMerge()) return;
                 if (eat.WasPressedThisFrame() && Interact()) return;
+                if (vomit != null && vomit.WasPressedThisFrame())
+                {
+                    if (a.TryVomit()) { Say("Bahan terakhir dimuntahkan."); return; }
+                    Say("Perut kosong.");
+                }
+                if (throwBlob != null && throwBlob.WasPressedThisFrame() && TryThrow()) return;
             }
             a.Move(move.ReadValue<Vector2>());
 
             // Objektif 1: mendekat ke toples = mengintip isinya.
             NearbyJar = FindNear<Jar>(a, peekRadius);
             if (NearbyJar != null) NearbyJar.Peek();
-            if (messageTimer > 0f && (messageTimer -= Time.deltaTime) <= 0f) Message = "";
         }
 
         private T FindNear<T>(SlimePiece a, float radius) where T : Component
@@ -174,23 +217,90 @@ namespace GooNapped
         public bool SplitOrMerge()
         {
             var other = TouchingPiece();
-            return other != null ? Merge(other) : TrySplit();
+            if (other != null) return Merge(other);
+            var a = Active;
+            if (!CanSplit(a))
+            {
+                if (a != null && pieces.Count >= maxPieces) Say("Maksimal " + maxPieces + " potongan.");
+                return false;
+            }
+            if (Time.time < nextSplit) return false;
+            StartCoroutine(SplitRoutine(a));
+            return true;
         }
 
+        private bool CanSplit(SlimePiece a)
+        {
+            if (a == null || a.IsEating || a.IsTransforming || pieces.Count >= maxPieces) return false;
+            return !IsBlocked(a, a.Center + (Vector2)a.Facing * splitDistance);
+        }
+
+        // Ancang (badan menggembung-memipih, diam) -> potongan keluar. Masih bisa ketahuan selama ancang.
+        private System.Collections.IEnumerator SplitRoutine(SlimePiece a)
+        {
+            nextSplit = Time.time + splitCooldown;
+            lockTimer = splitWindup + 0.2f;
+            a.Motor.Stop();
+            if (a.Jelly != null) a.Jelly.Hold(0.22f);
+            AudioDirector.Play(AudioDirector.Sfx.Split, a.Center);
+            yield return new WaitForSeconds(splitWindup * 0.6f);
+            if (a.Jelly != null) a.Jelly.Hold(-0.28f);
+            yield return new WaitForSeconds(splitWindup * 0.4f);
+            if (a.Jelly != null) a.Jelly.Release();
+            if (a != null && a == Active) TrySplit();
+        }
+
+        // Belah langsung (tanpa ancang). Dipakai SplitRoutine dan test.
         public bool TrySplit()
         {
             var a = Active;
-            if (a == null || a.IsEating || pieces.Count >= maxPieces) return false;
+            if (!CanSplit(a)) return false;
             Vector2 offset = (Vector2)a.Facing * splitDistance;
-            if (IsBlocked(a, a.Center + offset)) return false;
 
-            var go = Instantiate(a.gameObject, a.transform.position + (Vector3)offset, Quaternion.identity, a.transform.parent);
+            if (a.Jelly != null) a.Jelly.ResetPose();     // salinan jangan ikut pose gepeng/terangkat
+            var from = a.transform.position;
+            var to = from + (Vector3)offset;
+            var go = Instantiate(a.gameObject, from, Quaternion.identity, a.transform.parent);
             go.name = "Slime_Potongan_" + pieces.Count;
             var piece = go.GetComponent<SlimePiece>();
             piece.Body.SetState(a.Body.State.Clone());   // mewarisi sifat tubuh saat ini
+            piece.Carried.Clear();
             piece.Face(a.Facing);
-            piece.SetControlled(false);                  // langsung nyamar
+            piece.SetControlled(false);                  // nyamar setelah mendarat
+            piece.PlaySplitArc(from, to);
+            if (a.Jelly != null) a.Jelly.Kick(-9f);      // induk memipih saat "memuntahkan" potongan
+            a.Motor.Stop();
             pieces.Add(piece);
+            return true;
+        }
+
+        // Lempar gumpalan lendir ke arah hadap; mendarat = bunyi yang memancing penjaga. Cooldown supaya tidak di-spam.
+        public bool TryThrow()
+        {
+            var a = Active;
+            if (a == null || a.IsEating || a.IsTransforming) return false;
+            if (Time.time < nextThrow)
+            {
+                Say("Gumpalan belum siap (" + Mathf.CeilToInt(ThrowCooldownLeft) + " dtk).");
+                return false;
+            }
+            Vector2 dir = a.Facing;
+            Vector2 from = a.Center;
+            float dist = throwDistance;
+            foreach (var h in Physics2D.RaycastAll(from, dir, throwDistance))
+            {
+                if (h.collider.isTrigger || h.collider.GetComponentInParent<SlimePiece>() != null) continue;
+                dist = Mathf.Min(dist, h.distance - 0.3f);
+            }
+            if (dist < 0.6f) { Say("Terlalu dekat tembok untuk melempar."); return false; }
+            var color = a.GetComponent<SlimeSpriteAnimator>().bodyRenderer.sharedMaterial.HasProperty("_Band3")
+                ? a.GetComponent<SlimeSpriteAnimator>().bodyRenderer.sharedMaterial.GetColor("_Band3") : Color.green;
+            GooBlob.Spawn(blobSprite, color, from, from + dir * dist, throwNoiseRadius);
+            nextThrow = Time.time + throwCooldown;
+            lockTimer = 0.25f;
+            a.Motor.Stop();
+            if (a.Jelly != null) a.Jelly.Kick(6f);
+            AudioDirector.Play(AudioDirector.Sfx.Split, from, 0.5f, 0.2f);
             return true;
         }
 
@@ -217,13 +327,23 @@ namespace GooNapped
             a.Carried.AddRange(other.Carried);           // teman yang dibawa ikut pindah
             pieces.Remove(other);
             activeIndex = pieces.IndexOf(a);
-            Destroy(other.gameObject);
+            other.PlayAbsorbInto(a);                     // tersedot lalu hilang (animasi)
+            a.Motor.Stop();
+            lockTimer = mergeLock;
+            AudioDirector.Play(AudioDirector.Sfx.Merge, a.Center);
             return true;
         }
 
         public void SwitchNext()
         {
-            if (pieces.Count > 1) SetActive((activeIndex + 1) % pieces.Count);
+            if (pieces.Count < 2) return;
+            var old = Active;
+            if (old != null && old.IsEating) return;
+            SetActive((activeIndex + 1) % pieces.Count);
+            // yang ditinggal meringkuk jadi barang, yang baru "bangun" (lepas samaran) dulu sebelum bisa bergerak
+            nextSwitch = Time.time + switchCooldown;
+            lockTimer = switchLock;
+            AudioDirector.Play(AudioDirector.Sfx.Switch, Active.Center, 0.7f);
         }
 
         public void SetActive(int index)

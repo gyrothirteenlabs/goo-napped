@@ -116,5 +116,21 @@ namespace GooNapped.Tests
             salah.Eat(SerbukBatu());
             Assert.AreEqual(1, salah.MismatchCount(resep.Traits), "warna tertimpa abu");
         }
+        [Test]
+        public void Muntah_TubuhKembaliSebelumBahanTerakhir()
+        {
+            var s = new SlimeBodyState();
+            s.Eat(SerbukBatu());
+            s.Eat(RamuanApi());
+            Assert.AreEqual("merah", s.Get(TraitKind.Color));
+            var keluar = s.Vomit();
+            Assert.AreEqual("ramuanapi", keluar.Id);
+            Assert.AreEqual("abu", s.Get(TraitKind.Color), "warna batu yang tertimpa pulih");
+            Assert.AreEqual("", s.Get(TraitKind.Smell), "bau ramuan api ikut hilang");
+            Assert.AreEqual(1, s.Eaten.Count);
+            s.Vomit();
+            Assert.IsNull(s.Vomit(), "perut kosong");
+            Assert.AreEqual(0, s.TraitCount);
+        }
     }
 }

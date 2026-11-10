@@ -31,6 +31,7 @@ Shader "GooNapped/PixelToonLit"
         _Band3 ("Band 3", Color) = (0.44, 0.82, 0.49, 1)
         _Band4 ("Band 4 terang", Color) = (0.71, 0.95, 0.60, 1)
         _BandEdges ("Batas band (intensitas cahaya 1|2, 2|3, 3|4)", Vector) = (0.3, 0.55, 0.85, 0)
+        _ShadeGradient ("Gradient ikut digelapkan cahaya (0 = palet selalu terang)", Range(0,1)) = 1
     }
 
     SubShader
@@ -45,7 +46,7 @@ Shader "GooNapped/PixelToonLit"
             half4 _Outline, _Band1, _Band2, _Band3, _Band4; \
             half4 _BandEdges; \
             float _UseGradient; \
-            half _Steps, _MinLight, _LightTint, _LightInfluence;
+            half _Steps, _MinLight, _LightTint, _LightInfluence, _ShadeGradient;
         ENDHLSL
 
         // ---- Renderer 2D: warna + cahaya ----
@@ -93,24 +94,28 @@ Shader "GooNapped/PixelToonLit"
                 hue = lerp(half3(1,1,1), hue, _LightTint);
                 inten = lerp(1, inten, _LightInfluence);
 
+                // band cahaya: dipakai semua mode supaya warna cerah ikut tenggelam di tempat gelap
+                half q = max(floor(saturate(inten) * _Steps + 0.5) / _Steps, _MinLight);
+
                 half3 col;
                 if (_UseGradient > 0.5)
                 {
+                    // gradient-map memilih WARNA (hue shift palet), q menentukan seberapa terang.
+                    // Di bawah lampu (q = 1) hasilnya sama dengan palet asli.
+                    half shade = lerp(1, q, _ShadeGradient);
                     if (t.r < 0.2)
-                        col = _Outline.rgb * lerp(1, hue, 0.5);
+                        col = _Outline.rgb * lerp(1, hue, 0.5) * shade;
                     else
                     {
                         half3 band = inten < _BandEdges.x ? _Band1.rgb
                                    : inten < _BandEdges.y ? _Band2.rgb
                                    : inten < _BandEdges.z ? _Band3.rgb
                                    : _Band4.rgb;
-                        col = band * hue;
+                        col = band * hue * shade;
                     }
                 }
                 else
                 {
-                    half q = floor(inten * _Steps + 0.5) / _Steps;   // band cahaya
-                    q = max(q, _MinLight);
                     col = t.rgb * hue * q;
                 }
                 return half4(col, t.a);
