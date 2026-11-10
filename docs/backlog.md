@@ -46,7 +46,8 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 | | Fitur | Prio |
 |---|---|---|
 | ✅ | Pause + restart + menu utama + pilih level (OnGUI placeholder) | P1 |
-| ⬜ | UI asli: kartu resep, meter curiga di atas penjaga, ikon ciri tubuh | P1 |
+| ✅ | UI fungsional (UI Toolkit): kartu resep, chip ciri tubuh, tag status, meter curiga + ?/! di atas penjaga | P1 |
+| ⬜ | Tampilan UI final (font pixel, ikon ciri, gaya) oleh desainer | P1 |
 | ✅ | Simpan progres level (PlayerPrefs) | P2 |
 | ⬜ | Cerita: intro, dialog ringan per chapter, ending peran tertukar | P2 |
 

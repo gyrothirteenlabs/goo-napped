@@ -80,6 +80,12 @@ Cara slime terdeteksi (laju curiga berbeda-beda):
 Potongan yang nyamar tidak terlihat. Potongan nyamar yang menyala/berbau = **umpan**, dan bunyi dari `NoiseBus.Emit` (gumpalan dilempar) = **pengalih**: penjaga mendatanginya tanpa menaikkan curiga.
 `VisionMath` berisi hitungan murni (kerucut, pengali salah resep, faktor jarak) dan punya test.
 
+## UI
+- `UI/GameHud` (anak `Hud` di prefab LevelSystems, UI Toolkit): chip ciri tubuh, tag status (kena cahaya, menyala, berbau, lambat, nyamar), kartu resep tiap toples yang sudah diintip (titik hijau = ciri cocok dengan tubuh potongan aktif; setelah ditukar = dibandingkan dengan tiruan), statistik bawah, pesan, banner selesai/ketahuan.
+- Layout `Assets/_Game/UI/Hud.uxml`, gaya `Hud.uss`, skala `HudPanelSettings` (referensi 960×540). Desainer mengubah tampilan lewat USS; nama elemen/kelas dipakai kode.
+- `UI/GuardMeter` (di tiap prefab penjaga): bar curiga + ikon `?` (memeriksa) / `!` (melihat/mencium) di atas kepala, material unlit supaya terbaca di gelap.
+- `Demo/ProtoHud` (HUD teks lama) tinggal dipakai di scene sandbox.
+
 ## Alur game
 - `Core/GameFlow`: daftar level (`Levels`, urut), progres (PlayerPrefs `gn_unlocked`), `Load`, `ReloadCurrent`, `LoadMainMenu`. **Level baru wajib ditambahkan di `GameFlow.Levels` dan Build Settings.**
 - `Core/BootLoader` (scene Boot) → menu utama. `UI/MainMenuController` (scene MainMenu): Mulai/Lanjut, Pilih level (terkunci sampai level sebelumnya selesai), Reset progres.

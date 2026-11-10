@@ -1,0 +1,104 @@
+/* Gaya HUD (PLACEHOLDER: tampilan final oleh tim desainer).
+   Ubah warna/ukuran di sini; nama kelas dipakai GameHud.cs, jangan diganti tanpa mengubah kode. */
+
+.hud-root {
+    flex-grow: 1;
+    padding: 8px;
+    flex-direction: column;
+    color: rgb(225, 230, 240);
+    font-size: 11px;
+}
+
+.top-row { flex-direction: row; justify-content: space-between; align-items: flex-start; }
+.bottom-row { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+.spacer { flex-grow: 1; }
+
+.panel {
+    background-color: rgba(10, 14, 26, 0.78);
+    border-width: 1px;
+    border-color: rgba(120, 130, 160, 0.45);
+    border-radius: 3px;
+    padding: 4px 6px;
+}
+
+.panel-title {
+    font-size: 9px;
+    color: rgb(140, 150, 175);
+    -unity-font-style: bold;
+    margin-bottom: 2px;
+}
+
+.body-panel { max-width: 320px; }
+.chip-row { flex-direction: row; flex-wrap: wrap; }
+
+/* chip ciri tubuh */
+.chip {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(40, 48, 70, 0.9);
+    border-radius: 2px;
+    padding: 1px 4px;
+    margin: 1px 2px 1px 0;
+}
+.chip-swatch { width: 7px; height: 7px; margin-right: 3px; border-radius: 1px; }
+.chip-label { font-size: 10px; }
+
+/* tag status */
+.tag { border-radius: 2px; padding: 1px 4px; margin: 1px 2px 1px 0; font-size: 10px; -unity-font-style: bold; }
+.tag--light { background-color: rgba(255, 200, 97, 0.25); color: rgb(255, 214, 120); }
+.tag--glow { background-color: rgba(240, 138, 46, 0.3); color: rgb(255, 170, 90); }
+.tag--smell { background-color: rgba(230, 211, 106, 0.25); color: rgb(235, 220, 120); }
+.tag--slow { background-color: rgba(138, 146, 160, 0.3); color: rgb(190, 196, 210); }
+.tag--hidden { background-color: rgba(63, 209, 199, 0.25); color: rgb(120, 230, 220); }
+
+/* kartu resep toples */
+.recipes { flex-direction: column; align-items: flex-end; }
+.recipe-card { margin-bottom: 4px; min-width: 150px; }
+.recipe-title { -unity-font-style: bold; font-size: 11px; color: rgb(180, 242, 154); margin-bottom: 2px; }
+.recipe-row { flex-direction: row; align-items: center; }
+.recipe-dot { width: 6px; height: 6px; border-radius: 3px; margin-right: 4px; }
+.recipe-dot--ok { background-color: rgb(111, 210, 126); }
+.recipe-dot--miss { background-color: rgb(255, 90, 95); }
+.recipe-text { font-size: 10px; }
+.recipe-text--ok { color: rgb(170, 230, 170); }
+.recipe-text--miss { color: rgb(230, 200, 200); }
+.recipe-note { font-size: 9px; color: rgb(150, 160, 185); margin-top: 2px; }
+.recipe-card--done { opacity: 0.6; }
+
+/* bawah */
+.stats { flex-direction: row; flex-shrink: 0; }
+.stat { margin-right: 10px; font-size: 10px; }
+.stat:last-child { margin-right: 0; }
+.controls {
+    font-size: 9px;
+    color: rgba(170, 178, 200, 0.75);
+    -unity-text-align: lower-right;
+    white-space: normal;
+    flex-shrink: 1;
+    max-width: 55%;
+    margin-left: 12px;
+}
+
+.toast {
+    align-self: center;
+    background-color: rgba(10, 14, 26, 0.85);
+    color: rgb(255, 200, 97);
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-bottom: 6px;
+    font-size: 11px;
+}
+.toast--hidden { display: none; }
+
+.banner {
+    position: absolute;
+    left: 0; right: 0; top: 40%;
+    -unity-text-align: middle-center;
+    font-size: 26px;
+    -unity-font-style: bold;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px;
+}
+.banner--hidden { display: none; }
+.banner--win { color: rgb(111, 210, 126); }
+.banner--fail { color: rgb(255, 90, 95); }

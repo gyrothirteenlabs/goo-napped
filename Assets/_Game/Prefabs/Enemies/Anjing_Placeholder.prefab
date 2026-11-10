@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 708469961882706054}
   - component: {fileID: 4918916805122359023}
   - component: {fileID: 2271818785324583230}
+  - component: {fileID: 1298737971761557058}
   m_Layer: 0
   m_Name: Anjing_Placeholder
   m_TagString: Untagged
@@ -216,6 +217,24 @@ MonoBehaviour:
   blockedStare: 1.5
   coneMaterial: {fileID: 2100000, guid: 9e729fbbf04433041b2cfa5b24069e88, type: 2}
   coneSortingOrder: -50
+--- !u!114 &1298737971761557058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3308723976227863607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fcd80295de9f8a4e890b8a4c5807744, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.GuardMeter
+  material: {fileID: 2100000, guid: e411a68cb555ca44e928a3e07ff9a307, type: 2}
+  questionSprite: {fileID: 0}
+  exclaimSprite: {fileID: 0}
+  barWidth: 0.6
+  calmColor: {r: 1, g: 0.85, b: 0.3, a: 1}
+  alertColor: {r: 1, g: 0.25, b: 0.2, a: 1}
 --- !u!1 &3781588607034503677
 GameObject:
   m_ObjectHideFlags: 0

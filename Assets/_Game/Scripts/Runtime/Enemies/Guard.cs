@@ -122,6 +122,10 @@ namespace GooNapped
         // Slime tercium (penjaga pencium).
         public bool Smells { get; private set; }
         public string GuardName => guardName;
+        // Untuk indikator di atas kepala: sedang mencari/memeriksa ("?") atau sedang melihat/merasakan slime ("!").
+        public bool IsSearching => state == State.Search || state == State.LookAround;
+        public bool IsAlerted => state == State.Alert || state == State.Caught;
+        public float HeadHeight => eyeHeight + 0.55f;
         private float trackedTime = -999f, sniffTimer;
         private bool alerted;
         private float stepTimer;

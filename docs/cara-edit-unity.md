@@ -89,16 +89,23 @@ Prefab `Characters/Slime_Player`:
 
 Jeda aksi (anti spam) ada di `LevelSystems > PlayerBrain`: `Switch Cooldown`, `Split Windup`, `Split Cooldown`, `Merge Lock`, dan skill gumpalan: `Throw Distance`, `Throw Noise Radius`, `Throw Cooldown`.
 
-## 7. Suara
+## 7. Tampilan UI (desainer)
+- **HUD**: `Assets/_Game/UI/Hud.uss`. Ubah warna, ukuran font, padding, sudut panel di sini (format mirip CSS). Kelas penting: `.panel`, `.chip`, `.tag--light|glow|smell|slow|hidden`, `.recipe-card`, `.recipe-dot--ok|miss`, `.banner--win|fail`.
+- Posisi/susunan: `Hud.uxml` (buka dengan UI Builder: Window > UI Toolkit > UI Builder). Jangan ganti `name` elemen (dipakai `GameHud.cs`).
+- Skala keseluruhan: `HudPanelSettings.asset` > Reference Resolution (besar = UI lebih kecil).
+- Font pixel: taruh font di `Art/Fonts/`, set `-unity-font-definition` di `.hud-root`.
+- Ikon di atas penjaga: komponen `GuardMeter` di prefab penjaga, isi `Question Sprite` / `Exclaim Sprite` dengan sprite sendiri (kosong = ikon placeholder dari kode).
+
+## 8. Suara
 - Komponen **`AudioDirector`** di prefab `Systems/LevelSystems`: drag klip ke slot `Music`, `Ambience`, dan tiap efek (langkah slime, langkah golem, makan, belah, gabung, nyamar, Shift, waspada, ketahuan).
 - Kretek obor: `AudioSource` di prefab `Level/Lantern`.
 - Klip `proto_*` adalah placeholder hasil sintesis (**GooNapped > Audio > Buat suara placeholder**). Klip asli: taruh di `Assets/_Game/Audio/Music|SFX/` (WAV/OGG), ganti referensinya. Kode tidak perlu diubah.
 
-## 8. Sprite dari Blender
+## 9. Sprite dari Blender
 1. Desainer 3D bikin model di template Blender: [panduan-blender-3d.md](panduan-blender-3d.md) (render 1 klik → `art/sprites/<nama>/`).
 2. Copy sheet ke `Assets/_Game/Art/Sprites/<Characters|Enemies|Props>/<Nama>/`. Slice 48 px, pivot, dan normal map terpasang otomatis.
 3. Karakter slime: drag frame ke `SlimeSpriteAnimator > Clips` (anim + arah + frame body/face) di prefab `Slime_Player`. Spek jumlah frame tiap anim: panduan Blender bagian C.1.
 4. Musuh/prop: material `Env_Lit` untuk albedo, `Enemy_Glow_Unlit` untuk bagian menyala.
 
-## 9. Test
+## 10. Test
 Window > General > **Test Runner** > EditMode > Run All. Wajib hijau sebelum PR.

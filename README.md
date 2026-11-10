@@ -59,6 +59,7 @@ Assets/
       Tiles/              aset Tile (Placeholder/ = blockout)
       Animations/  Fonts/
     Audio/  Music/  SFX/  (proto_* = placeholder hasil sintesis)
+    UI/                   UI Toolkit: Hud.uxml (layout), Hud.uss (gaya), HudPanelSettings, tema
     Data/                 ScriptableObject: Ingredients/, Recipes/, Levels/
     Prefabs/              Characters/  Enemies/  Props/  Level/  Systems/  UI/
     Scenes/
