@@ -126,6 +126,22 @@ Semua dikerjakan di Python bawaan Blender, tidak perlu install Python/Pillow.
 - **Warna (mode Warna flat):** nada menengah, flat per bagian. Aturannya sama dengan `docs/panduan-art-desainer.md` bagian 2.
 - **Animasi:** shape key, lattice, armature, atau keyframe biasa, asal di timeline. Squash & stretch kuat terbaca bagus di 48px. Soft body: lihat bagian D.
 
+### C.1 Spek animasi slime (sinkron dengan gerak di Unity)
+Di Unity, slime bergerak dengan **lompatan kecil** (`SlimeMotor`): ancang → lompat → mendarat → meluncur. Unity juga menambah **squash/stretch berpegas dan tinggi lompatan sendiri** (`SlimeJelly`), dan frame sprite `move` dipilih dari **fase lompatan**, bukan dari jam. Jadi:
+
+| Anim | Frame | Isi | Catatan |
+|---|---|---|---|
+| `move` | 8 (boleh 6–10) | 1 ancang (pipih) · 2 lepas landas (memanjang) · 3–5 di udara (memanjang → bulat) · 6 mendarat (gepeng) · 7–8 meluncur (pulih, sedikit goyang) | Pembagian waktu kira-kira 15% ancang, 55% udara, 12% mendarat, 18% meluncur. Satu siklus = satu lompatan |
+| `idle` | 4–8 | napas pelan, goyang jeli kecil | loop |
+| `split` | 4–6 | badan menggembung lalu memuntahkan potongan ke depan | potongan yang terlempar dianimasikan Unity (busur), sprite cukup induknya |
+| `merge` | 4 | badan menggembung menelan potongan | |
+| `eat` | 4–6 | membuka, menelan, mengunyah | slime diam selama ±0.6 detik |
+
+- **Jangan bake tinggi lompatan** (kaki tetap di Z=0 di semua frame). Unity yang mengangkat badan dan mengecilkan bayangan. Kalau di-bake juga, lompatan jadi dobel.
+- **Squash/stretch di sprite secukupnya** (±15%). Unity menambah ±30% lagi di atasnya.
+- **Frame lebih banyak = lebih halus**, dan sprite 48px ringan di engine. Batasnya waktu render dan pengecekan, bukan performa.
+- Model final tinggal dimasukkan ke template, AI yang render ulang semua anim + 3 arah.
+
 ## D. Soft body / physics (goyangan jeli)
 
 Soft body = **animasi sekunder**. Gerak utama (lompat, squash-stretch) tetap di-keyframe, soft body cuma menambah goyangan. Kalau gerak diserahkan penuh ke simulasi (jatuh ke lantai), animasinya tidak bisa loop.

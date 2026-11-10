@@ -192,12 +192,19 @@ namespace GooNapped
             Vector2 offset = (Vector2)a.Facing * splitDistance;
             if (IsBlocked(a, a.Center + offset)) return false;
 
-            var go = Instantiate(a.gameObject, a.transform.position + (Vector3)offset, Quaternion.identity, a.transform.parent);
+            if (a.Jelly != null) a.Jelly.ResetPose();     // salinan jangan ikut pose gepeng/terangkat
+            var from = a.transform.position;
+            var to = from + (Vector3)offset;
+            var go = Instantiate(a.gameObject, from, Quaternion.identity, a.transform.parent);
             go.name = "Slime_Potongan_" + pieces.Count;
             var piece = go.GetComponent<SlimePiece>();
             piece.Body.SetState(a.Body.State.Clone());   // mewarisi sifat tubuh saat ini
+            piece.Carried.Clear();
             piece.Face(a.Facing);
-            piece.SetControlled(false);                  // langsung nyamar
+            piece.SetControlled(false);                  // nyamar setelah mendarat
+            piece.PlaySplitArc(from, to);
+            if (a.Jelly != null) a.Jelly.Kick(-9f);      // induk memipih saat "memuntahkan" potongan
+            a.Motor.Stop();
             pieces.Add(piece);
             return true;
         }
@@ -225,7 +232,7 @@ namespace GooNapped
             a.Carried.AddRange(other.Carried);           // teman yang dibawa ikut pindah
             pieces.Remove(other);
             activeIndex = pieces.IndexOf(a);
-            Destroy(other.gameObject);
+            other.PlayAbsorbInto(a);                     // tersedot lalu hilang (animasi)
             return true;
         }
 

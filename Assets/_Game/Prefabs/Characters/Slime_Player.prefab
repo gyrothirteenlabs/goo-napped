@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 601677373663986016}
   - component: {fileID: 5505398414917495404}
   - component: {fileID: 4614384273120818604}
+  - component: {fileID: 2594296895948663141}
   m_Layer: 0
   m_Name: Slime_Player
   m_TagString: Untagged
@@ -591,7 +592,6 @@ MonoBehaviour:
     m_Bits: 4294967295
   disguiseRenderer: {fileID: 7833935424039824229}
   disguiseSprite: {fileID: 392537881, guid: 590a0d7934c1e364899262d8fe1887f6, type: 3}
-  moveAnimSpeed: {x: 0.6, y: 1.4}
 --- !u!114 &4614384273120818604
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -605,50 +605,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimeMotor
   baseSpeed: 2.2
-  acceleration: 14
-  pulse:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.35
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.3
-      value: 1.7
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.65
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 0.35
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  pulseStrength: 1
+  windupTime: 0.07
+  airTime: 0.2
+  landTime: 0.05
+  slideTime: 0.12
+  slideShare: 0.22
+  airSteer: 160
+  hopHeight: 0.12
+  windupSquash: -0.22
+  airStretch: 0.18
+  landKick: -7
+--- !u!114 &2594296895948663141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380386765208411518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6baac6d68445bdd47832c8b32fb6bcc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimeJelly
+  visuals:
+  - {fileID: 7462760646673995856}
+  - {fileID: 18001112362928106}
+  - {fileID: 8062071772520720702}
+  shadow: {fileID: 2539880604119259309}
+  stiffness: 260
+  damping: 14
+  maxStretch: 0.32
+  widen: 0.7
 --- !u!1 &1460804099271962104
 GameObject:
   m_ObjectHideFlags: 0

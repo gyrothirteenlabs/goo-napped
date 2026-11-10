@@ -154,8 +154,15 @@ namespace GooNapped.EditorTools
         static Tile PlaceholderTile(string name, string spritePath, Color color)
         {
             string path = TileDir + name + ".asset";
+            // Sprite proyek ini pivot-nya tengah-bawah (aturan PixelSpriteImporter untuk karakter), sedangkan Tilemap
+            // menaruh pivot di tengah sel. Tanpa geser -0.5, gambar tile naik setengah sel dari collision-nya.
+            var fix = Matrix4x4.Translate(new Vector3(0f, -0.5f, 0f));
             var t = AssetDatabase.LoadAssetAtPath<Tile>(path);
-            if (t != null) return t;
+            if (t != null)
+            {
+                if (t.transform != fix) { t.transform = fix; EditorUtility.SetDirty(t); }
+                return t;
+            }
             if (!AssetDatabase.IsValidFolder("Assets/_Game/Art/Tiles/Placeholder"))
                 AssetDatabase.CreateFolder("Assets/_Game/Art/Tiles", "Placeholder");
             Sprite sprite = null;
@@ -165,6 +172,7 @@ namespace GooNapped.EditorTools
             t.sprite = sprite;
             t.color = color;
             t.colliderType = Tile.ColliderType.Grid;
+            t.transform = fix;
             AssetDatabase.CreateAsset(t, path);
             return t;
         }

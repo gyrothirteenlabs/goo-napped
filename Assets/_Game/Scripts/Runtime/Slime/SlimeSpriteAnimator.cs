@@ -26,6 +26,8 @@ namespace GooNapped
         public float fps = 8f;
         // Pengali tempo (1 = normal). Diatur SlimePiece supaya animasi jalan ikut kecepatan gerak.
         [NonSerialized] public float speedScale = 1f;
+        // >= 0: frame dipilih dari fase ini (0..1), bukan dari waktu. Dipakai supaya sprite "move" sinkron dengan lompatan.
+        [NonSerialized] public float forcedPhase = -1f;
 
         Clip current;
         float t;
@@ -57,7 +59,8 @@ namespace GooNapped
             if (current == null || current.body == null || current.body.Length == 0) return;
 
             t += Time.deltaTime * fps * speedScale;
-            int i = (int)t % current.body.Length;
+            int n = current.body.Length;
+            int i = forcedPhase >= 0f ? Mathf.Min(n - 1, (int)(Mathf.Repeat(forcedPhase, 1f) * n)) : (int)t % n;
 
             // Hanya arah side yang di-mirror untuk hadap kiri. Front/back punya sprite sendiri,
             // kalau ikut di-flip wajah & glint pindah sisi. faceLeft tetap diingat untuk saat kembali ke side.

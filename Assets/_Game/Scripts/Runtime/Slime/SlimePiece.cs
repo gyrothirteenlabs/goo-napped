@@ -21,10 +21,6 @@ namespace GooNapped
         [Tooltip("Sprite barang samaran untuk lokasi ini (chapter 1: batu). Placeholder sampai ada art tim.")]
         [SerializeField] private Sprite disguiseSprite;
 
-        [Header("Animasi")]
-        [Tooltip("Tempo animasi jalan mengikuti kecepatan: batas bawah dan atas pengali fps.")]
-        [SerializeField] private Vector2 moveAnimSpeed = new Vector2(0.6f, 1.4f);
-
         private SlimeSpriteAnimator anim;
         private Collider2D col;
         private float eatTimer;
@@ -72,7 +68,7 @@ namespace GooNapped
 
         private void ApplyDisguiseVisual()
         {
-            bool hidden = IsDisguised && disguiseRenderer != null && disguiseSprite != null;
+            bool hidden = IsDisguised && !animating && disguiseRenderer != null && disguiseSprite != null;
             if (disguiseRenderer != null)
             {
                 disguiseRenderer.enabled = hidden;
@@ -84,7 +80,7 @@ namespace GooNapped
             {
                 if (anim.bodyRenderer != null) anim.bodyRenderer.enabled = !hidden;
                 // tanpa sprite samaran (fallback lama): body tetap, wajah disembunyikan
-                if (anim.faceRenderer != null) anim.faceRenderer.enabled = !IsDisguised;
+                if (anim.faceRenderer != null) anim.faceRenderer.enabled = !IsDisguised || animating;
             }
         }
 
@@ -138,13 +134,83 @@ namespace GooNapped
             ApplyDisguiseVisual();
             string dir = Facing.x != 0 ? "side" : (Facing.y > 0 ? "back" : "front");
             bool left = Facing.x != 0 ? Facing.x < 0 : anim.faceLeft;
-            bool moving = IsControlled && !IsEating && Motor.MoveInput.sqrMagnitude > 0.04f;
-            // tempo animasi jalan ikut kecepatan (lambat habis makan bahan berat = animasi ikut lambat)
-            anim.speedScale = moving
-                ? Mathf.Clamp(Motor.MaxSpeed > 0f ? Motor.SpeedMultiplier : 1f, moveAnimSpeed.x, moveAnimSpeed.y)
-                : 1f;
-            anim.Play(IsDisguised ? "idle" : IsEating ? "eat" : moving ? "move" : "idle", dir, left);
+            bool moving = IsControlled && !IsEating && Motor.IsHopping;
+            // frame sprite "move" mengikuti fase lompatan (bukan jam), jadi squash di sprite sinkron dengan lompatan
+            anim.forcedPhase = moving ? Motor.CyclePhase : -1f;
+            anim.speedScale = 1f;
+            string a = animating ? "move" : IsDisguised ? "idle" : IsEating ? "eat" : moving ? "move" : "idle";
+            anim.Play(a, dir, left);
         }
+
+        // ---- animasi belah / gabung ----
+        private bool animating;
+
+        // Potongan baru melompat keluar dari induk ke tempat mendaratnya (busur), lalu baru nyamar.
+        public void PlaySplitArc(Vector3 from, Vector3 to, float duration = 0.32f)
+        {
+            StopAllCoroutines();
+            StartCoroutine(SplitArc(from, to, duration));
+        }
+
+        private System.Collections.IEnumerator SplitArc(Vector3 from, Vector3 to, float duration)
+        {
+            animating = true;
+            if (col != null) col.enabled = false;            // jangan mendorong induk saat keluar dari badannya
+            var rb = GetComponent<Rigidbody2D>();
+            var jelly = Jelly;
+            if (jelly != null) { jelly.Size = 0.55f; jelly.Kick(6f); }
+            for (float t = 0f; t < duration; t += Time.deltaTime)
+            {
+                float k = t / duration;
+                float e = 1f - (1f - k) * (1f - k);          // cepat keluar, pelan mendarat
+                var p = Vector3.Lerp(from, to, e);
+                transform.position = p;
+                if (rb != null) rb.position = p;
+                if (jelly != null)
+                {
+                    jelly.Lift = 0.28f * Mathf.Sin(k * Mathf.PI);
+                    jelly.Size = Mathf.Lerp(0.55f, 1f, e);
+                    jelly.Target = 0.2f * (1f - k);
+                }
+                yield return null;
+            }
+            transform.position = to;
+            if (rb != null) rb.position = to;
+            if (jelly != null) { jelly.Lift = 0f; jelly.Size = 1f; jelly.Target = 0f; jelly.Kick(-8f); }
+            if (col != null) col.enabled = true;
+            yield return new WaitForSeconds(0.12f);           // goyang sebentar sebelum berubah jadi barang
+            animating = false;
+        }
+
+        // Potongan ini tersedot ke potongan lain (gabung), lalu hilang.
+        public void PlayAbsorbInto(SlimePiece target, float duration = 0.2f)
+        {
+            StopAllCoroutines();
+            StartCoroutine(AbsorbInto(target, duration));
+        }
+
+        private System.Collections.IEnumerator AbsorbInto(SlimePiece target, float duration)
+        {
+            animating = true;
+            if (col != null) col.enabled = false;
+            var rb = GetComponent<Rigidbody2D>();
+            if (rb != null) rb.simulated = false;
+            var jelly = Jelly;
+            var from = transform.position;
+            for (float t = 0f; t < duration; t += Time.deltaTime)
+            {
+                float k = t / duration;
+                var to = target != null ? target.transform.position : from;
+                transform.position = Vector3.Lerp(from, to, k * k);
+                if (jelly != null) { jelly.Size = 1f - k; jelly.Target = 0.25f * k; jelly.Lift = 0.1f * Mathf.Sin(k * Mathf.PI); }
+                yield return null;
+            }
+            if (target != null && target.Jelly != null) target.Jelly.Kick(7f);   // yang menyerap menggembung sesaat
+            Destroy(gameObject);
+        }
+
+        public SlimeJelly Jelly => jellyCache != null ? jellyCache : (jellyCache = GetComponent<SlimeJelly>());
+        private SlimeJelly jellyCache;
 
         private void OnDrawGizmosSelected()
         {

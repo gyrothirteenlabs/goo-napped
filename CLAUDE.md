@@ -96,7 +96,7 @@ Puzzle stealth 2D top-down, level pendek (2–4 menit). Referensi feel: Robbery 
 Alkemis tidak sadar karena toples masih berisi slime (hanya slime yang bisa menggantikan slime).
 
 ## Mekanik
-- Gerak analog. Kecepatan dan tempo animasi mengikuti sifat tubuh.
+- Gerak analog berupa lompatan kecil (ancang, lompat, mendarat, meluncur) + squash/stretch berpegas di engine. Bahan berat = lompatan pendek dan lambat. Spek frame sprite: `docs/panduan-blender-3d.md` C.1.
 - Makan bahan alkemi: tubuh berubah sesuai bahan (Ramuan Api = merah + panas + menyala, Serbuk Batu = abu + berat, dll). Daftar final oleh tim.
 - Belah diri: potongan mewarisi sifat tubuh saat itu. Bisa dipakai jadi tiruan di toples ATAU umpan.
 - Nyamar jadi barang untuk ngumpet dari penjaga.
