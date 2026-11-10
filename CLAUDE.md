@@ -10,10 +10,17 @@ Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double
 - AI **tidak mengubah desain art** atas inisiatif sendiri. Kalau diminta "bikin lebih bagus" tanpa arahan, minta arahan konkret (sketsa, referensi, ukuran, warna).
 - Detail: `docs/ai-vs-tim.md`. Panduan art desainer: `docs/panduan-art-desainer.md`. Desainer 3D: `docs/panduan-blender-3d.md` (template `art/blender/sprite_template.blend`). Pipeline art/Blender: `art/CLAUDE.md` (baca dulu sebelum kerja di Blender atau sprite).
 
-## Status (9 Nov 2026, minggu 2)
-- Sudah: konsep gameplay, lore, objektif. Pipeline sprite Blender → Unity. Lighting real-time (normal map + toon band). Struktur project + 18 scene placeholder. Sandbox demo slime (WASD + collider).
-- Belum: desain slime final (tim desainer), controller asli, sistem makan/belah/gabung/Shift, resep, penjaga, tileset level.
-- Mood gelap-dingin + `art/palette.hex` masih USULAN.
+## Status (10 Nov 2026, minggu 2)
+- Sudah: konsep gameplay, lore, objektif. Pipeline sprite Blender → Unity (template + add-on v1.1). Lighting real-time (normal map + toon band). Struktur project + 18 scene placeholder. Placeholder 4 musuh (bukan desain final).
+- Prototipe mekanik (branch `feat/prototipe-mekanik`, scene `Sandbox/ProtoMekanik`): gerak per tile, makan bahan + state tubuh, belah/gabung, Shift antar potongan.
+- Belum: desain slime final (tim desainer), toples & resep, penjaga, tileset level, art bahan.
+- Mood: **gelap** (disetujui 10 Nov, lihat `art/CLAUDE.md`). `art/palette.hex` masih USULAN.
+- Usulan urutan chapter/level: `docs/rundown-level.md` (belum disepakati tim).
+
+## Keputusan desain 10 Nov 2026
+- **Gerak per tile** (ala Pokemon), bukan gerak bebas. Slime terasa kaku, lengket, lamban. 1 langkah = 1 tile (48 px).
+- **Bahan = barang alkemi** (ramuan, serbuk, minyak, esens), bukan bahan dapur. Contoh: Ramuan Api, bukan cabai.
+- **Lokasi level bervariasi**, tidak hanya dalam ruangan. Musuh muncul di tempat yang masuk akal (Golem Batu di area bebatuan).
 
 ## Struktur project
 ```
@@ -85,13 +92,14 @@ Puzzle stealth 2D top-down, level pendek (2–4 menit). Referensi feel: Robbery 
 Alkemis tidak sadar karena toples masih berisi slime (hanya slime yang bisa menggantikan slime).
 
 ## Mekanik
-- Makan bahan: tubuh berubah sesuai bahan (cabai = merah, bara = panas, batu = berat, dll).
+- Gerak per tile: satu langkah = satu tile, tahan arah untuk jalan terus. Kecepatan langkah mengikuti sifat tubuh.
+- Makan bahan alkemi: tubuh berubah sesuai bahan (Ramuan Api = merah + panas + menyala, Serbuk Batu = abu + berat, dll). Daftar final oleh tim.
 - Belah diri: potongan mewarisi sifat tubuh saat itu. Bisa dipakai jadi tiruan di toples ATAU umpan.
 - Nyamar jadi barang untuk ngumpet dari penjaga.
 - Tombol Shift untuk ganti kontrol antar potongan. Potongan yang ditinggal otomatis nyamar.
 - Gabung lagi hanya bisa kalau potongan bersentuhan langsung.
 - Resep tiruan: tiap slime di toples punya 2–3 ciri (warna, suhu, berat, kilau, bau).
-- Sifat bahan memengaruhi stealth: habis makan bara jadi menyala dan gampang terlihat, habis makan batu jadi lambat.
+- Sifat bahan memengaruhi stealth: habis minum Ramuan Api jadi menyala dan gampang terlihat, habis makan Serbuk Batu jadi lambat.
 - Bahan dipakai untuk resep ATAU umpan, jadi pemain harus memilih.
 - Salah resep tidak langsung kalah. Penjaga cuma jadi lebih cepat curiga.
 
@@ -123,6 +131,6 @@ Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, 
 - Kerjaan teknis (kode, scene, shader, tooling, pipeline render) langsung kerjakan. Kerjaan desain art: bantu eksekusi kalau ada arahan dari tim desainer.
 
 ## Next step
-- Programmer: controller slime (Input Actions), sistem bahan/state tubuh, belah/gabung + Shift, toples & resep (ScriptableObject di `Data/`), 1 penjaga.
+- Programmer: toples & resep (ScriptableObject di `Data/`), 1 penjaga (Golem, gerak per tile + cone lurus), lalu kamera/level loader. Sudah ada: `PlayerBrain` (input), `SlimePiece` + `GridMover` (badan), `SlimeBodyState` (ciri), `IngredientData`.
 - Desainer: desain final slime + palet state bahan, tileset chapter 1 (albedo flat + normal), toples, Golem Batu.
 - Tim: daftar bahan + ciri, slime teman per chapter, daftar level.

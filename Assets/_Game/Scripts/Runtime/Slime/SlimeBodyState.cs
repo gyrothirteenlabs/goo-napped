@@ -103,6 +103,19 @@ namespace GooNapped
             return c;
         }
 
+        // Gabung dengan potongan lain: hanya mengisi jenis ciri yang BELUM dimiliki tubuh ini.
+        // (Aturan sementara. Kalau tim mau "yang diserap menimpa", ubah di sini saja.)
+        public void Absorb(SlimeBodyState other)
+        {
+            if (other == null) return;
+            foreach (var kv in other.traits)
+            {
+                if (traits.ContainsKey(kv.Key)) continue;
+                traits[kv.Key] = kv.Value;
+                if (other.owners.TryGetValue(kv.Key, out var o)) owners[kv.Key] = o;
+            }
+        }
+
         public void Clear()
         {
             traits.Clear();

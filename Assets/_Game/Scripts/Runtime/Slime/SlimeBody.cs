@@ -34,6 +34,13 @@ namespace GooNapped
             Refresh();
         }
 
+        // Gabung: serap ciri potongan lain (ciri sendiri tidak tertimpa).
+        public void Absorb(SlimeBodyState other)
+        {
+            State.Absorb(other);
+            Refresh();
+        }
+
         private void Refresh()
         {
             if (bodyRenderer != null)

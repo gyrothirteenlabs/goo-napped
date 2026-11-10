@@ -129,15 +129,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1066769757108906871, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_Name
-      value: Pickup_batu_3
+      value: Pickup_serbukbatu_3
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3.2
+      value: -3.5
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.9
+      value: -1.25
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -638,14 +638,71 @@ MonoBehaviour:
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SceneNote
   note: 'Sandbox prototipe mekanik (tidak masuk build).
 
-    Tahap 1: SlimeController
-    (Input Actions: WASD gerak, tahan E dekat bahan = makan) + SlimeBody (state tubuh).
+    Gerak per tile (LevelGrid
+    + GridMover). Input di PlayerBrain, badan = SlimePiece.
 
-    Bahan
-    contoh: cabai (merah, berbau), batu (abu, berat -> lambat).
+    WASD gerak, tahan
+    E = makan (tile sendiri/depan), Space = belah ke tile depan, Shift = pindah potongan
+    (yang ditinggal nyamar), jalan ke potongan lain = gabung.
 
-    TODO tahap 2:
-    belah/gabung/Shift. Tahap 3: toples + resep. Tahap 4: penjaga.'
+    Bahan contoh:
+    Ramuan Api (merah, panas, menyala), Serbuk Batu (abu, berat -> lambat).
+
+    TODO
+    tahap 3: toples + resep. Tahap 4: penjaga.'
+--- !u!1 &380171587
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 380171589}
+  - component: {fileID: 380171588}
+  m_Layer: 0
+  m_Name: PlayerBrain
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &380171588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380171587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 127372524f4671840bb40e96195e2a15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.PlayerBrain
+  actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  actionMap: Player
+  moveAction: Move
+  eatAction: Interact
+  splitAction: Jump
+  switchAction: Sprint
+  pieces:
+  - {fileID: 490390222}
+  maxPieces: 3
+--- !u!4 &380171589
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380171587}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &490390213
 GameObject:
   m_ObjectHideFlags: 0
@@ -660,7 +717,8 @@ GameObject:
   - component: {fileID: 490390219}
   - component: {fileID: 490390218}
   - component: {fileID: 490390221}
-  - component: {fileID: 490390220}
+  - component: {fileID: 490390223}
+  - component: {fileID: 490390222}
   m_Layer: 0
   m_Name: Slime_Player
   m_TagString: Untagged
@@ -1039,7 +1097,7 @@ Transform:
   m_GameObject: {fileID: 490390213}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2, y: -1.3, z: 0}
+  m_LocalPosition: {x: 0.5, y: -1.25, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1111,28 +1169,6 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0.22}
   m_Radius: 0.28
---- !u!114 &490390220
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 490390213}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 696d5f2698e4bef49b9cd6e1994c69f8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimeController
-  actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  actionMap: Player
-  moveAction: Move
-  eatAction: Interact
-  baseSpeed: 2.5
-  eatRadius: 0.7
-  eatDuration: 0.6
-  pickupMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!114 &490390221
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1147,6 +1183,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimeBody
   bodyRenderer: {fileID: 1070587446}
   defaultMaterial: {fileID: 0}
+--- !u!114 &490390222
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 490390213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd0d81180b0b8004885e42c8ac0cf187, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimePiece
+  eatDuration: 0.6
+  pickupMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &490390223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 490390213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4e26290d0126d7498bceac019b09111, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.GridMover
+  stepTime: 0.34
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &528873576
 GameObject:
   m_ObjectHideFlags: 0
@@ -1248,15 +1316,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1066769757108906871, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_Name
-      value: Pickup_batu_1
+      value: Pickup_serbukbatu_1
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.2
+      value: -1.5
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.6
+      value: -2.25
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2060,7 +2128,7 @@ Transform:
   m_GameObject: {fileID: 1312316584}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.3, y: -0.3, z: 0}
+  m_LocalPosition: {x: 2.5, y: -0.25, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2181,6 +2249,51 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1344356463}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1434046160
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1434046162}
+  - component: {fileID: 1434046161}
+  m_Layer: 0
+  m_Name: LevelGrid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1434046161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1434046160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e4a011ee63d7474ea20958f5d558f74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.LevelGrid
+  origin: {x: -4, y: -2.25}
+--- !u!4 &1434046162
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1434046160}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -2428,15 +2541,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1066769757108906871, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_Name
-      value: Pickup_cabai_2
+      value: Pickup_ramuanapi_2
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3
+      value: 3.5
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.9
+      value: -1.25
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2632,15 +2745,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1066769757108906871, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_Name
-      value: Pickup_cabai_0
+      value: Pickup_ramuanapi_0
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.4
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.4
+      value: -2.25
       objectReference: {fileID: 0}
     - target: {fileID: 5704949040979929195, guid: 4c7d4ab761ae12e4999fed594c5e608e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3090,7 +3203,7 @@ Transform:
   m_GameObject: {fileID: 1841284020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2, y: -0.1, z: 0}
+  m_LocalPosition: {x: -1.5, y: -0.25, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3413,3 +3526,5 @@ SceneRoots:
   - {fileID: 1841284023}
   - {fileID: 1312316587}
   - {fileID: 1748753709}
+  - {fileID: 1434046162}
+  - {fileID: 380171589}
