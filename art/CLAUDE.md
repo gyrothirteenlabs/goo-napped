@@ -88,6 +88,7 @@ art/
 - `art/blender/sprite_template.blend` + add-on `art/tools/goonapped_sprite_addon.py`: kamera, render setting, material flat sementara, 3 layer, pixelize, preview. Panduan desainer: `docs/panduan-blender-3d.md`.
 - Template dibangun ulang dari skrip, jangan diedit tangan: `blender -b --factory-startup --python art/tools/make_sprite_template.py`. Konstanta spek (CELL, PX_PER_M, CAM_TILT) ada di add-on.
 - Render headless di mesin ini butuh `--gpu-backend vulkan` (backend OpenGL crash di EEVEE background).
+- Physics (soft body/cloth/partikel): add-on v1.1 bake ulang per arah (cache bake di koordinat dunia, tidak ikut rotasi `Model_Root`). Frame mentah yang dihapus sebelum render hanya anim + arah yang dirender.
 - Hasil v06 lewat template = identik pixel dengan `art/sprites/slime/` (sudah dites 9 Nov).
 
 ## Workflow

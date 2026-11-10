@@ -22,7 +22,7 @@ Tanpa Python/Pillow eksternal: semua jalan di Python bawaan Blender (numpy).
 bl_info = {
     "name": "GooNapped Sprite Render",
     "author": "Tim GooNapped",
-    "version": (1, 0, 0),
+    "version": (1, 1, 0),
     "blender": (4, 2, 0),
     "location": "3D Viewport > Sidebar > GooNapped",
     "description": "Render model jadi sprite pixel 48px (body/albedo + face + normal map) untuk Unity",
@@ -393,6 +393,31 @@ def body_layer(st):
     return "body" if st.mode == "GRADIENT" else "albedo"
 
 
+def _physics_caches():
+    """[(objek, point_cache)] semua simulasi (soft body, cloth, partikel) pada objek di koleksi MODEL."""
+    col = bpy.data.collections.get(COL_MODEL)
+    out = []
+    for o in (col.all_objects if col else []):
+        for m in o.modifiers:
+            pc = getattr(m, "point_cache", None)
+            if pc is not None and m.type != "PARTICLE_SYSTEM":
+                out.append((o, pc))
+        for ps in o.particle_systems:
+            out.append((o, ps.point_cache))
+    return out
+
+
+def _rebake(scene, caches, bake=True):
+    """Hasil bake physics tersimpan di koordinat dunia dan TIDAK ikut rotasi Model_Root.
+    Jadi setelah Model_Root diputar, simulasi harus di-bake ulang supaya side/back tidak sama dengan front."""
+    scene.frame_set(scene.frame_start)
+    for o, pc in caches:
+        with bpy.context.temp_override(scene=scene, point_cache=pc, active_object=o, object=o):
+            bpy.ops.ptcache.free_bake()
+            if bake:
+                bpy.ops.ptcache.bake(bake=True)
+
+
 def render_sprites(context, test=False):
     scene = context.scene
     st = scene.gn_sprite
@@ -418,6 +443,8 @@ def render_sprites(context, test=False):
     s_root_act = root.animation_data.action if root.animation_data else None
     s_hide = {o.name: o.hide_render for o in body + face}
     s_hold = {o.name: o.is_holdout for o in body + face}
+    caches = _physics_caches() if st.rebake_physics else []
+    s_baked = [pc.is_baked for _, pc in caches]
     swap = FlatSwap()
     count = 0
     try:
@@ -427,24 +454,29 @@ def render_sprites(context, test=False):
         for layer in layers:
             ldir = os.path.join(raw, layer)
             os.makedirs(ldir, exist_ok=True)
-            for a, _ in anims:     # buang frame lama anim ini (supaya sheet tidak tercampur sisa render lama)
-                for f in os.listdir(ldir):
-                    if f.startswith(f"{st.name}_{layer}_{a}_") and f.endswith(".png"):
-                        os.remove(os.path.join(ldir, f))
-            is_face, is_normal = layer == "face", layer == "normal"
-            for o in body:
-                o.hide_render = s_hide[o.name]
-                o.is_holdout = is_face
-            swap.restore()
-            if is_normal:
-                vl.material_override = _normal_material()
-                scene.view_settings.view_transform = "Raw"
-            else:
-                vl.material_override = s_override
-                scene.view_settings.view_transform = "Standard"
-                swap.apply(face if is_face else body, white=(layer == "body"))
-            for d in dirs:
-                root.rotation_euler = (0.0, 0.0, math.radians(DIRS[d]))
+            # buang frame lama (supaya sheet tidak tercampur sisa render lama): HANYA anim + arah yang dirender
+            olds = tuple(f"{st.name}_{layer}_{a}_{d}_" for a, _ in anims for d in dirs)
+            for f in os.listdir(ldir):
+                if f.startswith(olds) and f.endswith(".png"):
+                    os.remove(os.path.join(ldir, f))
+        for d in dirs:
+            root.rotation_euler = (0.0, 0.0, math.radians(DIRS[d]))
+            if caches:
+                _rebake(scene, caches)
+            for layer in layers:
+                ldir = os.path.join(raw, layer)
+                is_face, is_normal = layer == "face", layer == "normal"
+                for o in body:
+                    o.hide_render = s_hide[o.name]
+                    o.is_holdout = is_face
+                swap.restore()
+                if is_normal:
+                    vl.material_override = _normal_material()
+                    scene.view_settings.view_transform = "Raw"
+                else:
+                    vl.material_override = s_override
+                    scene.view_settings.view_transform = "Standard"
+                    swap.apply(face if is_face else body, white=(layer == "body"))
                 show_face = is_face and d != "back"   # tampak belakang: face kosong
                 for o in face:
                     o.hide_render = True if not show_face else s_hide[o.name]
@@ -465,6 +497,9 @@ def render_sprites(context, test=False):
         root.rotation_euler = s_rot
         if root.animation_data:
             root.animation_data.action = s_root_act
+        # kembalikan simulasi ke arah semula (yang tadinya ter-bake di-bake lagi, sisanya dikosongkan)
+        for (o, pc), baked in zip(caches, s_baked):
+            _rebake(scene, [(o, pc)], bake=baked)
         scene.frame_set(s_frame)
     pre = pixelize(st, raw, spr, layers, anims, dirs, test)
     return count, spr, pre
@@ -690,6 +725,10 @@ class GN_Settings(bpy.types.PropertyGroup):
     palette: bpy.props.StringProperty(name="Palet", subtype="FILE_PATH", default="",
                                       description="Opsional, mode warna flat: kunci warna ke palet .hex (mis. art/palette.hex)")
     normal_pad: bpy.props.IntProperty(name="Pad normal", default=1, min=0, max=3)
+    rebake_physics: bpy.props.BoolProperty(
+        name="Bake ulang physics per arah", default=True,
+        description="Soft body/cloth/partikel di-bake ulang tiap arah (cache bake tidak ikut rotasi Model_Root). "
+                    "Tanpa ini side/back sama dengan front. Tidak berpengaruh kalau model tanpa physics")
     out_raw: bpy.props.StringProperty(name="Raw", subtype="DIR_PATH", default="//../renders/raw/")
     out_sprites: bpy.props.StringProperty(name="Sprite", subtype="DIR_PATH", default="//../sprites/")
 
@@ -793,6 +832,8 @@ class GN_PT_panel(bpy.types.Panel):
         col.prop(st, "out_raw")
         col.prop(st, "out_sprites")
         col.prop(st, "normal_pad")
+        if _physics_caches():
+            box.prop(st, "rebake_physics")
         row = box.row(align=True)
         row.scale_y = 1.4
         row.operator("goonapped.render", text="Tes frame ini", icon="VIEWZOOM").test = True

@@ -124,20 +124,54 @@ Semua dikerjakan di Python bawaan Blender, tidak perlu install Python/Pillow.
 - **Mata/detail wajah objek terpisah** dari badan, lalu masuk ke Face. Taruh sedikit di depan permukaan badan supaya tidak tenggelam.
 - **Jangan** bikin bayangan jatuh atau lantai yang ikut di-render. Unity pakai blob shadow terpisah.
 - **Warna (mode Warna flat):** nada menengah, flat per bagian. Aturannya sama dengan `docs/panduan-art-desainer.md` bagian 2.
-- **Animasi:** shape key, lattice, armature, atau keyframe biasa, asal di timeline. Squash & stretch kuat terbaca bagus di 48px.
+- **Animasi:** shape key, lattice, armature, atau keyframe biasa, asal di timeline. Squash & stretch kuat terbaca bagus di 48px. Soft body: lihat bagian D.
 
-## D. Masalah umum
+## D. Soft body / physics (goyangan jeli)
+
+Soft body = **animasi sekunder**. Gerak utama (lompat, squash-stretch) tetap di-keyframe, soft body cuma menambah goyangan. Kalau gerak diserahkan penuh ke simulasi (jatuh ke lantai), animasinya tidak bisa loop.
+
+### D.1 File model: tanpa physics
+- File model (`art/blender/<nama>_model.blend`) **tidak berisi physics**, kamera, lampu, atau plane. Physics dipasang di file render, setelah model masuk template.
+- Alasannya: objek menyimpan cache simulasi lama walaupun modifier-nya sudah dihapus, dan soft body baru akan memutar ulang cache basi itu. Kalau terlanjur: Physics > Soft Body > Cache > **Delete All Bakes**, atau `Object > Convert > Mesh`.
+- Mesh harus bersih: Edit Mode > A > **Mesh > Clean Up > Merge by Distance**, dan Select > Select All by Trait > **Non Manifold** harus kosong. Vertex bertumpuk bikin soft body meledak.
+- Setelah **Pas-kan**, lakukan `Ctrl+A > Rotation & Scale` pada badan dan mata. Soft body wajib skala 1.
+
+### D.2 Setting soft body (titik awal, sudah dites)
+| Panel | Nilai | Catatan |
+|---|---|---|
+| **Goal** | on, Default **0.55**, Stiffness **0.35**, Damping **4** | Goal = badan ditarik ke bentuk animasi keyframe. Lebih kenyal: turunkan Default/Stiffness |
+| Edges | Pull 0.6, Push 0.6, Damp 2, Bend 0.3 | |
+| **Field Weights > Gravity** | **0** | Tanpa ini badan melorot ke bawah lantai. Template tidak punya lantai collision, dan tidak perlu |
+| Cache | Start/End = seluruh rentang timeline | Frame di luar cache tidak disimulasikan |
+
+### D.3 Mata ikut goyang: Surface Deform
+Pasang modifier **Surface Deform** di objek mata, Target = badan, lalu klik **Bind** di frame pertama **saat soft body dimatikan** (ikon monitor di modifier Soft Body), baru nyalakan lagi. Tanpa ini mata kaku dan tembus/tenggelam waktu badan goyang.
+
+### D.4 Supaya loop: render siklus ke-4
+Di awal simulasi badan belum stabil, jadi siklus pertama tidak nyambung dengan dirinya sendiri.
+- Ulangi animasi keyframe **6 siklus** di timeline, lalu render **siklus ke-4** saja.
+- Contoh siklus jalan 18 frame @24fps: siklus ke-4 = frame 55–72. Isian Animasi: `move:55-72/3` (ambil tiap 3 frame → 6 sprite frame @8fps).
+- Cek: frame terakhir sheet harus nyambung ke frame pertama (selisih < 1 px).
+
+### D.5 Arah side/back: bake ulang otomatis
+Hasil bake physics tersimpan di koordinat dunia dan **tidak ikut** rotasi `Model_Root`. Tanpa bake ulang, side/back akan sama dengan front.
+Add-on (v1.1) mengurus ini: kalau model punya soft body/cloth/partikel, tiap arah di-bake ulang sebelum dirender (opsi **Bake ulang physics per arah** di panel, default on). Setelah render, simulasi dikembalikan ke arah semula. Konsekuensinya render lebih lama (1 bake per arah, termasuk di "Tes frame ini").
+
+## E. Masalah umum
 | Gejala | Penyebab / solusi |
 |---|---|
+| Side/back sama persis dengan front (model soft body) | Opsi **Bake ulang physics per arah** mati, atau add-on masih v1.0. Lihat D.5 |
+| Badan melorot / jatuh saat simulasi | Field Weights > Gravity belum 0. Lihat D.2 |
+| Badan loncat ke posisi aneh di frame awal | Cache simulasi lama dari file model. Lihat D.1 |
 | Panel GooNapped tidak ada | Add-on belum aktif. Lihat A.0 |
 | "Simpan file .blend dulu" | Path output relatif ke file .blend. Save As ke `art/blender/` |
 | Warna mata/badan dari OBJ jadi abu | OBJ/FBX tidak membawa warna Emission. Isi **Base Color** material di Blender |
 | Model kepotong di frame | Terlalu besar. Kecilkan **Tinggi** lalu Pas-kan, atau diskusikan cell yang lebih besar dengan programmer (spek saat ini dikunci 48px) |
-| Sheet berisi frame lama | Render semua menghapus frame mentah anim yang sama sebelum render. Kalau nama anim diganti, hapus sheet lama di `art/sprites/<nama>/` manual |
+| Sheet berisi frame lama | Render menghapus frame mentah untuk anim + arah yang dirender saja (arah lain tidak disentuh). Kalau nama anim diganti, hapus sheet lama di `art/sprites/<nama>/` manual |
 | Cahaya di Unity terbalik | Normal map salah format (jangan edit di Photoshop dengan profil warna). Render ulang dari template |
 | Ingin ubah kamera/resolusi | Jangan diubah per file. Ubah konstanta di `goonapped_sprite_addon.py`, bahas dengan tim, lalu bangun ulang template: `blender -b --factory-startup --python art/tools/make_sprite_template.py` |
 
-## E. File terkait
+## F. File terkait
 - `art/blender/sprite_template.blend`: template (jangan diedit langsung, bangun ulang lewat skrip).
 - `art/tools/goonapped_sprite_addon.py`: add-on (panel, render, pixelize).
 - `art/tools/make_sprite_template.py`: membangun ulang template.
