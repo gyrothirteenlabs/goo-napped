@@ -35,6 +35,7 @@ namespace GooNapped
         private InputAction move, eat, split, switchPiece;
         private int activeIndex;
         private float messageTimer;
+        private LevelGoal goal;
         private readonly Collider2D[] hits = new Collider2D[8];
         private readonly Collider2D[] near = new Collider2D[16];
 
@@ -68,6 +69,7 @@ namespace GooNapped
             pieces.RemoveAll(p => p == null);
             if (pieces.Count == 0)
                 pieces.AddRange(FindObjectsByType<SlimePiece>(FindObjectsSortMode.None));
+            goal = FindFirstObjectByType<LevelGoal>();
             SetActive(0);
         }
 
@@ -75,6 +77,7 @@ namespace GooNapped
         {
             var a = Active;
             if (a == null) return;
+            if (goal != null && (goal.IsFailed || goal.IsComplete)) { a.Move(Vector2.zero); return; }
             if (switchPiece.WasPressedThisFrame()) { SwitchNext(); return; }
             if (!a.IsEating)
             {

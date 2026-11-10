@@ -17,7 +17,10 @@ namespace GooNapped
         {
             if (brain == null) brain = FindFirstObjectByType<PlayerBrain>();
             if (goal == null) goal = FindFirstObjectByType<LevelGoal>();
+            guards = FindObjectsByType<GolemGuard>(FindObjectsSortMode.None);
         }
+
+        private GolemGuard[] guards = new GolemGuard[0];
 
         private static string TraitsText(System.Collections.Generic.IEnumerable<Trait> traits)
         {
@@ -56,8 +59,16 @@ namespace GooNapped
                         sb.Append("Toples berisi tiruan (ciri salah: ").Append(jar.DecoyMismatch).AppendLine(")");
                 }
             }
+            foreach (var g in guards)
+            {
+                if (g == null) continue;
+                int n = Mathf.RoundToInt(g.Suspicion * 10);
+                sb.Append(g.SeesTarget ? "<color=#ff5a5f>" : "<color=#8a92a0>").Append("Curiga ")
+                  .Append(new string('#', n)).Append(new string('.', 10 - n)).AppendLine("</color>");
+            }
             if (!string.IsNullOrEmpty(brain.Message)) sb.Append("<color=#ffc861>").Append(brain.Message).AppendLine("</color>");
             if (goal != null && goal.IsComplete) sb.AppendLine("<color=#6fd27e><b>LEVEL SELESAI</b></color>");
+            if (goal != null && goal.IsFailed) sb.Append("<color=#ff5a5f><b>").Append(goal.FailReason).AppendLine(" - ulang...</b></color>");
             GUI.Label(new Rect(10, 8, Screen.width - 20, 200), sb.ToString(), style);
         }
     }

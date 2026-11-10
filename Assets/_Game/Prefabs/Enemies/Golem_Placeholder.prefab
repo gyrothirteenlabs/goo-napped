@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 6857354301773031473}
   - component: {fileID: 5514832514655150908}
   - component: {fileID: 708469961882706054}
+  - component: {fileID: 4918916805122359023}
+  - component: {fileID: 2271818785324583230}
   m_Layer: 0
   m_Name: Golem_Placeholder
   m_TagString: Untagged
@@ -171,6 +173,59 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0.22}
   m_Radius: 0.392
+--- !u!50 &4918916805122359023
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3308723976227863607}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!114 &2271818785324583230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3308723976227863607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93dfc8747e8089c40ae8236c1ff2610c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.GolemGuard
+  patrolPoints: []
+  speed: 0.9
+  waitAtPoint: 1.2
+  turnSpeed: 70
+  viewRange: 3.6
+  viewAngle: 40
+  eyeHeight: 0.45
+  glowRangeMultiplier: 1.4
+  fillTime: 1.4
+  decayPerSecond: 0.3
+  mismatchBonus: 0.35
+  investigateTime: 2
+  coneMaterial: {fileID: 2100000, guid: 9e729fbbf04433041b2cfa5b24069e88, type: 2}
+  coneSortingOrder: -50
 --- !u!1 &3781588607034503677
 GameObject:
   m_ObjectHideFlags: 0
