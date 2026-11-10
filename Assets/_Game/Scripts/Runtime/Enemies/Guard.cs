@@ -253,7 +253,10 @@ namespace GooNapped
             if (smellRange <= 0f) return false;
             if ((sniffTimer -= Time.deltaTime) > 0f) return false;
             sniffTimer = 0.3f;
-            if (!ScentTrail.Freshest(Body, smellRange, trackedTime, out var m, p => LineOfSight(Body, p))) return false;
+            // Dengan peta jalan, pencium langsung menuju titik bau terbaru (lewat jalur A*).
+            // Tanpa peta (sandbox): hanya titik yang terjangkau lurus.
+            System.Func<Vector2, bool> reach = NavGrid.Available ? null : p => LineOfSight(Body, p);
+            if (!ScentTrail.Freshest(Body, smellRange, trackedTime, out var m, reach)) return false;
             trackedTime = m.time;
             lastSeen = m.position;
             return true;
@@ -401,18 +404,56 @@ namespace GooNapped
             UpdateVisuals();
         }
 
-        // Menoleh ke tujuan lalu jalan; melambat saat masih berbelok. false = jalan tertutup tembok.
+        // ---- jalan: lurus kalau bebas, kalau tidak ikuti jalur A* (NavGrid) ----
+        private readonly List<Vector2> path = new List<Vector2>();   // titik tengah BADAN (bukan kaki)
+        private Vector2 pathGoal;
+        private float repathTimer;
+        private static readonly Vector2 FootToBody = Vector2.up * 0.22f;
+
+        // Seluruh garis dari badan ke titik `to` bebas tembok untuk badan selebar ini?
+        private bool SegmentClear(Vector2 from, Vector2 to)
+        {
+            var d = to - from;
+            float len = d.magnitude;
+            if (len < 1e-3f) return true;
+            foreach (var h in Physics2D.CircleCastAll(from, 0.28f, d / len, len))
+                if (h.distance > 0f && !IsSeeThrough(h.collider)) return false;
+            return true;
+        }
+
+        // Menoleh ke tujuan lalu jalan; melambat saat masih berbelok. false = tidak ada jalan ke sana.
         private bool TryMove(Vector2 dest, float spd)
         {
+            var bodyDest = dest + FootToBody;
             var d = dest - rb.position;
             if (d.sqrMagnitude < 1e-4f) return true;
+            repathTimer -= Time.deltaTime;
+
+            Vector2 waypoint = dest;
+            if (!SegmentClear(Body, bodyDest) && NavGrid.Available)
+            {
+                if (path.Count == 0 || (dest - pathGoal).sqrMagnitude > 0.25f || repathTimer <= 0f)
+                {
+                    if (!NavGrid.FindPath(Body, bodyDest, path)) return false;
+                    pathGoal = dest;
+                    repathTimer = 0.8f;
+                }
+                // haluskan: lompati titik berikutnya kalau titik sesudahnya sudah terlihat langsung
+                while (path.Count > 1 && SegmentClear(Body, path[1])) path.RemoveAt(0);
+                if (path.Count > 0 && (path[0] - Body).sqrMagnitude < 0.01f) path.RemoveAt(0);
+                if (path.Count > 0) waypoint = path[0] - FootToBody;
+                d = waypoint - rb.position;
+                if (d.sqrMagnitude < 1e-4f) return true;
+            }
+            else path.Clear();
+
             TurnTowards(d, turnSpeed);
             float facing = Mathf.Clamp01(Mathf.Cos(Vector2.Angle(forward, d) * Mathf.Deg2Rad));
             if (facing < 0.3f) return true;   // masih berbelok di tempat
             float step = spd * facing * Time.deltaTime;
             if (PathClear(d.normalized, step))
             {
-                moveTarget = dest;
+                moveTarget = waypoint;
             }
             else
             {

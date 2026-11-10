@@ -50,6 +50,7 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
 | `Level/LevelExit` | Trigger exit. |
 | `Level/CameraFollow` | Ikut potongan aktif, dijepit ke `CameraBounds`. |
 | `Level/Extinguishable` | Lentera/obor yang bisa dipadamkan (E) oleh tubuh bersuhu `dingin`. Desisnya `NoiseBus.Emit` (pengalih yang berisiko). |
+| `Level/NavGrid` + `Level/GridPath` | Pathfinding penjaga: peta sel dari Tilemap `Floor`/`Walls` (dibaca sekali per scene), A* 8 arah tanpa memotong sudut (`GridPath`, logika murni + test). `Guard.TryMove`: jalan lurus kalau garis bebas, kalau tidak ikuti jalur dan lompati titik yang sudah terlihat langsung. Scene tanpa Tilemap = jalan lurus + menyusur tembok. |
 | `Level/LightExposure` | Seberapa terang sebuah titik oleh Light 2D titik (bukan global), memperhitungkan tembok. Dipakai penjaga. |
 
 ## Penjaga

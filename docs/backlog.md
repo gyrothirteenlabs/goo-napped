@@ -22,6 +22,7 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 | ✅ | Golem Batu: patroli, kerucut lurus, cari, sapu pandangan, radius sadar, cahaya | P1 | |
 | ✅ | Familiar Api: melayang, melihat yang PANAS/menyala dari jauh, buta di gelap, bawa cahaya sendiri | P1 | chapter 2 |
 | ✅ | Anjing Lendir: mencium jejak bau (`ScentTrail`) dan menyusurinya lewat tikungan, mencium slime berbau di dekatnya, terpancing umpan berbau | P2 | chapter 2 (C2_L02) |
+| ✅ | Pathfinding penjaga: A* di grid tile (Tilemap lantai/tembok), dipakai patroli, mencari, umpan, jejak bau | P1 | `GridPath`, `NavGrid` |
 | ⬜ | Mata Penyihir: memeriksa toples, membongkar tiruan salah resep | P3 | chapter 3 (kandidat dipotong) |
 
 ## Bahan (chapter 1–2)
@@ -63,4 +64,3 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 - Sprite slime lama + squash engine bisa dobel sampai model baru dirender.
 - Angka rasa gerak dan kesulitan penjaga belum disetel lewat playtest.
 - Air Embun dan Minyak Belerang belum punya palet warna.
-- Penjaga tanpa pathfinding: hanya menyusur tembok sederhana, bisa menyerah di belokan rumit.

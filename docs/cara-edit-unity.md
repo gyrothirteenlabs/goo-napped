@@ -30,7 +30,7 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
 4. Level baru: salin satu `Config`, ganti `scene`, `recipe`, `next`, `note`, tambah `[MenuItem]`. Lalu **tambahkan nama scene di `GameFlow.Levels`** (urutan pilih level) dan pastikan scene ada di Build Settings.
 
 ### Cara manual (desain final)
-- **Lantai/tembok**: buka Tile Palette (Window > 2D > Tile Palette), gambar di Tilemap `Grid/Floor` dan `Grid/Walls`. `Walls` punya collider + bayangan otomatis.
+- **Lantai/tembok**: buka Tile Palette (Window > 2D > Tile Palette), gambar di Tilemap `Grid/Floor` dan `Grid/Walls`. `Walls` punya collider + bayangan otomatis. Penjaga mencari jalan dari dua Tilemap ini: sel bisa dilewati = ada tile `Floor` dan tidak ada tile `Walls`. Prop besar yang menghalangi jalan sebaiknya juga diberi tile `Walls` di bawahnya.
 - **Objek**: drag prefab ke scene di bawah `Actors/…`:
   - `Prefabs/Props/Jar` → isi `Recipe` di Inspector
   - `Prefabs/Props/IngredientPickup` → isi `Ingredient`
