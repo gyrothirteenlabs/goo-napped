@@ -108,6 +108,39 @@ def golem():
     box("Golem_EyeSlit", (0.42, 0.08, 0.15), (0, -0.37, 1.2), eye, 0.03, face=True)
 
 
+MOVE_START, MOVE_LEN = 11, 6   # siklus jalan golem: frame 11-16 (6 frame @8fps, loop)
+
+
+def golem_walk():
+    """Jalan berat: kaki bergantian melangkah, lengan berlawanan, badan turun + oleng saat kaki menapak.
+    Frame 1 = pose diam. Badan hanya TURUN dari pose (tidak naik) supaya kepala tidak keluar cell 48px."""
+    ob = bpy.data.objects
+    upper = [ob[n] for n in ("Golem_Torso", "Golem_Head", "Golem_EyeSlit")]
+    parts = upper + [ob[f"Golem_{p}{s}"] for p in ("Arm", "Foot") for s in "LR"]
+
+    def key(frame):
+        for o in parts:
+            o.keyframe_insert("location", frame=frame)
+            o.keyframe_insert("rotation_euler", frame=frame)
+
+    key(1)
+    for i in range(MOVE_LEN):
+        ph = 2 * math.pi * i / MOVE_LEN
+        dip = -0.05 * abs(math.cos(ph))
+        roll = math.radians(4) * math.sin(ph)
+        for o in upper:
+            o.location = (0, 0, dip)
+            o.rotation_euler = (0, roll, 0)
+        for s, off in (("L", 0.0), ("R", math.pi)):
+            p = ph + off
+            ob[f"Golem_Foot{s}"].location = (0, 0.13 * math.cos(p), 0.1 * max(0.0, math.sin(p)))
+            ob[f"Golem_Arm{s}"].location = (0, -0.1 * math.cos(p), dip)
+        key(MOVE_START + i)
+    for o in parts:
+        o.location, o.rotation_euler = (0, 0, 0), (0, 0, 0)
+    bpy.context.scene.frame_start, bpy.context.scene.frame_end = MOVE_START, MOVE_START + MOVE_LEN - 1
+
+
 def familiarapi():
     """Familiar Api: melayang, menyala (unlit di Unity), melihat benda panas -> tetesan api + 2 lidah api kecil."""
     fire, core, eye = mat("Familiar_Fire", "f08a2e"), mat("Familiar_Core", "ffc861"), mat("Familiar_Eye", "4d3324")
@@ -156,6 +189,9 @@ def build(name):
     ENEMIES[name]()
     st = scene.gn_sprite
     st.name, st.mode, st.anims = name, "ALBEDO", "pose:1"
+    if name == "golem":
+        golem_walk()
+        st.anims = f"pose:1, move:{MOVE_START}-{MOVE_START + MOVE_LEN - 1}"
     st.outline = True
     st.palette = "//../palette.hex"
     st.dir_front = st.dir_side = st.dir_back = True
