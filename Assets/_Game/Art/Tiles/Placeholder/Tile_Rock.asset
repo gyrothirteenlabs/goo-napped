@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Tile_Rock
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.Tilemaps.Tile
   m_Sprite: {fileID: 1568959671, guid: d170b1c49dc4d7e4baacd77dc397637e, type: 3}
-  m_Color: {r: 0.55, g: 0.52, b: 0.5, a: 1}
+  m_Color: {r: 0.4, g: 0.42, b: 0.5, a: 1}
   m_Transform:
     e00: 1
     e01: 0

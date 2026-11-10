@@ -11,8 +11,8 @@ namespace GooNapped.EditorTools
     // Desainer: ubah peta di bawah lalu jalankan menu GooNapped > Blockout, atau gambar ulang langsung di Tilemap.
     //
     // Legenda:  # batu (tembok)   . lantai   S spawn pemain   E exit   J toples
-    //           b Serbuk Batu   l Lumut Pendar   r Ramuan Api   L lentera
-    //           g / G  titik awal / akhir patroli Golem (garis lurus)
+    //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   L lentera
+    //           g/G, h/H, k/K  titik awal / akhir patroli Golem 1, 2, 3 (garis lurus; huruf kecil = posisi awal)
     public static class LevelBlockout
     {
         const string P = "Assets/_Game/Prefabs/";
@@ -51,7 +51,7 @@ namespace GooNapped.EditorTools
         {
             scene = "Assets/_Game/Scenes/Levels/Chapter1/C1_L02.unity",
             recipe = "Recipe_Pendar",
-            next = "",
+            next = "C1_L03",
             note = "BLOCKOUT C1_L02 (kenalan Golem). Kamp tambang, malam.\n" +
                    "Golem patroli di lorong tengah, melihat lurus. Lewati di belakangnya, atau tinggalkan potongan nyamar untuk menghadangnya (golem berhenti lalu putar balik).\n" +
                    "Resep Pendar: berat + berkilau. Lumut Pendar membuat tubuh menyala: terlihat dari lebih jauh.\n" +
@@ -70,6 +70,73 @@ namespace GooNapped.EditorTools
                 "######################",
             },
         };
+
+        static readonly Config C1L03 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter1/C1_L03.unity",
+            recipe = "Recipe_Debu",
+            next = "C1_L04",
+            note = "BLOCKOUT C1_L03 (urutan makan + 2 golem). Lorong tambang sempit.\n" +
+                   "Resep Debu: abu + berkilau. Lumut Pendar (hijau + berkilau) dulu, LALU Serbuk Batu (abu menimpa hijau). Kebalik = warna salah.\n" +
+                   "Golem 1 patroli lorong tengah (horizontal), Golem 2 patroli poros tambang (vertikal), jalurnya bersilangan.\n" +
+                   "Lumut membuat tubuh menyala (terlihat lebih jauh) selama dibawa ke Serbuk Batu.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C1_L03. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#.....#.....h....#..J..#",
+                "#..S..#.###...##.......#",
+                "#.....#.#.......##..L..#",
+                "###.###.#.##.#......####",
+                "#g.................G#..#",
+                "#.###.####.#.##.###.#..#",
+                "#.#l#.....#...#...#....#",
+                "#.#.#.L.b.#.H.#.b.#.####",
+                "#E..#.....#...#.......##",
+                "########################",
+            },
+        };
+
+        static readonly Config C1L04 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter1/C1_L04.unity",
+            recipe = "Recipe_Tetua",
+            next = "",
+            note = "BLOCKOUT C1_L04 (ujian chapter 1). Mulut tambang menuju gerbang kastil, slime tetua.\n" +
+                   "Resep Tetua: berat + dingin (Serbuk Batu + Air Embun). Kabur sambil berat = lambat.\n" +
+                   "Golem 1 patroli jalan utama, Golem 2 menjaga gerbang (exit). Pancing Golem 2 dengan umpan:\n" +
+                   "makan Lumut Pendar, belah, tinggalkan potongan menyala di depan pandangannya, lalu Shift dan menyelinap ke gerbang.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C1_L04. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#..........#....J...#",
+                "#....#.l..####..#........#",
+                "#....#....#..#..#..L.....#",
+                "##.###....#b.#..####.#####",
+                "#g.....................G.#",
+                "#.####.###.#####.#######.#",
+                "#....#.#w#.#...#.#..L..#.#",
+                "#.L..#.....#.b.#.#..h..H.#",
+                "#...............#.#.....E#",
+                "##########################",
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/C1_L03")]
+        public static void BuildC1L03() => Build(C1L03);
+
+        [MenuItem("GooNapped/Blockout/C1_L04")]
+        public static void BuildC1L04() => Build(C1L04);
+
+        [MenuItem("GooNapped/Blockout/Semua chapter 1")]
+        public static void BuildChapter1()
+        {
+            Build(C1L01);
+            Build(C1L02);
+            Build(C1L03);
+            Build(C1L04);
+        }
 
         [MenuItem("GooNapped/Blockout/C1_L01")]
         public static void BuildC1L01() => Build(C1L01);
@@ -136,8 +203,8 @@ namespace GooNapped.EditorTools
             if (EditorApplication.isPlayingOrWillChangePlaymode) { Debug.LogError("Stop Play mode dulu."); return; }
             var scene = EditorSceneManager.OpenScene(c.scene, OpenSceneMode.Single);
             var envMat = Load<Material>("Assets/_Game/Art/Materials/Env_Lit.mat");
-            var floorTile = PlaceholderTile("Tile_Ground", "Assets/_Game/Art/Sprites/Environment/floor_stone.png", new Color(0.62f, 0.56f, 0.5f));
-            var rockTile = PlaceholderTile("Tile_Rock", "Assets/_Game/Art/Sprites/Environment/wall_stone.png", new Color(0.55f, 0.52f, 0.5f));
+            var floorTile = PlaceholderTile("Tile_Ground", "Assets/_Game/Art/Sprites/Environment/floor_stone.png", new Color(0.7f, 0.6f, 0.5f));
+            var rockTile = PlaceholderTile("Tile_Rock", "Assets/_Game/Art/Sprites/Environment/wall_stone.png", new Color(0.4f, 0.42f, 0.5f));
 
             var floor = Find(scene, "Grid/Floor").GetComponent<Tilemap>();
             var walls = Find(scene, "Grid/Walls").GetComponent<Tilemap>();
@@ -171,8 +238,13 @@ namespace GooNapped.EditorTools
             }
 
             int h = c.map.Length, w = c.map[0].Length;
-            Vector2? golemA = null, golemB = null;
-            var ingredients = new Dictionary<char, string> { { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'r', "RamuanApi" } };
+            const string golemKeys = "ghk";
+            var golemStart = new Dictionary<char, Vector2>();
+            var golemEnd = new Dictionary<char, Vector2>();
+            var ingredients = new Dictionary<char, string>
+            {
+                { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'w', "AirEmbun" }, { 'r', "RamuanApi" },
+            };
             for (int row = 0; row < h; row++)
             {
                 for (int x = 0; x < w; x++)
@@ -216,10 +288,10 @@ namespace GooNapped.EditorTools
                         case 'L':
                             Spawn(P + "Level/Lantern.prefab", lights, pos, "Lantern");
                             break;
-                        case 'g': golemA = pos; break;
-                        case 'G': golemB = pos; break;
                         default:
-                            if (ingredients.TryGetValue(ch, out var id))
+                            if (golemKeys.IndexOf(ch) >= 0) golemStart[ch] = pos;
+                            else if (golemKeys.IndexOf(char.ToLowerInvariant(ch)) >= 0) golemEnd[char.ToLowerInvariant(ch)] = pos;
+                            else if (ingredients.TryGetValue(ch, out var id))
                             {
                                 var data = Load<IngredientData>(D + "Ingredients/Ingredient_" + id + ".asset");
                                 var p = Spawn(P + "Props/IngredientPickup.prefab", ingRoot, pos, "Pickup_" + id);
@@ -231,14 +303,16 @@ namespace GooNapped.EditorTools
                 }
             }
 
-            if (golemA.HasValue)
+            int gi = 0;
+            foreach (char key in golemKeys)
             {
-                var g = Spawn(P + "Enemies/Golem_Placeholder.prefab", guardRoot, golemA.Value, "Golem_Patroli");
-                var b = golemB ?? golemA.Value;
+                if (!golemStart.TryGetValue(key, out var a)) continue;
+                var b = golemEnd.TryGetValue(key, out var e) ? e : a;
+                var g = Spawn(P + "Enemies/Golem_Placeholder.prefab", guardRoot, a, "Golem_Patroli_" + (++gi));
                 Set(g.GetComponent<GolemGuard>(), "patrolPoints", p =>
                 {
                     p.arraySize = 2;
-                    p.GetArrayElementAtIndex(0).vector2Value = golemA.Value;
+                    p.GetArrayElementAtIndex(0).vector2Value = a;
                     p.GetArrayElementAtIndex(1).vector2Value = b;
                 });
             }
