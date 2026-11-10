@@ -60,8 +60,9 @@ Warna tubuh berubah terus karena bahan, jadi warna JANGAN di-render per varian.
 - Catatan ramp (kalau suatu saat butuh render grayscale ber-band lagi): isi nilai sRGB 32/96/160/224 (tengah bin `pixelize.py`), bukan linear 0.25/0.5/0.75/1.0.
 - Tanpa AA (`filter_size 0`), film transparan, view `Standard` (albedo) / `Raw` (normal).
 
-## Mood stage & palet (USULAN, belum disepakati tim)
-Game ini stealth, jadi cahaya = mekanik (Familiar Api melihat benda menyala, slime yang makan bara jadi gampang terlihat). Stage TIDAK boleh cerah.
+## Mood stage & palet (mood gelap disetujui 10 Nov 2026; palet masih USULAN)
+Arah yang disetujui: gambar konsep lab gelap dengan kuali menyala sebagai sumber cahaya (bukan versi cerah yang seluruh ruangannya terang), dan **lebih gelap lagi** dari gambar itu. Bagian di luar jangkauan lampu nyaris hitam-kebiruan; yang terbaca hanya sumber cahaya, slime, cone penjaga, dan bahan.
+Game ini stealth, jadi cahaya = mekanik (Familiar Api melihat benda menyala, slime yang minum Ramuan Api jadi gampang terlihat). Stage TIDAK boleh cerah.
 - **Dasar:** gelap dan dingin (Global Light 2D redup kebiruan). Cahaya hangat hanya dari sumber: kuali, api, obor.
 - **Slime pemain harus menonjol**: palet gradient-map lebih terang dari lingkungan, outline gelap sewarna badan.
 - **Cone penjaga:** merah, tetap terbaca di atas lantai gelap.

@@ -24,9 +24,16 @@ namespace GooNapped
         public string dir = "front";
         public bool faceLeft;
         public float fps = 8f;
+        // Pengali tempo (1 = normal). Diatur SlimePiece supaya animasi jalan ikut kecepatan gerak.
+        [NonSerialized] public float speedScale = 1f;
 
         Clip current;
         float t;
+
+        // Posisi dalam siklus clip yang sedang main, 0..1. Dipakai SlimeMotor untuk "denyut" gerak.
+        public float Phase =>
+            current != null && current.body != null && current.body.Length > 0
+                ? (t % current.body.Length) / current.body.Length : 0f;
 
         public void Play(string newAnim, string newDir, bool left)
         {
@@ -49,7 +56,7 @@ namespace GooNapped
             if (current == null || current.anim != anim || current.dir != dir) current = Find(anim, dir);
             if (current == null || current.body == null || current.body.Length == 0) return;
 
-            t += Time.deltaTime * fps;
+            t += Time.deltaTime * fps * speedScale;
             int i = (int)t % current.body.Length;
 
             // Hanya arah side yang di-mirror untuk hadap kiri. Front/back punya sprite sendiri,
