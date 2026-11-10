@@ -35,6 +35,18 @@ namespace GooNapped
         [Tooltip("Laju curiga di radius sadar dibanding terlihat langsung.")]
         [SerializeField] private float awarenessRate = 0.5f;
 
+        [Header("Cahaya")]
+        [Tooltip("Slime yang berdiri di cahaya (terang >= ambang) terlihat dari segala arah sejauh ini.")]
+        [SerializeField] private float lightSightRange = 4.5f;
+        [Tooltip("Ambang terang (0..1) dari LightExposure.")]
+        [SerializeField, Range(0f, 1f)] private float litThreshold = 0.35f;
+        [Tooltip("Laju curiga karena terlihat di cahaya dibanding di dalam kerucut.")]
+        [SerializeField] private float lightRate = 0.7f;
+
+        [Header("Suara")]
+        [Tooltip("Jarak antar langkah (detik) saat berjalan.")]
+        [SerializeField] private float stepInterval = 0.55f;
+
         [Header("Curiga")]
         [Tooltip("Detik sampai ketahuan kalau target terlihat di jarak menengah.")]
         [SerializeField] private float fillTime = 1.6f;
@@ -83,6 +95,10 @@ namespace GooNapped
         public float Suspicion { get; private set; }
         public bool SeesTarget { get; private set; }
         public bool Senses { get; private set; }
+        // Slime terlihat karena berdiri di cahaya (bukan karena kerucut/radius).
+        public bool InLight { get; private set; }
+        private bool alerted;
+        private float stepTimer;
         public Vector2 Forward => forward;
         public Vector2 Eye => (Vector2)transform.position + Vector2.up * eyeHeight;
         private Vector2 Body => rb.position + Vector2.up * 0.22f;
@@ -169,6 +185,16 @@ namespace GooNapped
             return Vector2.Distance(Body, p.Center) <= awarenessRadius && LineOfSight(Body, p.Center);
         }
 
+        // Slime yang berdiri di cahaya (atau menyala sendiri) terlihat dari segala arah dalam jarak tertentu,
+        // walau tidak di dalam kerucut. Cahaya = bahaya, bukan hiasan.
+        private bool SeesInLight(SlimePiece p)
+        {
+            if (p == null || p.IsDisguised) return false;
+            if (Vector2.Distance(Eye, p.Center) > lightSightRange) return false;
+            bool lit = p.Body.State.EmitsLight || LightExposure.At(p.Center) >= litThreshold;
+            return lit && LineOfSight(Eye, p.Center);
+        }
+
         private void Update()
         {
             moving = false;
@@ -181,11 +207,15 @@ namespace GooNapped
             if (baitCooldown > 0f) baitCooldown -= Time.deltaTime;
             var target = brain != null ? brain.Active : null;
             SeesTarget = CanSee(target, out float dist);
-            Senses = !SeesTarget && CanSense(target);
+            bool near = !SeesTarget && CanSense(target);
+            InLight = !SeesTarget && !near && SeesInLight(target);
+            Senses = near || InLight;
 
             if (SeesTarget || Senses)
             {
-                float rate = SeesTarget ? VisionMath.DistanceFactor(dist, RangeFor(target)) : awarenessRate;
+                float rate = SeesTarget ? VisionMath.DistanceFactor(dist, RangeFor(target)) : near ? awarenessRate : lightRate;
+                // bunyi "hm?" sekali tiap kali mulai curiga (diulang lagi setelah curiga turun ke 0)
+                if (!alerted) { alerted = true; AudioDirector.Play(AudioDirector.Sfx.Alert, Body); }
                 rate *= VisionMath.MismatchMultiplier(TotalMismatch(), mismatchBonus);
                 Suspicion = Mathf.Min(1f, Suspicion + Time.deltaTime * rate / Mathf.Max(0.05f, fillTime));
                 lastSeen = target.Center;
@@ -193,6 +223,7 @@ namespace GooNapped
                 if (Suspicion >= 1f)
                 {
                     state = State.Caught;
+                    AudioDirector.Play(AudioDirector.Sfx.Caught, Body);
                     if (goal != null) goal.Fail("Ketahuan Golem Batu");
                     UpdateVisuals();
                     return;
@@ -210,6 +241,7 @@ namespace GooNapped
             {
                 float decay = state == State.Search || state == State.LookAround ? decayPerSecond * 0.4f : decayPerSecond;
                 Suspicion = Mathf.Max(0f, Suspicion - decay * Time.deltaTime);
+                if (Suspicion <= 0f) alerted = false;
             }
 
             switch (state)
@@ -296,7 +328,7 @@ namespace GooNapped
             float step = spd * facing * Time.deltaTime;
             // cek tembok di depan. Hit dengan jarak 0 = sudah bersinggungan dari awal (lorong sempit): abaikan,
             // kalau tidak golem tersangkut di lorong selebar 1 tile.
-            int n = Physics2D.CircleCast(Body, 0.15f, d.normalized, new ContactFilter2D { useTriggers = false }, castHits, step + 0.05f);
+            int n = Physics2D.CircleCast(Body, 0.3f, d.normalized, new ContactFilter2D { useTriggers = false }, castHits, step + 0.05f);
             for (int i = 0; i < n; i++)
                 if (castHits[i].distance > 0f && !IsSeeThrough(castHits[i].collider)) return false;
             moveTarget = dest;
@@ -317,6 +349,17 @@ namespace GooNapped
                 if (d.magnitude < blockDistance && Vector2.Angle(toward, d) < 50f) return p;
             }
             return null;
+        }
+
+        private void LateUpdate()
+        {
+            // langkah berat golem
+            if (!moving) { stepTimer = 0f; return; }
+            if ((stepTimer -= Time.deltaTime) <= 0f)
+            {
+                stepTimer = stepInterval;
+                AudioDirector.Play(AudioDirector.Sfx.GolemStep, Body, 0.8f);
+            }
         }
 
         private void FixedUpdate()

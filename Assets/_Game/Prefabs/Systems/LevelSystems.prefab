@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8435187043092849981}
   - component: {fileID: 5929014801107240660}
   - component: {fileID: 7776598994333055192}
+  - component: {fileID: 2115229182577909811}
   m_Layer: 0
   m_Name: LevelSystems
   m_TagString: Untagged
@@ -52,12 +53,18 @@ MonoBehaviour:
   eatAction: Interact
   splitAction: Jump
   switchAction: Sprint
+  hideAction: Crouch
   pieces: []
   maxPieces: 3
   splitDistance: 0.8
   mergeGap: 0.15
   interactRadius: 0.85
   peekRadius: 1.3
+  switchCooldown: 0.7
+  switchLock: 0.3
+  splitWindup: 0.3
+  splitCooldown: 1.2
+  mergeLock: 0.35
 --- !u!114 &5929014801107240660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,3 +98,32 @@ MonoBehaviour:
   brain: {fileID: 0}
   goal: {fileID: 0}
   fontSize: 14
+--- !u!114 &2115229182577909811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8371740734739752879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba75d1a9304e3244cbf5dd4128100685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.AudioDirector
+  music: {fileID: 8300000, guid: a6f52d9a17aa2de4fb74bc686408d424, type: 3}
+  musicVolume: 0.35
+  ambience: {fileID: 8300000, guid: 8220a6914e23e1747bbd3815fec23b22, type: 3}
+  ambienceVolume: 0.5
+  slimeStep: {fileID: 8300000, guid: 78a275291152cbe4383a1fe0912a0329, type: 3}
+  golemStep: {fileID: 8300000, guid: b93814cdb65734441b040e71d8c39223, type: 3}
+  eat: {fileID: 8300000, guid: 59946781ba9550c4c95f4b542b17d4f6, type: 3}
+  split: {fileID: 8300000, guid: d3cc093867d28774b99084a6024ae34d, type: 3}
+  merge: {fileID: 8300000, guid: fa68e9035fe187f47b5d016dca4269ce, type: 3}
+  disguise: {fileID: 8300000, guid: b211e55aabde9cf4fb77b17b151b84e2, type: 3}
+  reveal: {fileID: 8300000, guid: 0a7f7a409a45c804583c7ea781d8fbac, type: 3}
+  switchPiece: {fileID: 8300000, guid: e8e8359c472dbeb4698771a08658d4c0, type: 3}
+  alert: {fileID: 8300000, guid: 4ac2b5eea38b2a641adbb64825fa0da2, type: 3}
+  caught: {fileID: 8300000, guid: e808dcda8d73fb348846f24fd14dced9, type: 3}
+  sfxVolume: 0.8
+  minDistance: 1.5
+  maxDistance: 8

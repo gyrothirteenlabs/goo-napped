@@ -96,10 +96,12 @@ Puzzle stealth 2D top-down, level pendek (2–4 menit). Referensi feel: Robbery 
 Alkemis tidak sadar karena toples masih berisi slime (hanya slime yang bisa menggantikan slime).
 
 ## Mekanik
-- Gerak analog berupa lompatan kecil (ancang, lompat, mendarat, meluncur) + squash/stretch berpegas di engine. Bahan berat = lompatan pendek dan lambat. Spek frame sprite: `docs/panduan-blender-3d.md` C.1.
+- Gerak analog berupa lompatan kecil yang merayap (ancang, lompat rendah, meluncur) + squash/stretch halus di engine. Bahan berat = lompatan pendek dan lambat. Spek frame sprite: `docs/panduan-blender-3d.md` C.1.
 - Makan bahan alkemi: tubuh berubah sesuai bahan (Ramuan Api = merah + panas + menyala, Serbuk Batu = abu + berat, dll). Daftar final oleh tim.
 - Belah diri: potongan mewarisi sifat tubuh saat itu. Bisa dipakai jadi tiruan di toples ATAU umpan.
-- Nyamar jadi barang untuk ngumpet dari penjaga.
+- Nyamar jadi barang untuk ngumpet dari penjaga (butuh waktu berubah; selama berubah masih bisa ketahuan).
+- Aksi punya jeda anti-spam: belah (ancang + cooldown), Shift (cooldown + potongan baru "bangun"), makan (diam ±0.85 detik).
+- Cahaya = bahaya: slime yang berdiri di cahaya lampu (atau menyala sendiri) terlihat penjaga di dekatnya dari segala arah, walau di luar kerucut.
 - Tombol Shift untuk ganti kontrol antar potongan. Potongan yang ditinggal otomatis nyamar.
 - Gabung lagi hanya bisa kalau potongan bersentuhan langsung.
 - Resep tiruan: tiap slime di toples punya 2–3 ciri (warna, suhu, berat, kilau, bau).

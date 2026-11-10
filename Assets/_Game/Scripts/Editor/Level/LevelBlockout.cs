@@ -154,13 +154,16 @@ namespace GooNapped.EditorTools
         static Tile PlaceholderTile(string name, string spritePath, Color color)
         {
             string path = TileDir + name + ".asset";
-            // Sprite proyek ini pivot-nya tengah-bawah (aturan PixelSpriteImporter untuk karakter), sedangkan Tilemap
-            // menaruh pivot di tengah sel. Tanpa geser -0.5, gambar tile naik setengah sel dari collision-nya.
-            var fix = Matrix4x4.Translate(new Vector3(0f, -0.5f, 0f));
+            // Sprite tile ada di Sprites/Tiles/ (pivot tengah, lihat PixelSpriteImporter). JANGAN geser lewat
+            // Tile.transform atau tileAnchor: keduanya ikut menggeser collider sehingga gambar dan collision tidak sejajar.
+            var fix = Matrix4x4.identity;
             var t = AssetDatabase.LoadAssetAtPath<Tile>(path);
             if (t != null)
             {
-                if (t.transform != fix) { t.transform = fix; EditorUtility.SetDirty(t); }
+                Sprite want = null;
+                foreach (var o in AssetDatabase.LoadAllAssetsAtPath(spritePath))
+                    if (o is Sprite s0 && (want == null || string.CompareOrdinal(s0.name, want.name) < 0)) want = s0;
+                if (t.transform != fix || t.sprite != want) { t.transform = fix; t.sprite = want; EditorUtility.SetDirty(t); }
                 return t;
             }
             if (!AssetDatabase.IsValidFolder("Assets/_Game/Art/Tiles/Placeholder"))
@@ -211,13 +214,14 @@ namespace GooNapped.EditorTools
             if (EditorApplication.isPlayingOrWillChangePlaymode) { Debug.LogError("Stop Play mode dulu."); return; }
             var scene = EditorSceneManager.OpenScene(c.scene, OpenSceneMode.Single);
             var envMat = Load<Material>("Assets/_Game/Art/Materials/Env_Lit.mat");
-            var floorTile = PlaceholderTile("Tile_Ground", "Assets/_Game/Art/Sprites/Environment/floor_stone.png", new Color(0.7f, 0.6f, 0.5f));
-            var rockTile = PlaceholderTile("Tile_Rock", "Assets/_Game/Art/Sprites/Environment/wall_stone.png", new Color(0.4f, 0.42f, 0.5f));
+            var floorTile = PlaceholderTile("Tile_Ground", "Assets/_Game/Art/Sprites/Tiles/tile_floor_stone.png", new Color(0.7f, 0.6f, 0.5f));
+            var rockTile = PlaceholderTile("Tile_Rock", "Assets/_Game/Art/Sprites/Tiles/tile_wall_stone.png", new Color(0.4f, 0.42f, 0.5f));
 
             var floor = Find(scene, "Grid/Floor").GetComponent<Tilemap>();
             var walls = Find(scene, "Grid/Walls").GetComponent<Tilemap>();
             floor.ClearAllTiles();
             walls.ClearAllTiles();
+            floor.tileAnchor = walls.tileAnchor = new Vector3(0.5f, 0.5f, 0f);
             floor.GetComponent<TilemapRenderer>().sharedMaterial = envMat;
             floor.GetComponent<TilemapRenderer>().sortingOrder = -100;
             walls.GetComponent<TilemapRenderer>().sharedMaterial = envMat;
@@ -260,7 +264,9 @@ namespace GooNapped.EditorTools
                     char ch = x < c.map[row].Length ? c.map[row][x] : '#';
                     int y = h - 1 - row;
                     var cell = new Vector3Int(x, y, 0);
-                    var pos = new Vector3(x + 0.5f, y + 0.05f, 0f);   // pivot sprite = tengah bawah tile
+                    // Posisi aktor = pivot sprite (tengah bawah cell 48px). Kaki/collider ada ±0.22–0.29 di atas pivot,
+                    // jadi pivot ditaruh 0.28 di atas tepi bawah tile supaya kaki tepat di TENGAH tile (tidak menempel tembok).
+                    var pos = new Vector3(x + 0.5f, y + 0.28f, 0f);
                     if (ch == '#') { walls.SetTile(cell, rockTile); continue; }
                     floor.SetTile(cell, floorTile);
                     switch (ch)
@@ -273,7 +279,7 @@ namespace GooNapped.EditorTools
                         {
                             var e = new GameObject("Exit_Zone");
                             e.transform.SetParent(exitRoot, false);
-                            e.transform.position = new Vector3(x + 0.5f, y, 0f);
+                            e.transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);   // sprite tile pivot tengah
                             var sr = e.AddComponent<SpriteRenderer>();
                             sr.sprite = floorTile.sprite;
                             sr.sharedMaterial = envMat;
@@ -282,7 +288,7 @@ namespace GooNapped.EditorTools
                             var bc = e.AddComponent<BoxCollider2D>();
                             bc.isTrigger = true;
                             bc.size = new Vector2(0.8f, 0.8f);
-                            bc.offset = new Vector2(0f, 0.5f);
+                            bc.offset = Vector2.zero;
                             e.AddComponent<LevelExit>();
                             break;
                         }

@@ -49,6 +49,12 @@ namespace GooNapped
             if (shadow != null) shadowScale = shadow.localScale;
         }
 
+        // Animasi khusus (ancang belah, makan, berubah jadi barang) menahan tujuan pegas; gerak tidak bisa menimpanya.
+        private bool hold;
+        private float holdValue;
+        public void Hold(float target) { hold = true; holdValue = target; }
+        public void Release() => hold = false;
+
         // Dorongan sesaat ke pegas: negatif = gepeng tiba-tiba (mendarat), positif = melonjak.
         public void Kick(float impulse) => velocity += impulse;
 
@@ -58,13 +64,14 @@ namespace GooNapped
             Cache();
             stretch = velocity = Target = Lift = 0f;
             Size = 1f;
+            hold = false;
             Apply();
         }
 
         private void LateUpdate()
         {
             float dt = Mathf.Min(Time.deltaTime, 1f / 30f);
-            float acc = (Target - stretch) * stiffness - velocity * damping;
+            float acc = ((hold ? holdValue : Target) - stretch) * stiffness - velocity * damping;
             velocity += acc * dt;
             stretch = Mathf.Clamp(stretch + velocity * dt, -maxStretch, maxStretch);
             Apply();

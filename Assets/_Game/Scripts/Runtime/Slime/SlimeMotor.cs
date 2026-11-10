@@ -16,21 +16,24 @@ namespace GooNapped
         [SerializeField] private float baseSpeed = 2.2f;
 
         [Header("Waktu tiap fase (detik, kecepatan normal)")]
-        [SerializeField] private float windupTime = 0.07f;
-        [SerializeField] private float airTime = 0.2f;
+        [SerializeField] private float windupTime = 0.08f;
+        [SerializeField] private float airTime = 0.14f;
         [SerializeField] private float landTime = 0.05f;
-        [SerializeField] private float slideTime = 0.12f;
-        [Tooltip("Bagian jarak tiap siklus yang ditempuh saat meluncur (sisanya di udara).")]
-        [SerializeField, Range(0f, 0.6f)] private float slideShare = 0.22f;
+        [SerializeField] private float slideTime = 0.22f;
+        [Tooltip("Bagian jarak tiap siklus yang ditempuh saat meluncur (sisanya di udara). Besar = lebih banyak merayap.")]
+        [SerializeField, Range(0f, 0.8f)] private float slideShare = 0.5f;
 
-        [Header("Rasa")]
+        [Header("Rasa (stealth: kecil saja)")]
         [Tooltip("Derajat/detik belokan saat di udara. Kecil = arah terkunci (lengket), besar = lincah.")]
         [SerializeField] private float airSteer = 160f;
-        [Tooltip("Tinggi lompatan visual (unit). 0.12 = sekitar 6 px.")]
-        [SerializeField] private float hopHeight = 0.12f;
-        [SerializeField] private float windupSquash = -0.22f;
-        [SerializeField] private float airStretch = 0.18f;
-        [SerializeField] private float landKick = -7f;
+        [Tooltip("Tinggi lompatan visual (unit). 0.035 = sekitar 2 px.")]
+        [SerializeField] private float hopHeight = 0.035f;
+        [SerializeField] private float windupSquash = -0.1f;
+        [SerializeField] private float airStretch = 0.07f;
+        [SerializeField] private float landKick = -2.5f;
+
+        // Fase baru dimulai (untuk suara langkah, debu, dll.).
+        public event System.Action<HopPhase> PhaseEntered;
 
         private Rigidbody2D rb;
         private SlimeJelly jelly;
@@ -92,6 +95,7 @@ namespace GooNapped
             t = 0f;
             if (p == HopPhase.Land && jelly != null) jelly.Kick(landKick);
             if (p == HopPhase.Slide) slideStart = SlideSpeed();
+            PhaseEntered?.Invoke(p);
         }
 
         private float AirSpeed() => CycleDistance * (1f - slideShare) / airTime;

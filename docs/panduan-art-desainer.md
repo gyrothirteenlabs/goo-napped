@@ -58,6 +58,7 @@ Tips: bagian atas objek (menghadap ke atas layar) cenderung hijau, kiri cyan, ka
 1. Desain/sketsa di tool pilihan (Aseprite, Krita, Blender, dst.). File sumber di `art/` (`art/blender/`, atau tambah `art/source/`).
 2. Export albedo + normal ke `art/sprites/<kategori>/`.
 3. Copy ke `Assets/_Game/Art/Sprites/<Characters|Enemies|Props|Environment|UI|VFX>/`. Import setting terpasang otomatis.
+   **Tile untuk Tilemap (lantai, tembok) masuk `Sprites/Tiles/`**: di folder itu pivot otomatis di tengah, supaya gambar tile pas dengan collision. Sprite di folder lain pivot tengah-bawah (titik kaki).
 4. Pasang material:
    - lingkungan/prop: `Env_Lit`
    - slime body: `Slime_*`

@@ -6,6 +6,8 @@ using UnityEngine;
 
 // Auto-setting import untuk semua sprite di folder sprite game (spek art/CLAUDE.md):
 // Sprite Multiple, slice grid 48x48, PPU 48, Filter Point, Compression None, pivot Bottom Center.
+// KECUALI folder Sprites/Tiles/: pivot Center, karena Tilemap menaruh sprite di tengah sel. Dengan pivot bawah,
+// gambar tile naik setengah sel dari collider-nya (dan menggeser lewat Tile.transform/anchor ikut menggeser collider).
 //
 // Normal map: file yang namanya mengandung "_normal" diimport linear (bukan sRGB) dan otomatis
 // dipasang sebagai secondary texture "_NormalMap" ke sprite pasangannya:
@@ -14,7 +16,11 @@ using UnityEngine;
 public class PixelSpriteImporter : AssetPostprocessor
 {
     public const string Root = "Assets/_Game/Art/Sprites/";
+    public const string TilesRoot = Root + "Tiles/";
     const int Cell = 48;
+
+    Vector2 Pivot => assetPath.StartsWith(TilesRoot) ? new Vector2(0.5f, 0.5f) : new Vector2(0.5f, 0f);
+    SpriteAlignment Alignment => assetPath.StartsWith(TilesRoot) ? SpriteAlignment.Center : SpriteAlignment.BottomCenter;
 
     static bool IsNormal(string path) => Path.GetFileNameWithoutExtension(path).Contains("_normal");
 
@@ -78,7 +84,7 @@ public class PixelSpriteImporter : AssetPostprocessor
         var existing = provider.GetSpriteRects();
         bool gridOk = existing.Length == cols * rows;
         foreach (var e in existing)
-            if (e.rect.width != Cell || e.rect.height != Cell || e.pivot != new Vector2(0.5f, 0f)) { gridOk = false; break; }
+            if (e.rect.width != Cell || e.rect.height != Cell || e.pivot != Pivot) { gridOk = false; break; }
         if (gridOk) return false;
 
         string baseName = Path.GetFileNameWithoutExtension(assetPath);
@@ -90,8 +96,8 @@ public class PixelSpriteImporter : AssetPostprocessor
                 {
                     name = $"{baseName}_{i++}",
                     rect = new Rect(c * Cell, r * Cell, Cell, Cell),
-                    alignment = SpriteAlignment.BottomCenter,
-                    pivot = new Vector2(0.5f, 0f),
+                    alignment = Alignment,
+                    pivot = Pivot,
                 });
 
         provider.SetSpriteRects(rects.ToArray());

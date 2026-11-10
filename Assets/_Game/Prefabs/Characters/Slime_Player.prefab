@@ -530,8 +530,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.22}
-  m_Radius: 0.28
+  m_Offset: {x: 0, y: 0.25}
+  m_Radius: 0.34
 --- !u!50 &6843090435859118369
 Rigidbody2D:
   serializedVersion: 5
@@ -586,12 +586,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimePiece
   eatRadius: 0.7
-  eatDuration: 0.6
+  eatDuration: 0.85
   pickupMask:
     serializedVersion: 2
     m_Bits: 4294967295
   disguiseRenderer: {fileID: 7833935424039824229}
   disguiseSprite: {fileID: 392537881, guid: 590a0d7934c1e364899262d8fe1887f6, type: 3}
+  disguiseTime: 0.45
+  revealTime: 0.3
 --- !u!114 &4614384273120818604
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -605,16 +607,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimeMotor
   baseSpeed: 2.2
-  windupTime: 0.07
-  airTime: 0.2
+  windupTime: 0.08
+  airTime: 0.14
   landTime: 0.05
-  slideTime: 0.12
-  slideShare: 0.22
+  slideTime: 0.22
+  slideShare: 0.5
   airSteer: 160
-  hopHeight: 0.12
-  windupSquash: -0.22
-  airStretch: 0.18
-  landKick: -7
+  hopHeight: 0.035
+  windupSquash: -0.1
+  airStretch: 0.07
+  landKick: -2.5
 --- !u!114 &2594296895948663141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -636,6 +638,7 @@ MonoBehaviour:
   damping: 14
   maxStretch: 0.32
   widen: 0.7
+  feetHeight: 0.29
 --- !u!1 &1460804099271962104
 GameObject:
   m_ObjectHideFlags: 0

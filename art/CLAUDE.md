@@ -21,7 +21,7 @@ Berlaku untuk semua kerjaan di Blender, sprite, dan aset visual.
 | Ukuran cell | 48×48 px |
 | Sudut | top-down 3/4, kamera orthographic (tilt 55°) |
 | Arah | 3: `front`, `side` (hadap kanan), `back`. Kiri = flip X di Unity |
-| Unity import | Otomatis oleh `PixelSpriteImporter`: PPU 48, Point, no compression, slice grid 48, pivot bottom-center |
+| Unity import | Otomatis oleh `PixelSpriteImporter`: PPU 48, Point, no compression, slice grid 48, pivot bottom-center (kecuali `Sprites/Tiles/`: pivot center untuk Tilemap) |
 | Bayangan jatuh | TIDAK di-render. Blob shadow sprite terpisah di Unity |
 | **Cahaya** | **TIDAK di-bake.** Sprite = albedo flat + normal map. Cahaya dihitung real-time di Unity (shader `GooNapped/PixelToonLit`, Light 2D) lalu dipotong jadi band |
 

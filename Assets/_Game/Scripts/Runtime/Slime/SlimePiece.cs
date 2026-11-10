@@ -6,13 +6,14 @@ namespace GooNapped
     // Input ada di PlayerBrain, yang pindah antar potongan (tombol Shift).
     // Potongan yang tidak dikendalikan otomatis nyamar dan diam di tempat.
     [RequireComponent(typeof(SlimeMotor), typeof(SlimeBody), typeof(SlimeSpriteAnimator))]
+    [DefaultExecutionOrder(10)]   // setelah SlimeMotor: animasi khusus menahan pegas jeli setelah gerak menulisnya
     public class SlimePiece : MonoBehaviour
     {
         [Header("Makan")]
         [Tooltip("Jarak maksimum ke bahan (dari pusat collider).")]
         [SerializeField] private float eatRadius = 0.7f;
         [Tooltip("Lama animasi makan. Selama itu potongan diam (risiko ketahuan).")]
-        [SerializeField] private float eatDuration = 0.6f;
+        [SerializeField] private float eatDuration = 0.85f;
         [SerializeField] private LayerMask pickupMask = ~0;
 
         [Header("Nyamar")]
@@ -20,6 +21,13 @@ namespace GooNapped
         [SerializeField] private SpriteRenderer disguiseRenderer;
         [Tooltip("Sprite barang samaran untuk lokasi ini (chapter 1: batu). Placeholder sampai ada art tim.")]
         [SerializeField] private Sprite disguiseSprite;
+        [Tooltip("Lama berubah jadi barang (detik). Selama itu belum tersamar = masih bisa ketahuan.")]
+        [SerializeField] private float disguiseTime = 0.45f;
+        [Tooltip("Lama kembali jadi slime (detik). Selama itu belum bisa bergerak.")]
+        [SerializeField] private float revealTime = 0.3f;
+
+        // 0 = slime, 1 = barang. Berubah bertahap (tidak bisa nyamar/lepas instan).
+        private float disguiseT;
 
         private SlimeSpriteAnimator anim;
         private Collider2D col;
@@ -33,7 +41,10 @@ namespace GooNapped
         public bool IsControlled { get; private set; }
         // Diminta pemain (tahan tombol nyamar). Potongan yang tidak dikendalikan selalu nyamar.
         public bool HideRequested { get; set; }
-        public bool IsDisguised => !IsControlled || (HideRequested && !IsEating);
+        // Potongan yang dikendalikan baru tersamar setelah transformasi selesai.
+        public bool IsDisguised => !IsControlled || disguiseT >= 1f;
+        // Sedang berubah jadi barang / kembali jadi slime (tidak bisa bergerak).
+        public bool IsTransforming => IsControlled && disguiseT > 0f;
         // Umpan: barang samaran yang menyala/berbau menarik perhatian penjaga (tanpa menaikkan curiga).
         public bool IsBait => IsDisguised && (Body.State.EmitsLight || Body.State.SmellRadius > 0f);
         public bool IsEating => eatTimer > 0f;
@@ -49,11 +60,19 @@ namespace GooNapped
             anim = GetComponent<SlimeSpriteAnimator>();
             col = GetComponent<Collider2D>();
             Body.Changed += OnBodyChanged;
+            Motor.PhaseEntered += OnHopPhase;
         }
 
         private void OnDestroy()
         {
             if (Body != null) Body.Changed -= OnBodyChanged;
+            if (Motor != null) Motor.PhaseEntered -= OnHopPhase;
+        }
+
+        // suara "plek" lembut tiap mendarat
+        private void OnHopPhase(SlimeMotor.HopPhase p)
+        {
+            if (p == SlimeMotor.HopPhase.Land) AudioDirector.Play(AudioDirector.Sfx.SlimeStep, Center, 0.45f, 0.12f);
         }
 
         private void OnBodyChanged(SlimeBody b) => Motor.SpeedMultiplier = b.State.SpeedMultiplier;
@@ -68,7 +87,7 @@ namespace GooNapped
 
         private void ApplyDisguiseVisual()
         {
-            bool hidden = IsDisguised && !animating && disguiseRenderer != null && disguiseSprite != null;
+            bool hidden = disguiseT >= 1f && !animating && disguiseRenderer != null && disguiseSprite != null;
             if (disguiseRenderer != null)
             {
                 disguiseRenderer.enabled = hidden;
@@ -80,7 +99,7 @@ namespace GooNapped
             {
                 if (anim.bodyRenderer != null) anim.bodyRenderer.enabled = !hidden;
                 // tanpa sprite samaran (fallback lama): body tetap, wajah disembunyikan
-                if (anim.faceRenderer != null) anim.faceRenderer.enabled = !IsDisguised || animating;
+                if (anim.faceRenderer != null) anim.faceRenderer.enabled = disguiseT < 1f || animating;
             }
         }
 
@@ -92,7 +111,7 @@ namespace GooNapped
         // Dipanggil PlayerBrain tiap frame untuk potongan yang dikendalikan.
         public void Move(Vector2 input)
         {
-            if (!IsControlled || IsEating || IsDisguised) { Motor.Stop(); return; }
+            if (!IsControlled || IsEating || IsTransforming) { Motor.Stop(); return; }
             Motor.MoveInput = input;
             if (input.sqrMagnitude < 0.04f) return;
             Face(Mathf.Abs(input.x) > Mathf.Abs(input.y)
@@ -125,12 +144,53 @@ namespace GooNapped
             Body.Eat(p.Consume());
             eatTimer = eatDuration;
             Motor.Stop();
+            if (Jelly != null) Jelly.Kick(6f);                // mulut membuka
+            AudioDirector.Play(AudioDirector.Sfx.Eat, Center);
             return true;
+        }
+
+        private void UpdateDisguise()
+        {
+            if (animating) return;
+            bool want = !IsControlled || (HideRequested && !IsEating);
+            float before = disguiseT;
+            disguiseT = Mathf.MoveTowards(disguiseT, want ? 1f : 0f,
+                Time.deltaTime / Mathf.Max(0.01f, want ? disguiseTime : revealTime));
+            var jelly = Jelly;
+            if (before < 1f && disguiseT >= 1f)
+            {
+                if (jelly != null) { jelly.Release(); jelly.Size = 1f; jelly.Kick(-5f); }
+                AudioDirector.Play(AudioDirector.Sfx.Disguise, Center, 0.6f);
+            }
+            else if (before >= 1f && disguiseT < 1f)
+            {
+                if (jelly != null) jelly.Kick(5f);
+                if (IsControlled) AudioDirector.Play(AudioDirector.Sfx.Reveal, Center, 0.6f);
+            }
+            if (jelly == null) return;
+            if (disguiseT > 0f && disguiseT < 1f)
+            {
+                // meringkuk mengecil sebelum jadi barang (dan kebalikannya saat kembali)
+                jelly.Hold(-0.3f * disguiseT);
+                jelly.Size = 1f - 0.18f * disguiseT;
+            }
+            else if (!IsEating)
+            {
+                jelly.Release();
+                if (disguiseT <= 0f) jelly.Size = 1f;
+            }
         }
 
         private void Update()
         {
-            if (eatTimer > 0f) eatTimer -= Time.deltaTime;
+            if (eatTimer > 0f)
+            {
+                eatTimer -= Time.deltaTime;
+                // menelan: badan berdenyut dua kali
+                if (Jelly != null) Jelly.Hold(eatTimer > 0f ? 0.12f * Mathf.Sin((1f - eatTimer / eatDuration) * Mathf.PI * 4f) : 0f);
+                if (eatTimer <= 0f && Jelly != null) Jelly.Release();
+            }
+            UpdateDisguise();
             ApplyDisguiseVisual();
             string dir = Facing.x != 0 ? "side" : (Facing.y > 0 ? "back" : "front");
             bool left = Facing.x != 0 ? Facing.x < 0 : anim.faceLeft;
@@ -138,7 +198,7 @@ namespace GooNapped
             // frame sprite "move" mengikuti fase lompatan (bukan jam), jadi squash di sprite sinkron dengan lompatan
             anim.forcedPhase = moving ? Motor.CyclePhase : -1f;
             anim.speedScale = 1f;
-            string a = animating ? "move" : IsDisguised ? "idle" : IsEating ? "eat" : moving ? "move" : "idle";
+            string a = animating ? "move" : disguiseT > 0f ? "idle" : IsEating ? "eat" : moving ? "move" : "idle";
             anim.Play(a, dir, left);
         }
 
