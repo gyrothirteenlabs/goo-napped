@@ -25,6 +25,7 @@ namespace GooNapped
 
         public bool IsPressed => pressed;
         public bool RequireHeavy => requireHeavy;
+        public IReadOnlyList<Door> Doors => doors;
         private Vector2 Center => (Vector2)transform.position + Vector2.up * centerHeight;
 
         public void Setup(IEnumerable<Door> list, bool heavy)

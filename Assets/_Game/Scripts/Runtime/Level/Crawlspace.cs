@@ -33,7 +33,7 @@ namespace GooNapped
             foreach (var p in brain.Pieces)
             {
                 if (p == null) continue;
-                var c = p.GetComponent<Collider2D>();
+                var c = p.Collider;
                 if (c != null) Physics2D.IgnoreCollision(box, c, Fits(p));
             }
         }

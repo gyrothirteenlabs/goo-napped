@@ -159,7 +159,9 @@ namespace GooNapped
             messageTimer = 3f;
         }
 
-        // Tombol E. Urutan: telan teman -> tukar dengan isi toples -> makan bahan.
+        // Tombol E. Urutan: telan teman -> tukar dengan isi toples -> makan bahan -> lentera -> tuas -> petunjuk toples.
+        // Tukar hanya dicoba kalau memang bisa (≥2 potongan, potongan ini tidak membawa teman); kalau tidak, bahan di
+        // dekat toples tetap bisa dimakan dan petunjuk "belah dulu" baru muncul kalau tidak ada aksi lain.
         public bool Interact()
         {
             var a = Active;
@@ -175,7 +177,8 @@ namespace GooNapped
             }
 
             var jar = FindNear<Jar>(a, interactRadius);
-            if (jar != null && jar.HasFriend) return SwapWithJar(a, jar);
+            if (jar != null && !jar.HasFriend) jar = null;
+            if (jar != null && pieces.Count >= 2 && a.Carried.Count == 0) return SwapWithJar(a, jar);
 
             if (a.TryEat()) return true;
 
@@ -201,6 +204,9 @@ namespace GooNapped
                 Say(lever.Message);
                 return true;
             }
+
+            // di depan toples tapi belum bisa tukar: jelaskan kenapa
+            if (jar != null) return SwapWithJar(a, jar);
             return false;
         }
 

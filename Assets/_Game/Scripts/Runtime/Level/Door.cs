@@ -25,9 +25,10 @@ namespace GooNapped
         private readonly Collider2D[] overlap = new Collider2D[8];
 
         public bool IsOpen => isOpen;
+        public bool StartsOpen => startsOpen;
         // Sel tile yang ditempati (dari pusat collider; bounds collider nonaktif tidak bisa dipakai).
         public Vector2Int Cell => NavGrid.CellOf(Center);
-        private Vector2 Center => transform.TransformPoint(GetComponent<BoxCollider2D>().offset);
+        private Vector2 Center => transform.TransformPoint((box != null ? box : GetComponent<BoxCollider2D>()).offset);
 
         private void Awake()
         {

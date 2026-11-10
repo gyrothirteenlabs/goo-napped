@@ -57,6 +57,7 @@ namespace GooNapped
         public System.Collections.Generic.List<RecipeData> Carried { get; } = new System.Collections.Generic.List<RecipeData>();
         public Vector2 Center => col != null ? (Vector2)col.bounds.center : (Vector2)transform.position;
         public float Radius => col != null ? col.bounds.extents.x : 0.28f;
+        public Collider2D Collider => col;
 
         private void Awake()
         {

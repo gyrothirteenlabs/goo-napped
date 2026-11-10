@@ -71,9 +71,9 @@ MonoBehaviour:
   brain: {fileID: 0}
   goal: {fileID: 0}
   refreshInterval: 0.1
-  controlsText: "WASD gerak \xB7 E makan/tukar/telan \xB7 Space belah/gabung \xB7
-    Shift pindah \xB7 C nyamar \xB7 Q muntah \xB7 F gumpalan \xB7 R ulang \xB7 Esc
-    jeda"
+  controlsText: "WASD gerak \xB7 E makan/tukar/telan/tuas \xB7 Space belah/gabung
+    \xB7 Shift pindah \xB7 C nyamar \xB7 Q muntah \xB7 F gumpalan \xB7 R ulang \xB7
+    Esc jeda"
 --- !u!1 &8371740734739752879
 GameObject:
   m_ObjectHideFlags: 0

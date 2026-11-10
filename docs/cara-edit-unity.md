@@ -145,5 +145,26 @@ Kontrol: E / Space / Enter / klik = lanjut (menekan saat teks diketik = tampilka
 3. Karakter slime: drag frame ke `SlimeSpriteAnimator > Clips` (anim + arah + frame body/face) di prefab `Slime_Player`. Spek jumlah frame tiap anim: panduan Blender bagian C.1.
 4. Musuh/prop: material `Env_Lit` untuk albedo, `Enemy_Glow_Unlit` untuk bagian menyala.
 
-## 11. Test
-Window > General > **Test Runner** > EditMode > Run All. Wajib hijau sebelum PR.
+## 11. Test & QA otomatis
+Window > General > **Test Runner**. Wajib hijau sebelum PR, terutama setelah mengubah level, prefab, atau data.
+
+**EditMode** (± 1 detik, tanpa Play):
+| Test | Mengecek |
+|---|---|
+| `LevelValidationTests.Level_Valid` (per level + `Sandbox/ProtoProps`) | isi wajib (pemain, toples, exit, LevelSystems, kamera), `nextScene` sesuai urutan `GameFlow.Levels`, objek tidak di dalam tembok, **resep bisa dibuat dari bahan yang ada** (urutan makan dicari otomatis, termasuk muntah), jalan spawn → bahan → toples → exit bisa ditempuh (ikut aturan tubuh berat + celah), ruang untuk belah di samping toples, patroli penjaga di lantai dan tersambung, spawn tidak langsung terlihat penjaga, tuas/pelat tersambung |
+| `AssetIntegrityTests` | script hilang, referensi aset rusak, field wajib kosong (prefab + semua scene alur game), data bahan/resep lengkap (2–3 ciri, tidak dobel) |
+| `AlurGame_SemuaSceneAdaDiBuild` | semua scene alur game ada di Build Settings |
+| logika murni | `SlimeBodyState`, `VisionMath`, `ScentTrail`, `GridPath`, solver resep |
+
+**PlayMode** (± 4 menit, memainkan scene asli):
+| Test | Mengecek |
+|---|---|
+| `Bot_MenyelesaikanLevel` (per level) | penjaga dimatikan, bot memainkan alur lengkap dengan gerak & collision asli (makan sesuai resep → belah → Shift → tukar → telan → exit). Gagal = level tidak bisa diselesaikan atau badan slime menyangkut. Console mencatat waktu tempuh bot. |
+| `Penjaga_PatroliJalan_SpawnAman` (per level) | pemain diam 40 detik game: tidak ketahuan, tiap penjaga sampai ke semua titik patrolinya |
+| `Alur_*` | Boot → MainMenu, Intro → level pertama, Ending → MainMenu, timeScale kembali normal |
+
+**Laporan** (kategori `Laporan`, tidak ikut Run All, jalankan manual): `Laporan_PetaPengawasan` mencatat berapa persen rute terpendek diawasi penjaga dan sel mana yang tidak punya jeda aman. Pakai untuk menyetel kesulitan, bukan lulus/gagal.
+
+Error/exception apa pun di console selama PlayMode test = test gagal. Progres pemain (PlayerPrefs) dikembalikan setelah test. Kode QA bersama (peta grid level, solver resep) ada di `Tests/Shared/`.
+
+Yang **tidak** bisa dicek otomatis: rasa kontrol, keterbacaan visual, apakah stealth terasa adil/seru, kesulitan. Itu tetap butuh playtest manusia.

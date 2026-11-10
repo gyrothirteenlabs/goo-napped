@@ -62,7 +62,26 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 | ⬜ | Tileset chapter 1, toples, Golem final | P1 |
 | ⬜ | Audio final | P2 |
 
+## QA (10 Nov 2026)
+Hasil test otomatis (detail cara jalan: `docs/cara-edit-unity.md` bagian 11):
+- ✅ 8/8 level **bisa diselesaikan** bot dengan gerak & collision asli (penjaga dimatikan). Waktu tempuh bot tanpa
+  penjaga: C1 22–60 dtk, C2 49–106 dtk. Manusia + stealth = beberapa kali lipat, masih masuk target 2–4 menit.
+- ✅ Resep tiap toples bisa dibuat dari bahan yang ada; semua patroli penjaga jalan dan sampai ke tiap titiknya;
+  spawn tidak terlihat penjaga; alur Boot → Menu, Intro → C1_L01, C2_L04 → Ending → Menu jalan.
+- ✅ Tidak ada script hilang / referensi rusak / field wajib kosong di prefab dan scene alur game.
+- 🔎 Peta pengawasan (rute terpendek, pemain tidak menyala): tidak ada sel yang diawasi terus-menerus. Bagian rute
+  yang pernah terlihat penjaga: C1_L02 50%, C1_L03 78%, C1_L04 76%, C2_L01 29%, C2_L02 36%, C2_L03 34%, C2_L04 52%.
+  **Kurva kesulitan terbalik**: chapter 1 lebih ramai diawasi daripada chapter 2 (C2 mengandalkan indra khusus
+  Familiar/Anjing yang tidak terhitung di peta ini). Perlu dicek di playtest manusia.
+- Diperbaiki saat QA: E di dekat toples (masih 1 potongan) tidak bisa makan bahan di sebelahnya; HUD "Teman x/y"
+  hanya menghitung potongan aktif; warning USS `:last-child` di tiap level; cache lampu mencari ulang tiap frame di
+  scene tanpa lampu titik.
+- Belum bisa otomatis: rasa kontrol, keterbacaan, adil/serunya stealth. Bot stealth sederhana (nyamar saat terlihat)
+  macet di C1_L02–L03, jadi itu bukan ukuran; butuh playtest manusia.
+
 ## Bug / poles yang diketahui (menyusul)
+- Build Settings masih memuat C3_L01–L04, ChapterSelect, Credits (scene placeholder kosong, tidak dipakai alur game).
+  Bersihkan saat tim memutuskan chapter 3 (ProjectSettings = keputusan tim).
 - Sprite slime lama + squash engine bisa dobel sampai model baru dirender.
 - Angka rasa gerak dan kesulitan penjaga belum disetel lewat playtest.
 - Air Embun dan Minyak Belerang belum punya palet warna.

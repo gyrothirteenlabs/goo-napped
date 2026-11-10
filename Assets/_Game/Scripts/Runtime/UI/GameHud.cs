@@ -16,7 +16,7 @@ namespace GooNapped
         [SerializeField] private LevelGoal goal;
         [SerializeField, Range(0.02f, 0.5f)] private float refreshInterval = 0.1f;
         [SerializeField, TextArea] private string controlsText =
-            "WASD gerak · E makan/tukar/telan · Space belah/gabung · Shift pindah · C nyamar · Q muntah · F gumpalan · R ulang · Esc jeda";
+            "WASD gerak · E makan/tukar/telan/tuas · Space belah/gabung · Shift pindah · C nyamar · Q muntah · F gumpalan · R ulang · Esc jeda";
 
         private VisualElement traits, tags, recipes;
         private Label pieces, carried, blob, toast, banner, controls;
@@ -78,7 +78,10 @@ namespace GooNapped
 
             int req = goal != null ? goal.Required : 0;
             pieces.text = "Potongan " + brain.Pieces.Count;
-            carried.text = "Teman " + (a != null ? a.Carried.Count : 0) + "/" + req;
+            // total teman yang dibawa semua potongan (setelah Shift ke potongan lain, angka tidak "hilang")
+            int total = 0;
+            foreach (var p in brain.Pieces) if (p != null) total += p.Carried.Count;
+            carried.text = "Teman " + total + "/" + req;
             blob.text = brain.ThrowCooldownLeft > 0f ? "Gumpalan " + Mathf.CeilToInt(brain.ThrowCooldownLeft) + " dtk" : "Gumpalan siap";
 
             bool hasMsg = !string.IsNullOrEmpty(brain.Message);

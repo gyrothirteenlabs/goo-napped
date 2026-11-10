@@ -67,8 +67,8 @@
 
 /* bawah */
 .stats { flex-direction: row; flex-shrink: 0; }
-.stat { margin-right: 10px; font-size: 10px; }
-.stat:last-child { margin-right: 0; }
+/* USS tidak punya :last-child: jarak antar stat dibagi dua sisi, panel sudah punya padding */
+.stat { margin-left: 5px; margin-right: 5px; font-size: 10px; }
 .controls {
     font-size: 9px;
     color: rgba(170, 178, 200, 0.75);
