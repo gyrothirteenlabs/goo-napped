@@ -21,7 +21,7 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 |---|---|---|---|
 | ✅ | Golem Batu: patroli, kerucut lurus, cari, sapu pandangan, radius sadar, cahaya | P1 | |
 | ✅ | Familiar Api: melayang, melihat yang PANAS/menyala dari jauh, buta di gelap, bawa cahaya sendiri | P1 | chapter 2 |
-| ⬜ | Anjing Lendir: mengendus jejak bau, mengikuti jejak | P2 | chapter 2 |
+| ✅ | Anjing Lendir: mencium jejak bau (`ScentTrail`) dan menyusurinya lewat tikungan, mencium slime berbau di dekatnya, terpancing umpan berbau | P2 | chapter 2 (C2_L02) |
 | ⬜ | Mata Penyihir: memeriksa toples, membongkar tiruan salah resep | P3 | chapter 3 (kandidat dipotong) |
 
 ## Bahan (chapter 1–2)
@@ -31,14 +31,14 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 | ✅ | Lumut Pendar | hijau, berkilau | menyala |
 | ✅ | Air Embun | biru, dingin | – |
 | ✅ | Ramuan Api | merah, panas | menyala |
-| ⬜ | Minyak Belerang | kuning, bau | radius bau (Anjing) |
+| ✅ | Minyak Belerang | kuning, bau | meninggalkan jejak bau (Anjing) |
 | ⬜ | Garam Beku | putih, dingin | memadamkan menyala |
 
 ## Level
 | | Fitur | Prio |
 |---|---|---|
 | ✅ | Blockout chapter 1 (4 level) + tool peta teks | P1 |
-| 🔧 | Blockout chapter 2 (kastil bawah): C2_L01 selesai, L02–L04 belum | P1 |
+| 🔧 | Blockout chapter 2 (kastil bawah): C2_L01 (Familiar), C2_L02 (Anjing) selesai, L03–L04 belum | P1 |
 | ⬜ | Pintu / tuas / lorong tikus (hanya potongan kecil bisa lewat) | P2 |
 | ⬜ | Lampu yang bisa dipadamkan (Garam Beku / potongan dingin) | P2 |
 
@@ -61,4 +61,5 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 ## Bug / poles yang diketahui (menyusul)
 - Sprite slime lama + squash engine bisa dobel sampai model baru dirender.
 - Angka rasa gerak dan kesulitan penjaga belum disetel lewat playtest.
-- Air Embun belum punya palet warna.
+- Air Embun dan Minyak Belerang belum punya palet warna.
+- Penjaga tanpa pathfinding: hanya menyusur tembok sederhana, bisa menyerah di belokan rumit.

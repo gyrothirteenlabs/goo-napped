@@ -19,10 +19,11 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `S` | spawn pemain |
    | `E` | exit |
    | `J` | toples (resep = `recipe` di config) |
-   | `b` `l` `w` `r` | Serbuk Batu, Lumut Pendar, Air Embun, Ramuan Api |
+   | `b` `l` `w` `r` `y` | Serbuk Batu, Lumut Pendar, Air Embun, Ramuan Api, Minyak Belerang |
    | `L` | lentera |
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |
    | `f`/`F`, `v`/`V` | titik awal/akhir patroli Familiar Api 1, 2 |
+   | `d`/`D` | titik awal/akhir patroli Anjing Lendir |
 
 3. Unity: menu **GooNapped > Blockout > C1_L0x** (atau **Semua chapter 1**). Scene diisi ulang dan disimpan.
 4. Level baru: salin satu `Config`, ganti `scene`, `recipe`, `next`, `note`, tambah `[MenuItem]`. Lalu **tambahkan nama scene di `GameFlow.Levels`** (urutan pilih level) dan pastikan scene ada di Build Settings.
@@ -74,6 +75,7 @@ Inspector `Guard` (Golem dan Familiar memakai komponen yang sama):
 | Bagian | Field penting |
 |---|---|
 | Jenis | `Guard Name`, `Needs Light To See` (buta di gelap), `Heat Sight Range` (lihat panas dari jauh), `Hover Height` |
+| Penciuman | `Smell Range` (0 = tidak mencium), `Smell Rate` |
 | Patroli | `Patrol Points`, `Speed`, `Wait At Point` |
 | Penglihatan | `View Range`, `View Angle` (lebar kerucut), `Awareness Radius` (radius sadar) |
 | Cahaya | `Light Sight Range`, `Lit Threshold`, `Light Rate` |

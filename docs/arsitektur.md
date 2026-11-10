@@ -59,6 +59,7 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
 |---|---|
 | `Golem_Placeholder` | kerucut sempit & jauh, lambat, langkah berat |
 | `Familiar_Placeholder` | melayang (`hoverHeight`), kerucut lebar, `needsLightToSee` (buta di gelap), `heatSightRange` 7 (melihat yang panas/menyala dari jauh), membawa Light 2D sendiri |
+| `Anjing_Placeholder` | penglihatan pendek, `smellRange` 4.5: mencium slime berbau di dekatnya, menyusuri jejak bau (`ScentTrail`), terpancing umpan berbau dari segala arah |
 
 
 | State | Perilaku |
@@ -74,6 +75,7 @@ Cara slime terdeteksi (laju curiga berbeda-beda):
 1. **Kerucut pandang**: makin dekat makin cepat. Slime menyala terlihat 1.4× lebih jauh.
 2. **Radius sadar**: terlalu dekat dari arah mana pun (anti menguntit dari belakang).
 3. **Cahaya**: slime yang berdiri di cahaya lampu (atau menyala sendiri) terlihat dari segala arah dalam `lightSightRange`.
+4. **Bau** (penjaga dengan `smellRange`): slime berbau tercium dari dekat tanpa butuh cahaya atau garis pandang. Slime berbau meninggalkan titik bau (`Level/ScentTrail`, pudar 10 detik); pencium menyusuri titik terbaru yang terjangkau langsung, jadi ia mengikuti jalan yang dilalui slime.
 
 Potongan yang nyamar tidak terlihat. Potongan nyamar yang menyala/berbau = **umpan**, dan bunyi dari `NoiseBus.Emit` (gumpalan dilempar) = **pengalih**: penjaga mendatanginya tanpa menaikkan curiga.
 `VisionMath` berisi hitungan murni (kerucut, pengali salah resep, faktor jarak) dan punya test.

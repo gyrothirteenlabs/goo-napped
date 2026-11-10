@@ -154,6 +154,21 @@ namespace GooNapped
             return true;
         }
 
+        // Tubuh berbau meninggalkan jejak (diikuti Anjing Lendir): tiap berpindah ±0.4 unit, atau tiap 1.2 detik kalau diam.
+        private Vector2 lastScent;
+        private float scentTimer;
+
+        private void DropScent()
+        {
+            float r = Body.State.SmellRadius;
+            if (r <= 0f || animating) return;
+            scentTimer -= Time.deltaTime;
+            if (Vector2.Distance(Center, lastScent) < 0.4f && scentTimer > 0f) return;
+            ScentTrail.Drop(Center, r);
+            lastScent = Center;
+            scentTimer = 1.2f;
+        }
+
         // Muntahkan bahan terakhir ke lantai di depan: koreksi resep yang salah, atau jadikan bahan umpan di tempat lain.
         public bool TryVomit()
         {
@@ -216,6 +231,7 @@ namespace GooNapped
             }
             UpdateDisguise();
             ApplyDisguiseVisual();
+            DropScent();
             string dir = Facing.x != 0 ? "side" : (Facing.y > 0 ? "back" : "front");
             bool left = Facing.x != 0 ? Facing.x < 0 : anim.faceLeft;
             bool moving = IsControlled && !IsEating && Motor.IsHopping;

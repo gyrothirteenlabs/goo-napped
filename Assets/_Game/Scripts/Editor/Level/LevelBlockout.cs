@@ -11,9 +11,10 @@ namespace GooNapped.EditorTools
     // Desainer: ubah peta di bawah lalu jalankan menu GooNapped > Blockout, atau gambar ulang langsung di Tilemap.
     //
     // Legenda:  # batu (tembok)   . lantai   S spawn pemain   E exit   J toples
-    //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   L lentera
+    //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   y Minyak Belerang   L lentera
     //           g/G, h/H, k/K  titik awal / akhir patroli Golem 1, 2, 3 (garis lurus; huruf kecil = posisi awal)
     //           f/F, v/V       titik awal / akhir patroli Familiar Api 1, 2
+    //           d/D            titik awal / akhir patroli Anjing Lendir
     public static class LevelBlockout
     {
         const string P = "Assets/_Game/Prefabs/";
@@ -128,7 +129,7 @@ namespace GooNapped.EditorTools
         {
             scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L01.unity",
             recipe = "Recipe_Bara",
-            next = "",
+            next = "C2_L02",
             note = "BLOCKOUT C2_L01 (kenalan Familiar Api). Halaman kastil malam, sedikit lampu.\n" +
                    "Familiar Api melayang di jalan tengah: BUTA di gelap, tapi melihat yang panas/menyala dari jauh, dan membawa cahaya sendiri.\n" +
                    "Resep Bara: merah + berat. Serbuk Batu dulu, lalu Ramuan Api (merah + panas + menyala).\n" +
@@ -151,8 +152,38 @@ namespace GooNapped.EditorTools
             },
         };
 
+        static readonly Config C2L02 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L02.unity",
+            recipe = "Recipe_Lumpur",
+            next = "",
+            note = "BLOCKOUT C2_L02 (kenalan Anjing Lendir). Kandang & selokan kastil.\n" +
+                   "Anjing Lendir: penglihatan pendek, tapi MENCIUM jejak bau dan mengikutinya (tembus tikungan, tidak butuh cahaya).\n" +
+                   "Resep Lumpur: kuning + berat. Serbuk Batu lalu Minyak Belerang (kuning + bau). Selama berbau kamu meninggalkan jejak.\n" +
+                   "Trik: belah saat masih berbau, tinggalkan potongan berbau nyamar sebagai umpan; atau muntahkan (Q) Minyak Belerang setelah tiruan masuk toples.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C2_L02. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S...#.........#.....J.#",
+                "#....#.###.###.#.......#",
+                "#.b..#.#.....#.###.#####",
+                "#....#.#..y..#.........#",
+                "##.###.##.####.###.###.#",
+                "#......d...........D...#",
+                "#.####.####.#####.####.#",
+                "#.#..#....#.....#......#",
+                "#.#y.#.L..#..b..#..L...#",
+                "#E...#....#.....#......#",
+                "########################",
+            },
+        };
+
         [MenuItem("GooNapped/Blockout/C2_L01")]
         public static void BuildC2L01() => Build(C2L01);
+
+        [MenuItem("GooNapped/Blockout/C2_L02")]
+        public static void BuildC2L02() => Build(C2L02);
 
         [MenuItem("GooNapped/Blockout/C1_L03")]
         public static void BuildC1L03() => Build(C1L03);
@@ -174,6 +205,7 @@ namespace GooNapped.EditorTools
         {
             BuildChapter1();
             Build(C2L01);
+            Build(C2L02);
         }
 
         [MenuItem("GooNapped/Blockout/C1_L01")]
@@ -288,12 +320,12 @@ namespace GooNapped.EditorTools
             }
 
             int h = c.map.Length, w = c.map[0].Length;
-            const string golemKeys = "ghkfv";   // g h k = Golem Batu, f v = Familiar Api
+            const string golemKeys = "ghkfvd";   // g h k = Golem Batu, f v = Familiar Api, d = Anjing Lendir
             var golemStart = new Dictionary<char, Vector2>();
             var golemEnd = new Dictionary<char, Vector2>();
             var ingredients = new Dictionary<char, string>
             {
-                { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'w', "AirEmbun" }, { 'r', "RamuanApi" },
+                { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'w', "AirEmbun" }, { 'r', "RamuanApi" }, { 'y', "MinyakBelerang" },
             };
             for (int row = 0; row < h; row++)
             {
@@ -360,10 +392,8 @@ namespace GooNapped.EditorTools
             {
                 if (!golemStart.TryGetValue(key, out var a)) continue;
                 var b = golemEnd.TryGetValue(key, out var e) ? e : a;
-                bool familiar = key == 'f' || key == 'v';
-                var g = familiar
-                    ? Spawn(P + "Enemies/Familiar_Placeholder.prefab", guardRoot, a, "Familiar_" + (++gi))
-                    : Spawn(P + "Enemies/Golem_Placeholder.prefab", guardRoot, a, "Golem_Patroli_" + (++gi));
+                string kind = key == 'f' || key == 'v' ? "Familiar" : key == 'd' ? "Anjing" : "Golem";
+                var g = Spawn(P + "Enemies/" + kind + "_Placeholder.prefab", guardRoot, a, kind + "_" + (++gi));
                 Set(g.GetComponent<Guard>(), "patrolPoints", p =>
                 {
                     p.arraySize = 2;

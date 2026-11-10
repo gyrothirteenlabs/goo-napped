@@ -100,6 +100,7 @@ namespace GooNapped
             if (pieces.Count == 0)
                 pieces.AddRange(FindObjectsByType<SlimePiece>(FindObjectsSortMode.None));
             goal = FindFirstObjectByType<LevelGoal>();
+            if (ScentTrail.MarkSprite == null) ScentTrail.MarkSprite = blobSprite;
             SetActive(0);
         }
 
