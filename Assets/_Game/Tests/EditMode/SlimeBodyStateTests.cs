@@ -101,21 +101,5 @@ namespace GooNapped.Tests
             Assert.AreEqual("berat", a.Get(TraitKind.Weight), "berat diserap dari potongan lain");
             Assert.AreEqual(0.6f, a.SpeedMultiplier, 1e-5f);
         }
-
-        [Test]
-        public void Grid_BolakBalikCellDunia()
-        {
-            var old = GridUtil.Origin;
-            GridUtil.Origin = new UnityEngine.Vector2(-4f, -2.25f);
-            try
-            {
-                var c = new UnityEngine.Vector2Int(3, 1);
-                Assert.AreEqual(c, GridUtil.WorldToCell(GridUtil.CellToWorld(c)));
-                Assert.AreEqual(new UnityEngine.Vector3(-0.5f, -1.25f, 0f), GridUtil.CellToWorld(c));
-                Assert.AreEqual(UnityEngine.Vector2Int.left, GridUtil.ToDirection(new UnityEngine.Vector2(-0.9f, 0.3f)));
-                Assert.AreEqual(UnityEngine.Vector2Int.zero, GridUtil.ToDirection(new UnityEngine.Vector2(0.2f, 0.1f)));
-            }
-            finally { GridUtil.Origin = old; }
-        }
     }
 }

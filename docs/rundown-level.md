@@ -20,7 +20,7 @@ Slime yang baru diculik dikumpulkan di kamp tambang sebelum dibawa ke kastil. Go
 
 | Level | Isi | Yang diajarkan |
 |---|---|---|
-| C1_L01 | Jalan setapak tebing, 1 toples di gerobak, tanpa penjaga | Gerak per tile, intip toples, makan 1 bahan, belah, tukar |
+| C1_L01 | Jalan setapak tebing, 1 toples di gerobak, tanpa penjaga | Gerak, intip toples, makan 1 bahan, belah, tukar |
 | C1_L02 | Kamp tambang, 1 golem patroli lurus | Cone lurus, nyamar jadi batu saat golem lewat |
 | C1_L03 | Lorong tambang sempit, 2 golem, resep 2 ciri | Urutan makan (ciri sejenis tertimpa), Shift antar potongan |
 | C1_L04 | Mulut tambang → gerbang kastil, slime tetua | Potongan sebagai umpan, kabur sambil berat (lambat) |

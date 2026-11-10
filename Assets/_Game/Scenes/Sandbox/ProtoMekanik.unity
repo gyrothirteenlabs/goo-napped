@@ -638,12 +638,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SceneNote
   note: 'Sandbox prototipe mekanik (tidak masuk build).
 
-    Gerak per tile (LevelGrid
-    + GridMover). Input di PlayerBrain, badan = SlimePiece.
+    Input di PlayerBrain,
+    badan = SlimePiece + SlimeMotor (gerak analog, berdenyut ikut animasi jalan).
 
-    WASD gerak, tahan
-    E = makan (tile sendiri/depan), Space = belah ke tile depan, Shift = pindah potongan
-    (yang ditinggal nyamar), jalan ke potongan lain = gabung.
+    WASD
+    gerak, E = makan bahan terdekat, Space = belah ke arah hadap / gabung kalau menyentuh
+    potongan lain, Shift = pindah potongan (yang ditinggal nyamar).
 
     Bahan contoh:
     Ramuan Api (merah, panas, menyala), Serbuk Batu (abu, berat -> lambat).
@@ -688,6 +688,8 @@ MonoBehaviour:
   pieces:
   - {fileID: 490390222}
   maxPieces: 3
+  splitDistance: 0.8
+  mergeGap: 0.15
 --- !u!4 &380171589
 Transform:
   m_ObjectHideFlags: 0
@@ -717,8 +719,8 @@ GameObject:
   - component: {fileID: 490390219}
   - component: {fileID: 490390218}
   - component: {fileID: 490390221}
-  - component: {fileID: 490390223}
   - component: {fileID: 490390222}
+  - component: {fileID: 490390223}
   m_Layer: 0
   m_Name: Slime_Player
   m_TagString: Untagged
@@ -1195,10 +1197,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd0d81180b0b8004885e42c8ac0cf187, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimePiece
+  eatRadius: 0.7
   eatDuration: 0.6
   pickupMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  moveAnimSpeed: {x: 0.6, y: 1.4}
 --- !u!114 &490390223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1208,13 +1212,54 @@ MonoBehaviour:
   m_GameObject: {fileID: 490390213}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4e26290d0126d7498bceac019b09111, type: 3}
+  m_Script: {fileID: 11500000, guid: 7bed821409b757040884d20e6989cf02, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.GridMover
-  stepTime: 0.34
-  obstacleMask:
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimeMotor
+  baseSpeed: 2.2
+  acceleration: 14
+  pulse:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.35
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.3
+      value: 1.7
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.65
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0.35
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  pulseStrength: 1
 --- !u!1 &528873576
 GameObject:
   m_ObjectHideFlags: 0
@@ -2249,51 +2294,6 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1344356463}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1434046160
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1434046162}
-  - component: {fileID: 1434046161}
-  m_Layer: 0
-  m_Name: LevelGrid
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1434046161
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1434046160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e4a011ee63d7474ea20958f5d558f74, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.LevelGrid
-  origin: {x: -4, y: -2.25}
---- !u!4 &1434046162
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1434046160}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -3526,5 +3526,4 @@ SceneRoots:
   - {fileID: 1841284023}
   - {fileID: 1312316587}
   - {fileID: 1748753709}
-  - {fileID: 1434046162}
   - {fileID: 380171589}
