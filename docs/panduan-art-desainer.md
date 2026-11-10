@@ -32,7 +32,7 @@ Pilih sesuai jenis aset:
 
 | Cara | Cocok untuk | Catatan |
 |---|---|---|
-| **Pre-render Blender** | Karakter & benda bulat (slime, toples, musuh) | Otomatis, paling akurat. Pipeline sudah ada (`art/tools/render_slime.py`). Minta AI/programmer siapkan untuk model baru. |
+| **Pre-render Blender** | Karakter & benda bulat (slime, toples, musuh) | Otomatis, paling akurat. Pakai template `art/blender/sprite_template.blend` (panel GooNapped, render 1 klik). Panduan: [panduan-blender-3d.md](panduan-blender-3d.md). |
 | **Generator dari gambar** (Laigter, gratis & open source) | Prop & tile gambar tangan | Masukkan albedo, atur bevel/kedalaman, export normal. Cek hasilnya di scene demo. |
 | **Gambar tangan 4 arah** | Bentuk sederhana | Gambar versi "disinari dari kiri/kanan/atas/bawah" lalu gabung di tool (mis. SpriteIlluminator, berbayar) |
 | **Tanpa normal map** | Lantai rata, dinding datar | Boleh. Tetap kena cahaya (gelap-terang sesuai jarak lampu), hanya tanpa efek bentuk. |

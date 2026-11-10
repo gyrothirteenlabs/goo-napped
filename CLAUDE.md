@@ -8,7 +8,7 @@ Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double
 - **Programmer tim:** arsitektur gameplay, review & merge.
 - **AI (Claude):** kode, tooling render, setup scene/prefab, shader, struktur project, debug, dokumentasi teknis. Membantu programmer, bukan menggantikan keputusan desain.
 - AI **tidak mengubah desain art** atas inisiatif sendiri. Kalau diminta "bikin lebih bagus" tanpa arahan, minta arahan konkret (sketsa, referensi, ukuran, warna).
-- Detail: `docs/ai-vs-tim.md`. Panduan art desainer: `docs/panduan-art-desainer.md`. Pipeline art/Blender: `art/CLAUDE.md` (baca dulu sebelum kerja di Blender atau sprite).
+- Detail: `docs/ai-vs-tim.md`. Panduan art desainer: `docs/panduan-art-desainer.md`. Desainer 3D: `docs/panduan-blender-3d.md` (template `art/blender/sprite_template.blend`). Pipeline art/Blender: `art/CLAUDE.md` (baca dulu sebelum kerja di Blender atau sprite).
 
 ## Status (9 Nov 2026, minggu 2)
 - Sudah: konsep gameplay, lore, objektif. Pipeline sprite Blender → Unity. Lighting real-time (normal map + toon band). Struktur project + 18 scene placeholder. Sandbox demo slime (WASD + collider).
