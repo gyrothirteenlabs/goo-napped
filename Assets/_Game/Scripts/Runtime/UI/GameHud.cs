@@ -68,6 +68,7 @@ namespace GooNapped
                 if (st.EmitsLight) tags.Add(Tag("MENYALA", "tag--glow"));
                 if (st.SmellRadius > 0f) tags.Add(Tag("BERBAU", "tag--smell"));
                 if (st.SpeedMultiplier < 1f) tags.Add(Tag("LAMBAT", "tag--slow"));
+                if (st.StepNoiseRadius > 0f) tags.Add(Tag("BERISIK", "tag--slow"));
                 if (a.IsDisguised) tags.Add(Tag("NYAMAR", "tag--hidden"));
             }
 

@@ -150,6 +150,9 @@ namespace GooNapped
             return best;
         }
 
+        // Pesan HUD dari objek level (pintu terkunci, celah terlalu sempit, ...).
+        public void Notify(string text) => Say(text);
+
         private void Say(string text)
         {
             Message = text;
@@ -187,6 +190,15 @@ namespace GooNapped
                 }
                 lamp.Extinguish();
                 Say("Lentera padam. Desisnya terdengar penjaga di dekat!");
+                return true;
+            }
+
+            // tarik tuas: buka/tutup pintu yang tersambung (berisik)
+            var lever = FindNear<Lever>(a, interactRadius);
+            if (lever != null)
+            {
+                lever.Pull();
+                Say(lever.Message);
                 return true;
             }
             return false;

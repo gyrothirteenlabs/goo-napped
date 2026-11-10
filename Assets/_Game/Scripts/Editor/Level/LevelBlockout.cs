@@ -16,6 +16,9 @@ namespace GooNapped.EditorTools
     //           g/G, h/H, k/K  titik awal / akhir patroli Golem 1, 2, 3 (garis lurus; huruf kecil = posisi awal)
     //           f/F, v/V       titik awal / akhir patroli Familiar Api 1, 2
     //           d/D            titik awal / akhir patroli Anjing Lendir
+    //           |  pintu (tertutup)   /  tuas   o  pelat tekan   O  pelat tekan berat   ~  celah (lorong tikus, slime saja)
+    //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
+    //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
     public static class LevelBlockout
     {
         const string P = "Assets/_Game/Prefabs/";
@@ -235,6 +238,41 @@ namespace GooNapped.EditorTools
             },
         };
 
+        // Ruang uji props (BUKAN level, tidak masuk build): pintu+tuas, celah, pelat tekan, pelat berat.
+        static readonly Config SandboxProps = new Config
+        {
+            scene = "Assets/_Game/Scenes/Sandbox/ProtoProps.unity",
+            recipe = "Recipe_Ibu",
+            next = "",
+            note = "SANDBOX ProtoProps: ruang uji pintu, tuas, pelat tekan, celah. Bukan desain level.\n" +
+                   "Ruang A: tarik tuas (E) untuk membuka pintu ke ruang B (bunyinya memancing Golem).\n" +
+                   "Ruang B -> C lewat celah (~): slime bisa menyelinap, Golem tidak; tubuh berat (Serbuk Batu) tidak muat.\n" +
+                   "Ruang C: makan Minyak Belerang + Ramuan Api (resep Ibu), tukar dengan toples. Pintu ke exit dibuka pelat tekan:\n" +
+                   "belah, tinggalkan satu potongan di pelat, Shift ke potongan pembawa teman, lewat pintu.\n" +
+                   "Pelat berat (ruang A, bawah) hanya tertekan tubuh berat: makan Serbuk Batu dulu.\n" +
+                   "Dibangun oleh GooNapped > Blockout > Sandbox ProtoProps.",
+            map = new[]
+            {
+                "##########################",
+                "#S.....#.........#....J..#",
+                "#......|..g....G.~.y.....#",
+                "#..b../#.........#.....r.#",
+                "#......#.........#..o....#",
+                "#...O..#.........#####|###",
+                "####|###.........#.......#",
+                "#.l....#.........#...E...#",
+                "##########################",
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/Sandbox ProtoProps")]
+        public static void BuildSandboxProps()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(SandboxProps.scene) == null)
+                AssetDatabase.CopyAsset("Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity", SandboxProps.scene);
+            Build(SandboxProps);
+        }
+
         [MenuItem("GooNapped/Blockout/C2_L01")]
         public static void BuildC2L01() => Build(C2L01);
 
@@ -377,10 +415,19 @@ namespace GooNapped.EditorTools
             var guardRoot = Find(scene, "Actors/Guards");
             var lights = Find(scene, "Lights");
             foreach (var t in new[] { spawn, exitRoot, jarRoot, ingRoot, guardRoot, lights }) Clear(t);
-            foreach (var n in new[] { "LevelSystems", "CameraBounds" })
+            foreach (var n in new[] { "LevelSystems", "CameraBounds", "LevelProps" })
             {
                 var old = GameObject.Find(n);
                 if (old != null) Object.DestroyImmediate(old);
+            }
+            Transform propRoot = null;
+            var doors = new List<Door>();
+            var switches = new List<(Component comp, Vector2 pos)>();
+            Transform PropRoot()
+            {
+                if (propRoot == null) propRoot = new GameObject("LevelProps").transform;
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Door.prefab") == null) LevelPropBuilder.BuildAll();
+                return propRoot;
             }
 
             int h = c.map.Length, w = c.map[0].Length;
@@ -439,6 +486,32 @@ namespace GooNapped.EditorTools
                         case 'L':
                             Spawn(P + "Level/Lantern.prefab", lights, pos, "Lantern");
                             break;
+                        case '|':
+                        {
+                            // props 1 tile: pivot di tepi bawah tile, collider di tengah tile
+                            var root = PropRoot();
+                            doors.Add(Spawn(P + "Level/Door.prefab", root, new Vector3(x + 0.5f, y, 0f), "Door").GetComponent<Door>());
+                            break;
+                        }
+                        case '~':
+                            Spawn(P + "Level/Crawlspace.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "Crawlspace");
+                            break;
+                        case '/':
+                        {
+                            var root = PropRoot();
+                            var lv = Spawn(P + "Level/Lever.prefab", root, pos, "Lever").GetComponent<Lever>();
+                            switches.Add((lv, new Vector2(x + 0.5f, y + 0.5f)));
+                            break;
+                        }
+                        case 'o':
+                        case 'O':
+                        {
+                            var root = PropRoot();
+                            string pf = ch == 'O' ? "PressurePlate_Heavy" : "PressurePlate";
+                            var pl = Spawn(P + "Level/" + pf + ".prefab", root, new Vector3(x + 0.5f, y, 0f), pf).GetComponent<PressurePlate>();
+                            switches.Add((pl, new Vector2(x + 0.5f, y + 0.5f)));
+                            break;
+                        }
                         default:
                             if (golemKeys.IndexOf(ch) >= 0) golemStart[ch] = pos;
                             else if (golemKeys.IndexOf(char.ToLowerInvariant(ch)) >= 0) golemEnd[char.ToLowerInvariant(ch)] = pos;
@@ -466,6 +539,24 @@ namespace GooNapped.EditorTools
                     p.arraySize = 2;
                     p.GetArrayElementAtIndex(0).vector2Value = a;
                     p.GetArrayElementAtIndex(1).vector2Value = b;
+                });
+            }
+
+            // sambungkan tiap tuas/pelat ke pintu terdekat
+            foreach (var (comp, sp) in switches)
+            {
+                Door nearest = null;
+                float best = float.MaxValue;
+                foreach (var d in doors)
+                {
+                    float dd = Vector2.Distance(sp, (Vector2)d.transform.position + Vector2.up * 0.5f);
+                    if (dd < best) { best = dd; nearest = d; }
+                }
+                if (nearest == null) { Debug.LogWarning("Blockout: " + comp.name + " tidak punya pintu untuk disambung."); continue; }
+                Set(comp, "doors", p =>
+                {
+                    p.arraySize = 1;
+                    p.GetArrayElementAtIndex(0).objectReferenceValue = nearest;
                 });
             }
 

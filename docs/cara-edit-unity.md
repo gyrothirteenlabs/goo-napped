@@ -25,6 +25,13 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |
    | `f`/`F`, `v`/`V` | titik awal/akhir patroli Familiar Api 1, 2 |
    | `d`/`D` | titik awal/akhir patroli Anjing Lendir |
+   | `\|` | pintu (tertutup) |
+   | `/` | tuas (E: buka/tutup pintu, berisik) |
+   | `o` / `O` | pelat tekan / pelat tekan berat (butuh tubuh berat) |
+   | `~` | celah / lorong tikus (slime bisa lewat, penjaga tidak, tubuh berat tidak muat) |
+
+   Tuas dan pelat otomatis tersambung ke **pintu terdekat**. Atur peta supaya jelas, atau ubah daftar `Doors` di Inspector.
+   Contoh pemakaian semua props: scene `Sandbox/ProtoProps` (menu **GooNapped > Blockout > Sandbox ProtoProps**).
 
 3. Unity: menu **GooNapped > Blockout > C1_L0x** (atau **Semua chapter 1**). Scene diisi ulang dan disimpan.
 4. Level baru: salin satu `Config`, ganti `scene`, `recipe`, `next`, `note`, tambah `[MenuItem]`. Lalu **tambahkan nama scene di `GameFlow.Levels`** (urutan pilih level) dan pastikan scene ada di Build Settings.
@@ -36,6 +43,11 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
   - `Prefabs/Props/IngredientPickup` → isi `Ingredient`
   - `Prefabs/Enemies/Golem_Placeholder` → isi `Patrol Points` (posisi dunia)
   - `Prefabs/Level/Lantern` → di `Lights/` (punya `Extinguishable`: bisa dipadamkan slime bertubuh dingin)
+  - `Prefabs/Level/Door` → pivot di tepi bawah tile, taruh di `(x + 0.5, y)`. `Starts Open`, `Noise Radius`. Tertutup = menghalangi slime, penjaga, dan pandangan; jalur penjaga otomatis memutar. Tidak menutup selama ada yang berdiri di ambangnya.
+  - `Prefabs/Level/Lever` → isi `Doors`. E = toggle semua pintu di daftar, bunyinya (`Noise Radius`) memancing penjaga.
+  - `Prefabs/Level/PressurePlate` / `PressurePlate_Heavy` → isi `Doors`. Pintu terbuka selama ada potongan (termasuk yang nyamar) di atas pelat. Pintu terbuka = tuas XOR pelat, jadi pelat juga bisa menutup pintu yang `Starts Open`.
+  - `Prefabs/Level/Crawlspace` → satu tile di celah tembok. Slime lewat, penjaga tidak, tubuh berat tidak muat.
+  - Gambar props masih placeholder (`Art/Sprites/Props/door_|lever_|plate_|plate_heavy_|crawlspace_placeholder.png`, frame 0/1). Ganti PNG dengan nama dan urutan frame sama; prefab ikut. Buat ulang: **GooNapped > Placeholder > Props level**.
 - **Exit**: objek dengan `BoxCollider2D` (Is Trigger) + `LevelExit`.
 - **Sistem**: satu `Prefabs/Systems/LevelSystems` per level. Isi `LevelGoal > Next Scene` (nama scene berikutnya, harus ada di Build Settings).
 - **Kamera**: `Main Camera` punya `CameraFollow`. Isi `Bounds` dengan collider yang menutup seluruh level (`CameraBounds`).
@@ -55,6 +67,7 @@ Play di scene level. HUD kiri atas menampilkan tubuh, potongan, resep toples ter
    - **Emits Light**: menyala (terlihat lebih jauh, kena aturan cahaya, bisa jadi umpan).
    - **Smell Radius**: bau (meninggalkan jejak, dicium Anjing Lendir).
    - **Extinguishes**: memadamkan nyala bahan yang dimakan sebelumnya (Garam Beku).
+   - **Step Noise Radius**: langkah berisik. Tiap mendarat, penjaga dalam radius ini datang memeriksa (tembus tembok). Serbuk Batu = 2.2, lainnya 0.
    - **Body Material**: palet `Slime_*` saat bahan ini menentukan warna (kosong = warna tidak berubah).
 3. Taruh di level lewat `IngredientPickup`, atau tambah huruf baru di dictionary `ingredients` di `LevelBlockout`.
 
@@ -88,6 +101,7 @@ Prefab `Characters/Slime_Player`:
 - **`SlimeMotor`**: `Base Speed`, waktu tiap fase, `Slide Share` (besar = lebih merayap), `Hop Height`, `Air Steer`.
 - **`SlimeJelly`**: `Stiffness`, `Damping`, `Max Stretch`.
 - **`SlimePiece`**: `Eat Duration`, `Disguise Time`, `Reveal Time`, sprite samaran (`Disguise Sprite`).
+- **`SlimeTraitFx`**: efek ciri di badan (panas = uap naik, dingin = serpih es, bau = garis bau, berkilau = kerlip, berat = debu saat mendarat). Warna dan jumlah partikel per detik bisa diubah di Inspector. Material `Art/Materials/Vfx_Particle` (tanpa cahaya). Placeholder sampai ada VFX dari tim.
 
 Jeda aksi (anti spam) ada di `LevelSystems > PlayerBrain`: `Switch Cooldown`, `Split Windup`, `Split Cooldown`, `Merge Lock`, dan skill gumpalan: `Throw Distance`, `Throw Noise Radius`, `Throw Cooldown`.
 

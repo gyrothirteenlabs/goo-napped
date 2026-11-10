@@ -74,10 +74,17 @@ namespace GooNapped
             if (Motor != null) Motor.PhaseEntered -= OnHopPhase;
         }
 
-        // suara "plek" lembut tiap mendarat
+        // suara "plek" lembut tiap mendarat. Tubuh berat (Serbuk Batu) mendarat "dug": terdengar penjaga tembus tembok.
         private void OnHopPhase(SlimeMotor.HopPhase p)
         {
-            if (p == SlimeMotor.HopPhase.Land) AudioDirector.Play(AudioDirector.Sfx.SlimeStep, Center, 0.45f, 0.12f);
+            if (p != SlimeMotor.HopPhase.Land) return;
+            float noise = Body.State.StepNoiseRadius;
+            if (noise > 0f)
+            {
+                AudioDirector.Play(AudioDirector.Sfx.GolemStep, Center, 0.35f, 0.15f);
+                if (IsControlled) NoiseBus.Emit(Center, noise);
+            }
+            else AudioDirector.Play(AudioDirector.Sfx.SlimeStep, Center, 0.45f, 0.12f);
         }
 
         private void OnBodyChanged(SlimeBody b) => Motor.SpeedMultiplier = b.State.SpeedMultiplier;

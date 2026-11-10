@@ -14,6 +14,19 @@ namespace GooNapped.Tests
             new[] { new Trait(TraitKind.Temperature, "panas") }, emitsLight: true);
 
         [Test]
+        public void BahanBerat_LangkahBerisik_SampaiTertimpa()
+        {
+            var s = new SlimeBodyState();
+            Assert.AreEqual(0f, s.StepNoiseRadius);
+            var batu = IngredientData.Create("batu", new[] { new Trait(TraitKind.Weight, "berat") }, stepNoiseRadius: 2.2f);
+            var ringan = IngredientData.Create("bulu", new[] { new Trait(TraitKind.Weight, "ringan") });
+            s.Eat(batu);
+            Assert.AreEqual(2.2f, s.StepNoiseRadius);
+            s.Eat(ringan);   // ciri berat tertimpa: bahan batu tidak aktif lagi
+            Assert.AreEqual(0f, s.StepNoiseRadius);
+        }
+
+        [Test]
         public void Baru_Netral()
         {
             var s = new SlimeBodyState();

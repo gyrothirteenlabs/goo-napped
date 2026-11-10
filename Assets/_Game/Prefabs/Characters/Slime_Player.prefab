@@ -108,6 +108,7 @@ GameObject:
   - component: {fileID: 5505398414917495404}
   - component: {fileID: 4614384273120818604}
   - component: {fileID: 2594296895948663141}
+  - component: {fileID: 4239505970690613981}
   m_Layer: 0
   m_Name: Slime_Player
   m_TagString: Untagged
@@ -641,6 +642,31 @@ MonoBehaviour:
   maxStretch: 0.32
   widen: 0.7
   feetHeight: 0.29
+--- !u!114 &4239505970690613981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380386765208411518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3deefd7f44c2405409eadb7e826f78e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SlimeTraitFx
+  particleMaterial: {fileID: 2100000, guid: a23a969a9a35ac045a70385bd6b0ab06, type: 2}
+  pixel: 0.020833334
+  centerHeight: 0.22
+  heatColor: {r: 1, g: 0.6, b: 0.3, a: 0.75}
+  coldColor: {r: 0.75, g: 0.92, b: 1, a: 0.9}
+  smellColor: {r: 0.82, g: 0.86, b: 0.3, a: 0.7}
+  shineColor: {r: 1, g: 1, b: 0.9, a: 1}
+  dustColor: {r: 0.6, g: 0.57, b: 0.52, a: 0.85}
+  heatRate: 7
+  coldRate: 5
+  smellRate: 5
+  shineRate: 3
+  dustPerLanding: 5
 --- !u!1 &1460804099271962104
 GameObject:
   m_ObjectHideFlags: 0

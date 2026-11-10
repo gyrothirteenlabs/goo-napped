@@ -13,8 +13,8 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 | ✅ | Umpan (potongan nyamar menyala/berbau didatangi penjaga) | P1 | |
 | ✅ | Muntahkan bahan (Q): tubuh kembali seperti sebelum bahan terakhir, bahan jatuh ke lantai | P2 | koreksi resep salah tanpa ulang level |
 | ✅ | Lempar gumpalan (F) sebagai pengalih suara (`NoiseBus`) | P2 | "skill" utama selain belah |
-| ⬜ | Suara langkah terdengar penjaga (berat = lebih berisik) | P2 | |
-| ⬜ | Ciri tubuh terlihat di badan (uap panas, garis bau, kilau) | P2 | VFX Unity |
+| ✅ | Suara langkah terdengar penjaga: tubuh berat mendarat "dug", penjaga dalam radius datang memeriksa (tembus tembok). Tag HUD "BERISIK" | P2 | `IngredientData.stepNoiseRadius` (Serbuk Batu 2.2) |
+| ✅ | Ciri tubuh terlihat di badan: uap (panas), serpih es (dingin), garis bau, kerlip (berkilau), debu mendarat (berat) | P2 | `SlimeTraitFx`, partikel placeholder |
 
 ## Musuh
 | | Fitur | Prio | Catatan |
@@ -40,7 +40,8 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 |---|---|---|
 | ✅ | Blockout chapter 1 (4 level) + tool peta teks | P1 |
 | ✅ | Blockout chapter 2 (4 level): C2_L01 Familiar, C2_L02 Anjing, C2_L03 tungku (padamkan), C2_L04 dua toples + 3 musuh | P1 |
-| ⬜ | Pintu / tuas / lorong tikus (hanya potongan kecil bisa lewat) | P2 |
+| ✅ | Pintu + tuas (berisik) + pelat tekan (biasa/berat, ditahan potongan nyamar) + celah/lorong tikus (slime lewat, penjaga tidak, tubuh berat tidak muat). Legenda blockout `\| / o O ~`, uji di `Sandbox/ProtoProps` | P2 |
+| ⬜ | Pakai props di level chapter 1–2 (keputusan desain level: tim) | P2 |
 | ✅ | Lentera bisa dipadamkan (E, butuh tubuh dingin); desisnya = suara yang memancing penjaga | P2 |
 
 ## Alur game & UI
@@ -65,3 +66,5 @@ Fokus minggu 2–3: **perbanyak fitur & mekanik dulu, bug menyusul** (keputusan 
 - Sprite slime lama + squash engine bisa dobel sampai model baru dirender.
 - Angka rasa gerak dan kesulitan penjaga belum disetel lewat playtest.
 - Air Embun dan Minyak Belerang belum punya palet warna.
+- Sprite props (pintu, tuas, pelat, celah) dan partikel ciri tubuh masih placeholder.
+- Langkah berat memancing penjaga tiap mendarat: angka radius perlu disetel lewat playtest.

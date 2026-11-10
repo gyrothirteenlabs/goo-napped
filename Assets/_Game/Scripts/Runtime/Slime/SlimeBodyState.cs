@@ -80,6 +80,17 @@ namespace GooNapped
             }
         }
 
+        // Radius suara tiap mendarat (0 = senyap). Diambil dari bahan aktif paling berisik.
+        public float StepNoiseRadius
+        {
+            get
+            {
+                float r = 0f;
+                foreach (var i in ActiveIngredients()) r = Mathf.Max(r, i.StepNoiseRadius);
+                return r;
+            }
+        }
+
         // Material palet body: dari bahan yang menentukan warna. null = pakai material default.
         public Material BodyMaterial
         {

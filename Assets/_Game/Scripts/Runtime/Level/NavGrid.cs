@@ -12,11 +12,26 @@ namespace GooNapped
         private static Tilemap floor, walls;
         private static bool built;
         private static readonly List<Vector2Int> cells = new List<Vector2Int>();
+        // Sel yang ditutup objek level (pintu tertutup, celah slime). Hitungan, karena satu sel bisa ditutup >1 objek.
+        // Objek mendaftar di OnEnable dan melepas di OnDisable (tidak dikosongkan saat ganti scene: urutan
+        // sceneLoaded terjadi SETELAH OnEnable objek scene baru).
+        private static readonly Dictionary<Vector2Int, int> blocked = new Dictionary<Vector2Int, int>();
+
+        // Tutup / buka sel untuk jalur penjaga.
+        public static void SetBlocked(Vector2Int cell, bool on)
+        {
+            blocked.TryGetValue(cell, out int n);
+            n = Mathf.Max(0, n + (on ? 1 : -1));
+            if (n == 0) blocked.Remove(cell); else blocked[cell] = n;
+        }
+
+        public static bool IsBlocked(Vector2Int cell) => blocked.ContainsKey(cell);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Init()
         {
             built = false;
+            blocked.Clear();
             SceneManager.sceneLoaded -= OnLoaded;
             SceneManager.sceneLoaded += OnLoaded;
         }
@@ -49,7 +64,7 @@ namespace GooNapped
         public static bool Walkable(Vector2Int c)
         {
             var p = new Vector3Int(c.x, c.y, 0);
-            if (walls.HasTile(p)) return false;
+            if (walls.HasTile(p) || blocked.ContainsKey(c)) return false;
             return floor == null || floor.HasTile(p);
         }
 
