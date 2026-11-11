@@ -31,17 +31,24 @@ namespace GooNapped.Tests
         private bool hadUnlock;
         private string failure;
 
+        const string PowersKey = "gn_powers";
+        private string savedPowers;
+        private bool hadPowers;
+
         [OneTimeSetUp]
         public void SaveProgress()
         {
             hadUnlock = PlayerPrefs.HasKey(UnlockKey);
             savedUnlock = PlayerPrefs.GetInt(UnlockKey, 0);
+            hadPowers = PlayerPrefs.HasKey(PowersKey);
+            savedPowers = PlayerPrefs.GetString(PowersKey, "");
         }
 
         [OneTimeTearDown]
         public void RestoreProgress()
         {
             if (hadUnlock) PlayerPrefs.SetInt(UnlockKey, savedUnlock); else PlayerPrefs.DeleteKey(UnlockKey);
+            if (hadPowers) PlayerPrefs.SetString(PowersKey, savedPowers); else PlayerPrefs.DeleteKey(PowersKey);
             PlayerPrefs.Save();
         }
 

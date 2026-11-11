@@ -35,6 +35,7 @@ namespace GooNapped
         public static void ResetProgress()
         {
             PlayerPrefs.DeleteKey(UnlockKey);
+            FriendPowers.ResetUnlocks();
             PlayerPrefs.Save();
         }
 

@@ -22,6 +22,23 @@ namespace GooNapped
             if (flame == null) flame = GetComponent<SpriteRenderer>();
         }
 
+        private float relightAt = -1f;
+
+        // Padam sementara (kekuatan Padam): menyala lagi setelah `seconds`. Tanpa desis (padamnya dari dalam ventilasi).
+        public void ExtinguishFor(float seconds)
+        {
+            if (Extinguish(true)) relightAt = Time.time + seconds;
+        }
+
+        private void Update()
+        {
+            if (relightAt < 0f || Time.time < relightAt) return;
+            relightAt = -1f;
+            if (lightSource != null) lightSource.enabled = true;
+            if (crackle != null) crackle.Play();
+            if (flame != null) flame.color = Color.white;
+        }
+
         // silent = tanpa suara (dipulihkan dari checkpoint).
         public bool Extinguish(bool silent = false)
         {

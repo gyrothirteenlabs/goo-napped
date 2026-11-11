@@ -82,6 +82,12 @@ namespace GooNapped
             pieces.text = "Pieces " + brain.Pieces.Count + "/" + brain.MaxPieces;
             carried.text = req > 0 ? "Friends safe " + (goal != null ? goal.Saved : 0) + "/" + req : "Reach the vent";
             blob.text = FriendStatus();
+            if (a != null && a.HidingIn != null && Vent.Of(a.HidingIn) != null)
+            {
+                var sel = FriendPowers.Selected;
+                blob.text = sel == FriendPower.None ? "In the vent: A/D other openings · C out"
+                    : "Power: " + FriendPowers.NameOf(sel) + " x" + FriendPowers.Charges(sel) + " · E use · Shift change · A/D openings";
+            }
 
             bool hasMsg = !string.IsNullOrEmpty(brain.Message);
             toast.text = brain.Message;

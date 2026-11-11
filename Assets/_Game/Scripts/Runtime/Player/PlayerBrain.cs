@@ -28,7 +28,7 @@ namespace GooNapped
         [Tooltip("Perintah teman yang dikawal: tunggu / ikut.")]
         [SerializeField] private string commandAction = "Command";
 
-        [Tooltip("Sprite titik jejak bau (ScentTrail).")]
+        [Tooltip("Sprite titik jejak bau (ScentTrail), juga dipakai umpan kristal dan kabut.")]
         [SerializeField] private Sprite blobSprite;
 
         [Tooltip("Potongan awal. Kosong = semua SlimePiece di scene.")]
@@ -121,6 +121,14 @@ namespace GooNapped
             if (messageTimer > 0f && (messageTimer -= Time.deltaTime) <= 0f) Message = "";
             // jeda setelah aksi (belah, gabung, Shift): tidak bisa bergerak/aksi lain, supaya tidak bisa di-spam
             if (lockTimer > 0f) { lockTimer -= Time.deltaTime; a.Move(Vector2.zero); return; }
+            // di ventilasi dengan kekuatan teman: Shift = pilih kekuatan (bukan pindah potongan)
+            if (switchPiece.WasPressedThisFrame() && a.HidingIn != null && Vent.Of(a.HidingIn) != null && FriendPowers.Unlocked().Count > 0)
+            {
+                FriendPowers.SelectNext();
+                var sel = FriendPowers.Selected;
+                Say("Friend power: " + FriendPowers.NameOf(sel) + " (" + FriendPowers.Charges(sel) + " left). E: use here.");
+                return;
+            }
             if (switchPiece.WasPressedThisFrame() && Time.time >= nextSwitch) { SwitchNext(); return; }
             if (a.IsTransforming) { a.Move(Vector2.zero); return; }
             if (hide.WasPressedThisFrame() && !a.IsEating) { ToggleHide(a); a.Move(Vector2.zero); return; }
@@ -132,6 +140,7 @@ namespace GooNapped
                 if (vent != null && Mathf.Abs(x) > 0.5f && !ventStick) { ventStick = true; TravelVent(a, vent, x < 0f ? -1 : 1); }
                 if (Mathf.Abs(x) <= 0.5f) ventStick = false;
                 if (command != null && command.WasPressedThisFrame()) Command();
+                else if (vent != null && eat.WasPressedThisFrame()) Say(FriendPowers.Use(vent, blobSprite), 3f);
                 else if (split.WasPressedThisFrame() || eat.WasPressedThisFrame())
                     Say(vent != null ? "You're in the vent. A/D: other openings. C: come out." : "You're hiding. Press C to come out.");
                 a.Move(Vector2.zero);
@@ -378,7 +387,7 @@ namespace GooNapped
         // Masuk ventilasi: checkpoint, pesan, dan exit level kalau ini lubang exit.
         private void EnteredVent(SlimePiece a, Vent vent, int evacuated)
         {
-            if (vent.SavesCheckpoint) Checkpoint.Save(this);
+            if (vent.SavesCheckpoint) { Checkpoint.Save(this); FriendPowers.Refill(); }
             if (vent.ExitsLevel && goal != null)
             {
                 if (goal.TryComplete(a)) return;

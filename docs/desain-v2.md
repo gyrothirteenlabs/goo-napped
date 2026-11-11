@@ -234,6 +234,7 @@ Implementasi memakai **C** sebagai bawaan. Kalau tim memilih A atau B, cukup gan
 | Raja | segel | **Segel Raja (Royal Seal)** | adegan | final | Menyegel alkemis di toples |
 
 - Jatah terisi ulang di tiap checkpoint ventilasi (lore: aura pulih saat beristirahat).
+- **Sudah dibuat (11 Nov):** di dalam ventilasi, Shift = pilih kekuatan, A/D = pilih lubang, E = pakai dari lubang itu. Pelat tekan juga ditekan teman yang menunggu di atasnya (teman besar = pelat berat).
 - **Kebanyakan opsional.** Satu atau dua tempat per level boleh mewajibkan kekuatan tertentu, dan hanya dari lubang tertentu.
 
 ---

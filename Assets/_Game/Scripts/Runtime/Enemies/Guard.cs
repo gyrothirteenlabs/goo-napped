@@ -130,6 +130,7 @@ namespace GooNapped
             public Vector2 pos;
             public SlimePiece piece;
             public FriendSlime friend;
+            public Decoy decoy;
         }
 
         private Rigidbody2D rb;
@@ -249,7 +250,7 @@ namespace GooNapped
         }
 
         private bool LineOfSight(Vector2 from, Vector2 to, Collider2D ignore = null) =>
-            Clip(from, to - from, ignore) >= Vector2.Distance(from, to) - 0.05f;
+            !MistCloud.Blocks(from, to) && Clip(from, to - from, ignore) >= Vector2.Distance(from, to) - 0.05f;
 
         // ---- indra ----
 
@@ -267,6 +268,14 @@ namespace GooNapped
             {
                 if (f == null || !f.IsExposed) continue;
                 var s = SeeFriend(f);
+                if (s.valid && Better(s, best)) best = s;
+            }
+            // Umpan Kristal: berkilau, terlihat seperti slime yang menyala
+            foreach (var d in Decoy.All)
+            {
+                if (d == null) continue;
+                var s = Sense(d.Center, viewRange * glowRangeMultiplier, true, true, 0f);
+                s.decoy = d;
                 if (s.valid && Better(s, best)) best = s;
             }
             return best;
@@ -510,6 +519,7 @@ namespace GooNapped
         {
             if (chase.piece != null && !chase.piece.IsHidden) { pos = chase.piece.Center; radius = chase.piece.Radius; return true; }
             if (chase.friend != null && chase.friend.IsExposed) { pos = chase.friend.Center; radius = 0.25f * chase.friend.transform.localScale.x; return true; }
+            if (chase.decoy != null) { pos = chase.decoy.Center; radius = 0.2f; return true; }
             pos = lastSeen;
             radius = 0f;
             return false;
@@ -520,7 +530,8 @@ namespace GooNapped
             if (sight.valid)
             {
                 // target yang sama, atau target lain kalau target lama sudah lolos dari pandangan
-                bool same = (chase.piece != null && sight.piece == chase.piece) || (chase.friend != null && sight.friend == chase.friend);
+                bool same = (chase.piece != null && sight.piece == chase.piece) || (chase.friend != null && sight.friend == chase.friend)
+                         || (chase.decoy != null && sight.decoy == chase.decoy);
                 if (same || loseTimer > 0.3f)
                 {
                     chase = sight;
@@ -555,6 +566,17 @@ namespace GooNapped
 
         private void Catch(Sight s)
         {
+            if (s.decoy != null)
+            {
+                // umpan kristal pecah: penjaga bingung, menyapu pandangan, lalu kembali patroli
+                s.decoy.Pop();
+                chase = default;
+                Suspicion = 0.5f;
+                state = State.LookAround;
+                timer = lookAroundTime;
+                lookBase = forward;
+                return;
+            }
             state = State.Caught;
             AudioDirector.Play(AudioDirector.Sfx.Caught, Body);
             string who = s.friend != null ? s.friend.Name + " was caught by " : "Caught by ";

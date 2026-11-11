@@ -148,6 +148,7 @@ namespace GooNapped
             Leader = null;
             trail.Clear();
             saveTimer = 0.25f;
+            if (recipe != null) FriendPowers.Unlock(recipe.Power);   // auranya pulih di ventilasi: kekuatannya bisa dipakai
             AudioDirector.Play(AudioDirector.Sfx.Merge, Center, 0.7f);
             var goal = FindFirstObjectByType<LevelGoal>();
             if (goal != null) goal.NotifySaved(this);
