@@ -18,6 +18,7 @@ namespace GooNapped.EditorTools
     //           f/F, v/V       titik awal / akhir patroli Familiar Api 1, 2
     //           d/D            titik awal / akhir patroli Anjing Lendir
     //           |  pintu (tertutup)   /  tuas   o  pelat tekan   O  pelat tekan berat   ~  celah (lorong tikus, slime saja)
+    //           T  tong (tempat sembunyi, muat 1)   P  peti (tempat sembunyi, muat 2)
     //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
     //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
     public static class LevelBlockout
@@ -277,6 +278,7 @@ namespace GooNapped.EditorTools
                    "Toples 1 (Pip, kecil, aura Embun/biru): makan 1 Esens Embun (w) -> massa 2 -> Space di depan toples.\n" +
                    "Toples 2 (Bolu, besar, aura Batu/abu): massa 3, esens TERAKHIR = Batu (b). Contoh: Pendar (l) lalu Batu.\n" +
                    "Teman keluar dan menunggu: F = ajak ikut / suruh tunggu. Kawal ke exit (E). Golem berpatroli di lorong bawah.\n" +
+                   "Tempat sembunyi (C): tong (T, muat 1) di ruang atas, peti (P, muat 2: pemain + teman) di lorong exit.\n" +
                    "Dibangun oleh GooNapped > Blockout > Sandbox ProtoV2.",
             map = new[]
             {
@@ -284,11 +286,11 @@ namespace GooNapped.EditorTools
                 "#S.....#.............#",
                 "#......#..w.....1....#",
                 "#..............l..b..#",
-                "#......#.............#",
+                "#......#....T........#",
                 "####.######.####...2.#",
                 "#g.................G.#",
                 "#.##.###.####.####.###",
-                "#E...................#",
+                "#E........P..........#",
                 "######################",
             },
         };
@@ -462,7 +464,8 @@ namespace GooNapped.EditorTools
             Transform PropRoot()
             {
                 if (propRoot == null) propRoot = new GameObject("LevelProps").transform;
-                if (AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Door.prefab") == null) LevelPropBuilder.BuildAll();
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Door.prefab") == null ||
+                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/HidingSpot_Barrel.prefab") == null) LevelPropBuilder.BuildAll();
                 return propRoot;
             }
 
@@ -533,6 +536,14 @@ namespace GooNapped.EditorTools
                         case '~':
                             Spawn(P + "Level/Crawlspace.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "Crawlspace");
                             break;
+                        case 'T':
+                        case 'P':
+                        {
+                            var root = PropRoot();
+                            string pf = ch == 'P' ? "HidingSpot_Crate" : "HidingSpot_Barrel";
+                            Spawn(P + "Level/" + pf + ".prefab", root, new Vector3(x + 0.5f, y, 0f), pf);
+                            break;
+                        }
                         case '/':
                         {
                             var root = PropRoot();

@@ -19,7 +19,7 @@ namespace GooNapped.Tests
             { typeof(PauseMenu), new[] { "actions" } },
             { typeof(StoryPlayer), new[] { "actions" } },
             { typeof(Jar), new[] { "recipe", "friendPrefab" } },
-            { typeof(SlimePiece), new[] { "pickupPrefab", "disguiseRenderer", "disguiseSprite" } },
+            { typeof(SlimePiece), new[] { "pickupPrefab" } },
             { typeof(SlimeTraitFx), new[] { "particleMaterial" } },
             { typeof(Guard), new[] { "coneMaterial" } },
             { typeof(IngredientPickup), new[] { "ingredient" } },

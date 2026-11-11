@@ -65,12 +65,12 @@ namespace GooNapped
                 traits.Add(TextChip("Size " + st.Mass + "/" + SlimeBodyState.MaxMass));
                 traits.Add(AuraChip(st.Aura));
                 foreach (var t in st.Traits) if (t.kind != TraitKind.Color) traits.Add(TextChip(TraitNames.Of(t)));
-                if (!a.IsDisguised && LightExposure.At(a.Center) >= 0.35f) tags.Add(Tag("LIT", "tag--light"));
+                if (!a.IsHidden && LightExposure.At(a.Center) >= 0.35f) tags.Add(Tag("LIT", "tag--light"));
                 if (st.EmitsLight) tags.Add(Tag("GLOWING", "tag--glow"));
                 if (st.SmellRadius > 0f) tags.Add(Tag("SMELLY", "tag--smell"));
                 if (st.SpeedMultiplier < 0.85f) tags.Add(Tag("SLOW", "tag--slow"));
                 if (st.StepNoiseRadius > 0f) tags.Add(Tag("NOISY", "tag--slow"));
-                if (a.IsDisguised) tags.Add(Tag("HIDDEN", "tag--hidden"));
+                if (a.IsHidden) tags.Add(Tag("HIDDEN", "tag--hidden"));
             }
 
             recipes.Clear();

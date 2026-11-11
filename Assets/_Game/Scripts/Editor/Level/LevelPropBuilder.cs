@@ -11,14 +11,16 @@ namespace GooNapped.EditorTools
     //   lever_placeholder.png       frame 0 mati, 1 ditarik
     //   plate_placeholder.png       frame 0 naik, 1 tertekan        (plate_heavy_placeholder.png: sama, versi berat)
     //   crawlspace_placeholder.png  frame 0
-    // Menu: GooNapped > Placeholder > Props level (pintu, tuas, pelat, celah)
+    //   barrel_placeholder.png      frame 0 (tempat sembunyi muat 1)
+    //   crate_placeholder.png       frame 0 (tempat sembunyi muat 2)
+    // Menu: GooNapped > Placeholder > Props level (pintu, tuas, pelat, celah, tempat sembunyi)
     public static class LevelPropBuilder
     {
         const string SpriteDir = "Assets/_Game/Art/Sprites/Props/";
         const string PrefabDir = "Assets/_Game/Prefabs/Level/";
         const int C = 48;
 
-        [MenuItem("GooNapped/Placeholder/Props level (pintu, tuas, pelat, celah)")]
+        [MenuItem("GooNapped/Placeholder/Props level (pintu, tuas, pelat, celah, tempat sembunyi)")]
         public static void BuildAll()
         {
             MakeSprites();
@@ -110,6 +112,22 @@ namespace GooNapped.EditorTools
             Rect(16, 16, 16, 3, Hole);
             Rect(10, 0, 4, 18, StoneDark); Rect(34, 0, 4, 18, StoneDark);
             Save("crawlspace_placeholder");
+
+            // tong (sembunyi, muat 1): bilah kayu + dua pita besi, tutup gelap di atas
+            Begin(1);
+            Rect(12, 2, 24, 30, WoodDark);
+            for (int i = 0; i < 4; i++) Rect(13 + i * 6, 3, 5, 28, Wood);
+            Rect(11, 8, 26, 3, Iron); Rect(11, 23, 26, 3, Iron);
+            Rect(13, 32, 22, 4, WoodDark); Rect(15, 33, 18, 2, Hole);
+            Save("barrel_placeholder");
+
+            // peti (sembunyi, muat 2): kotak lebar dengan silang penguat
+            Begin(1);
+            Rect(5, 2, 38, 30, WoodDark);
+            Rect(7, 4, 34, 26, Wood);
+            for (int k = 0; k < 26; k++) { Rect(7 + k * 34 / 26, 4 + k, 3, 1, WoodDark); Rect(38 - k * 34 / 26, 4 + k, 3, 1, WoodDark); }
+            Rect(5, 30, 38, 4, WoodDark);
+            Save("crate_placeholder");
         }
 
         // ---------- prefab ----------
@@ -187,6 +205,22 @@ namespace GooNapped.EditorTools
                 box.size = Vector2.one;
                 go.AddComponent<Crawlspace>();
                 SavePrefab(go, "Crawlspace");
+            }
+            // tempat sembunyi: root = collider padat + HidingSpot, anak "Visual" = sprite yang bergoyang saat dicurigai
+            foreach (bool crate in new[] { false, true })
+            {
+                string sheet = crate ? "crate_placeholder" : "barrel_placeholder";
+                string name = crate ? "HidingSpot_Crate" : "HidingSpot_Barrel";
+                var go = new GameObject(name);
+                var vis = NewProp("Visual", Frame(sheet, 0), 0);
+                vis.transform.SetParent(go.transform, false);
+                var box = go.AddComponent<BoxCollider2D>();
+                box.offset = new Vector2(0f, crate ? 0.36f : 0.38f);
+                box.size = crate ? new Vector2(0.82f, 0.62f) : new Vector2(0.56f, 0.66f);
+                var hs = go.AddComponent<HidingSpot>();
+                Set(hs, "capacity", p => p.intValue = crate ? 2 : 1);
+                Set(hs, "visual", p => p.objectReferenceValue = vis.transform);
+                SavePrefab(go, name);
             }
         }
     }

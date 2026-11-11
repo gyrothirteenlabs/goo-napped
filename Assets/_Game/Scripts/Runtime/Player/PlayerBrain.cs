@@ -11,7 +11,7 @@ namespace GooNapped
     //   E     makan esens · tukar di toples · lentera · tuas
     //   Space belah / gabung. Di depan toples = membelah langsung ke dalam toples (tiruan)
     //   Shift pindah kendali ke potongan lain
-    //   C     nyamar (v1, diganti tempat sembunyi di tahap berikutnya)
+    //   C     masuk / keluar tempat sembunyi (HidingSpot) terdekat
     //   F     perintah teman yang dikawal: tunggu / ikut
     //   Q     muntahkan esens terakhir
     public class PlayerBrain : MonoBehaviour
@@ -22,7 +22,7 @@ namespace GooNapped
         [SerializeField] private string eatAction = "Interact";
         [SerializeField] private string splitAction = "Jump";
         [SerializeField] private string switchAction = "Sprint";
-        [Tooltip("Tahan untuk nyamar jadi barang di tempat (v1).")]
+        [Tooltip("Masuk / keluar tempat sembunyi terdekat.")]
         [SerializeField] private string hideAction = "Crouch";
         [SerializeField] private string vomitAction = "Vomit";
         [Tooltip("Perintah teman yang dikawal: tunggu / ikut.")]
@@ -44,6 +44,8 @@ namespace GooNapped
         [SerializeField] private float interactRadius = 0.85f;
         [Tooltip("Jarak mendekat ke toples: aura dan ukuran teman masuk HUD, teman bicara.")]
         [SerializeField] private float peekRadius = 1.6f;
+        [Tooltip("Jarak ke tempat sembunyi supaya bisa masuk (C).")]
+        [SerializeField] private float hideRadius = 0.9f;
 
         [Header("Jeda aksi (anti spam)")]
         [Tooltip("Jeda minimum antar Shift (detik).")]
@@ -74,8 +76,9 @@ namespace GooNapped
         public int MaxPieces => maxPieces;
         public SlimePiece Active => pieces.Count > 0 ? pieces[Mathf.Clamp(activeIndex, 0, pieces.Count - 1)] : null;
         public event Action<SlimePiece> ActiveChanged;
-        // Belah / gabung / masuk toples terjadi (dipakai penjaga: transformasi yang terlihat = curiga).
-        public event Action<Vector2> Transformed;
+        // Transformasi terjadi: belah, gabung, tiruan masuk toples, potongan bangun (Shift), masuk/keluar tempat sembunyi.
+        // Penjaga yang melihatnya jadi curiga (desain-v2 bagian 4). spot != null untuk tempat sembunyi, entering = masuk.
+        public event Action<Vector2, HidingSpot, bool> Transformed;
 
         private void OnEnable()
         {
@@ -116,8 +119,16 @@ namespace GooNapped
             // jeda setelah aksi (belah, gabung, Shift): tidak bisa bergerak/aksi lain, supaya tidak bisa di-spam
             if (lockTimer > 0f) { lockTimer -= Time.deltaTime; a.Move(Vector2.zero); return; }
             if (switchPiece.WasPressedThisFrame() && Time.time >= nextSwitch) { SwitchNext(); return; }
-            a.HideRequested = hide.IsPressed();
             if (a.IsTransforming) { a.Move(Vector2.zero); return; }
+            if (hide.WasPressedThisFrame() && !a.IsEating) { ToggleHide(a); a.Move(Vector2.zero); return; }
+            if (a.HidingIn != null)
+            {
+                // di dalam tempat sembunyi: diam, hanya C (keluar), Shift, dan F
+                if (command != null && command.WasPressedThisFrame()) Command();
+                else if (split.WasPressedThisFrame() || eat.WasPressedThisFrame()) Say("You're hiding. Press C to come out.");
+                a.Move(Vector2.zero);
+                return;
+            }
             if (!a.IsEating)
             {
                 if (split.WasPressedThisFrame() && SplitOrMerge()) return;
@@ -285,7 +296,7 @@ namespace GooNapped
             if (decoy == null) yield break;
             a.Body.SetState(a.Body.State);
             int miss = jar.MismatchOf(decoy);
-            Transformed?.Invoke(a.Center);
+            Transformed?.Invoke(a.Center, null, false);
 
             // gumpalan tiruan melompat masuk ke mulut toples
             Vector3 mouth = jar.transform.position + Vector3.up * 0.25f * jar.transform.localScale.y;
@@ -318,6 +329,35 @@ namespace GooNapped
             piece.Face(a.Facing);
             piece.SetControlled(false);
             return piece;
+        }
+
+        // Tombol C: keluar kalau sedang sembunyi, masuk ke tempat sembunyi terdekat kalau tidak.
+        // Teman yang mengikuti ikut masuk kalau muat (berdua = lebih cepat dicurigai), kalau tidak menunggu di sebelahnya.
+        public bool ToggleHide(SlimePiece a)
+        {
+            if (a == null || a.IsTransforming) return false;
+            if (a.HidingIn != null)
+            {
+                var spot = a.HidingIn;
+                if (!a.ExitHiding()) return false;
+                Transformed?.Invoke(spot.Center, spot, false);
+                var inside = new List<FriendSlime>(spot.Friends);
+                Vector2 at = spot.ExitPoint(a.transform.position, 0.25f);
+                foreach (var f in inside) { spot.Leave(f); f.Unhide(a, at); }
+                return true;
+            }
+            var target = FindNear<HidingSpot>(a, hideRadius);
+            if (target == null) { Say("Nothing to hide in here."); return false; }
+            if (!target.HasRoom()) { Say("No room in there."); return false; }
+            if (!a.EnterHiding(target)) return false;
+            Transformed?.Invoke(a.Center, target, true);
+            foreach (var f in FriendSlime.All)
+            {
+                if (f == null || f.State != FriendSlime.Mode.Following || f.Leader != a) continue;
+                if (target.HasRoom()) { target.Enter(f); f.Hide(target.transform.position); }
+                else { f.Wait(); Say(f.Name + ": \"No room for me! I'll stay low here.\""); }
+            }
+            return true;
         }
 
         // Potongan lain yang sedang bersentuhan dengan potongan aktif (paling dekat), atau null.
@@ -405,7 +445,7 @@ namespace GooNapped
             if (a.Jelly != null) a.Jelly.Kick(-9f);      // induk memipih saat "memuntahkan" potongan
             a.Motor.Stop();
             pieces.Add(piece);
-            Transformed?.Invoke(a.Center);
+            Transformed?.Invoke(a.Center, null, false);
             return true;
         }
 
@@ -443,7 +483,7 @@ namespace GooNapped
             a.Motor.Stop();
             lockTimer = mergeLock;
             AudioDirector.Play(AudioDirector.Sfx.Merge, a.Center);
-            Transformed?.Invoke(a.Center);
+            Transformed?.Invoke(a.Center, null, false);
             return true;
         }
 
@@ -457,7 +497,7 @@ namespace GooNapped
             nextSwitch = Time.time + switchCooldown;
             lockTimer = switchLock;
             AudioDirector.Play(AudioDirector.Sfx.Switch, Active.Center, 0.7f);
-            Transformed?.Invoke(Active.Center);
+            Transformed?.Invoke(Active.Center, null, false);
         }
 
         public void SetActive(int index)

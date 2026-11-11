@@ -45,9 +45,9 @@ namespace GooNapped
                 sb.Append("Tubuh: ").Append(TraitsText(a.Body.State.Traits));
                 if (a.Body.State.EmitsLight) sb.Append("  [menyala]");
                 if (a.Body.State.SpeedMultiplier < 1f) sb.Append("  [lambat]");
-                if (!a.IsDisguised && LightExposure.At(a.Center) >= 0.35f) sb.Append("  <color=#ffc861>[kena cahaya: penjaga di dekat bisa melihat]</color>");
+                if (!a.IsHidden && LightExposure.At(a.Center) >= 0.35f) sb.Append("  <color=#ffc861>[kena cahaya: penjaga di dekat bisa melihat]</color>");
                 if (a.Body.State.SmellRadius > 0f) sb.Append("  <color=#e6d36a>[berbau: meninggalkan jejak]</color>");
-                if (a.IsDisguised) sb.Append("  [nyamar]");
+                if (a.IsHidden) sb.Append("  [nyamar]");
                 sb.AppendLine();
                 sb.Append("Pieces: ").Append(brain.Pieces.Count).Append("   Size: ").Append(a.Mass)
                   .Append("   Friends safe: ").Append(goal != null ? goal.Saved : 0);

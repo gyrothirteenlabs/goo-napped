@@ -1,28 +1,31 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace GooNapped
 {
-    // Penjaga umum. Tiap musuh = Guard dengan setelan berbeda (prefab):
+    // Penjaga umum (desain-v2 bagian 9). Tiap musuh = Guard dengan setelan berbeda (prefab):
     //   Golem Batu   : kerucut sempit & jauh ("melihat lurus"), lambat, langkah berat.
-    //   Familiar Api : melayang, kerucut lebar, BUTA DI GELAP (needsLightToSee) tapi melihat yang PANAS/menyala
-    //                  dari jauh (heatSightRange). Membawa cahaya sendiri, jadi slime di dekatnya ikut terang.
-    // Perilaku bersama:
-    //   - Lihat slime  : berhenti, menoleh, curiga naik.
-    //   - Hilang dari pandangan setelah cukup curiga: datangi tempat terakhir slime terlihat,
-    //     diam sambil menyapu pandangan, lalu kembali patroli.
-    //   - Radius sadar : slime yang terlalu dekat (termasuk di belakang) membuat penjaga menoleh.
-    //   - Cahaya       : slime di cahaya terlihat dari segala arah dalam jarak tertentu.
-    //   - Umpan / suara: didatangi dan diperiksa tanpa menaikkan curiga.
-    //   - Potongan nyamar menghalangi jalan: berhenti, menatap, lalu putar balik.
+    //   Familiar Api : melayang, BUTA DI GELAP (needsLightToSee) tapi melihat yang PANAS/menyala dari jauh, membawa cahaya.
+    //   Anjing Lendir: pandangan pendek, mencium jejak bau/lumpur dan slime berbau (tembus tikungan).
+    // Perilaku v2:
+    //   - Yang bisa terlihat: potongan yang dikendalikan, potongan yang ditinggal, dan teman yang sedang di luar.
+    //   - Terlihat: curiga naik. Penuh = MENGEJAR (berlari lewat A*), berteriak memanggil penjaga lain di dekat.
+    //     Menyentuh target = tertangkap (level diulang dari checkpoint). Pandangan putus cukup lama = target lolos:
+    //     penjaga mencari di tempat terakhir target terlihat, menyapu pandangan, lalu kembali patroli.
+    //   - Transformasi yang terlihat (belah, gabung, potongan bangun, masuk/keluar tempat sembunyi) = curiga melonjak.
+    //   - Tempat sembunyi: isinya tidak terlihat. Barang yang ditatap dari dekat makin mencurigakan, penuh = diperiksa.
+    //     Terlihat masuk = langsung diperiksa. Pemeriksa (inspectsHidingSpots) memeriksa tempat di dekat jalurnya.
+    //   - Radius sadar (segala arah), cahaya = bahaya, suara = didatangi, jejak bau = disusuri,
+    //     alarm penyadapan toples = semua penjaga waspada dan mendatangi toples.
     [RequireComponent(typeof(Rigidbody2D), typeof(SlimeSpriteAnimator))]
     public class Guard : MonoBehaviour
     {
-        private enum State { Patrol, Wait, Alert, Search, LookAround, Blocked, Caught }
+        private enum State { Patrol, Wait, Alert, Search, LookAround, Chase, Inspect, Caught }
 
         [Header("Jenis")]
-        [Tooltip("Nama untuk pesan 'Ketahuan ...'.")]
-        [SerializeField] private string guardName = "Golem Batu";
+        [Tooltip("Nama untuk pesan 'Caught by ...' (bahasa Inggris).")]
+        [SerializeField] private string guardName = "Stone Golem";
         [Tooltip("Familiar Api: slime di kerucut hanya terlihat kalau terang atau panas/menyala.")]
         [SerializeField] private bool needsLightToSee;
         [Tooltip("Slime panas/menyala di dalam kerucut terlihat sejauh ini (0 = pakai View Range biasa).")]
@@ -52,7 +55,7 @@ namespace GooNapped
         [SerializeField] private float awarenessRate = 0.5f;
 
         [Header("Penciuman (Anjing Lendir)")]
-        [Tooltip("Jarak mencium jejak/umpan bau (0 = tidak bisa mencium). Mencium tembus tikungan, tidak butuh cahaya.")]
+        [Tooltip("Jarak mencium jejak/slime berbau (0 = tidak bisa mencium). Mencium tembus tikungan, tidak butuh cahaya.")]
         [SerializeField] private float smellRange;
         [Tooltip("Laju curiga saat mencium slime berbau di dekatnya.")]
         [SerializeField] private float smellRate = 0.8f;
@@ -66,35 +69,68 @@ namespace GooNapped
         [SerializeField] private float lightRate = 0.7f;
 
         [Header("Suara")]
-        [Tooltip("Jarak antar langkah (detik) saat berjalan.")]
+        [Tooltip("Jarak antar langkah (detik) saat berjalan. 0 = tanpa langkah (melayang).")]
         [SerializeField] private float stepInterval = 0.55f;
 
         [Header("Curiga")]
-        [Tooltip("Detik sampai ketahuan kalau target terlihat di jarak menengah.")]
+        [Tooltip("Detik sampai mengejar kalau target terlihat di jarak menengah.")]
         [SerializeField] private float fillTime = 1.6f;
         [SerializeField] private float decayPerSecond = 0.2f;
         [Tooltip("Tambahan laju curiga per ciri tiruan yang salah di toples level ini.")]
         [SerializeField] private float mismatchBonus = 0.35f;
-        [Tooltip("Di atas nilai ini, golem mendatangi tempat terakhir slime terlihat.")]
+        [Tooltip("Di atas nilai ini, penjaga mendatangi tempat terakhir slime terlihat.")]
         [SerializeField] private float searchThreshold = 0.3f;
         [SerializeField] private float searchSpeedMultiplier = 1.3f;
         [Tooltip("Lama diam sambil menyapu pandangan di tempat terakhir slime terlihat.")]
         [SerializeField] private float lookAroundTime = 3.5f;
         [Tooltip("Sudut sapuan pandangan kiri-kanan (derajat).")]
         [SerializeField] private float lookAroundAngle = 75f;
-
-        [Tooltip("Golem berhenti sejauh ini dari titik yang diperiksa (tidak menimpa potongan/umpan).")]
+        [Tooltip("Penjaga berhenti sejauh ini dari titik yang diperiksa.")]
         [SerializeField] private float searchStopDistance = 0.8f;
-        [Tooltip("Umpan yang sudah diperiksa diabaikan selama ini (detik).")]
-        [SerializeField] private float baitIgnoreTime = 8f;
+        [Tooltip("Lonjakan curiga saat melihat transformasi (belah, gabung, potongan bangun).")]
+        [SerializeField, Range(0f, 1f)] private float transformSuspicion = 0.5f;
+        [Tooltip("Setelah alarm penyadapan: pengali waktu curiga penuh (lebih kecil = lebih cepat curiga).")]
+        [SerializeField, Range(0.2f, 1f)] private float alarmFillMultiplier = 0.6f;
 
-        [Header("Terhalang potongan")]
-        [SerializeField] private float blockDistance = 0.75f;
-        [SerializeField] private float blockedStare = 1.5f;
+        [Header("Mengejar (desain-v2 jawaban 5)")]
+        [Tooltip("Pengali kecepatan saat mengejar.")]
+        [SerializeField] private float chaseSpeedMultiplier = 1.8f;
+        [Tooltip("Detik pandangan putus sampai target dianggap lolos.")]
+        [SerializeField] private float loseSightTime = 2.5f;
+        [Tooltip("Jarak menangkap (dari badan penjaga ke tepi badan target).")]
+        [SerializeField] private float catchDistance = 0.3f;
+        [Tooltip("Radius teriakan: penjaga lain di dalamnya datang membantu.")]
+        [SerializeField] private float callRadius = 7f;
+
+        [Header("Tempat sembunyi (desain-v2 bagian 7)")]
+        [Tooltip("Jarak menatap barang yang membuat isinya makin mencurigakan.")]
+        [SerializeField] private float stareRange = 2.6f;
+        [Tooltip("Pemeriksa (Mata Penyihir, Pelayan Tudung): memeriksa tiap tempat sembunyi di dekat jalurnya.")]
+        [SerializeField] private bool inspectsHidingSpots;
+        [SerializeField] private float inspectRadius = 1.3f;
+        [Tooltip("Lama memeriksa satu tempat sembunyi (detik).")]
+        [SerializeField] private float inspectTime = 0.9f;
+        [Tooltip("Tempat yang sudah diperiksa dilewati selama ini (detik).")]
+        [SerializeField] private float reinspectDelay = 12f;
 
         [Header("Tampilan")]
         [SerializeField] private Material coneMaterial;
         [SerializeField] private int coneSortingOrder = -50;
+
+        // Penjaga mulai mengejar (memanggil penjaga lain).
+        public static event Action<Guard, Vector2> Alerted;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => Alerted = null;
+
+        private struct Sight
+        {
+            public bool valid, cone, near, light, smell;
+            public float rate;
+            public Vector2 pos;
+            public SlimePiece piece;
+            public FriendSlime friend;
+        }
 
         private Rigidbody2D rb;
         private SlimeSpriteAnimator anim;
@@ -110,8 +146,12 @@ namespace GooNapped
         private Vector2 moveTarget;
         private float moveSpeed;
         private bool moving;
-        private SlimePiece lastBait;
-        private float baitCooldown;
+        private bool alarmed, longSearch;
+        private Sight chase;
+        private float loseTimer;
+        private HidingSpot inspectSpot;
+        private bool inspectKnown, inspectArrived;
+        private readonly Dictionary<HidingSpot, float> inspectedAt = new Dictionary<HidingSpot, float>();
         private readonly RaycastHit2D[] castHits = new RaycastHit2D[8];
 
         public float Suspicion { get; private set; }
@@ -131,12 +171,13 @@ namespace GooNapped
         public bool NeedsLightToSee => needsLightToSee;
         public float LightSightRange => lightSightRange;
         public float LitThreshold => litThreshold;
-        // Untuk indikator di atas kepala: sedang mencari/memeriksa ("?") atau sedang melihat/merasakan slime ("!").
-        public bool IsSearching => state == State.Search || state == State.LookAround;
-        public bool IsAlerted => state == State.Alert || state == State.Caught;
+        // Untuk indikator di atas kepala: mencari/memeriksa ("?") atau melihat/mengejar ("!").
+        public bool IsSearching => state == State.Search || state == State.LookAround || state == State.Inspect;
+        public bool IsAlerted => state == State.Alert || state == State.Chase || state == State.Caught;
+        public bool IsChasing => state == State.Chase;
         public float HeadHeight => eyeHeight + 0.55f;
         private float trackedTime = -999f, sniffTimer;
-        private bool alerted;
+        private bool alertedSound;
         private float stepTimer;
         public Vector2 Forward => forward;
         public Vector2 Eye => (Vector2)transform.position + Vector2.up * eyeHeight;
@@ -155,6 +196,7 @@ namespace GooNapped
             brain = FindFirstObjectByType<PlayerBrain>();
             goal = FindFirstObjectByType<LevelGoal>();
             jars = FindObjectsByType<Jar>(FindObjectsSortMode.None);
+            if (brain != null) brain.Transformed += OnTransformed;
             if (coneMaterial != null) cone = VisionCone.Create("VisionCone_" + name, coneMaterial, coneSortingOrder);
             if (patrolPoints.Count > 1)
             {
@@ -163,8 +205,23 @@ namespace GooNapped
             }
         }
 
+        private void OnEnable()
+        {
+            NoiseBus.Noise += OnNoise;
+            Alerted += OnAlerted;
+            Jar.Alarm += OnJarAlarm;
+        }
+
+        private void OnDisable()
+        {
+            NoiseBus.Noise -= OnNoise;
+            Alerted -= OnAlerted;
+            Jar.Alarm -= OnJarAlarm;
+        }
+
         private void OnDestroy()
         {
+            if (brain != null) brain.Transformed -= OnTransformed;
             if (cone != null) Destroy(cone.gameObject);
         }
 
@@ -180,113 +237,157 @@ namespace GooNapped
         private static bool IsSeeThrough(Collider2D c) =>
             c == null || c.isTrigger || c.GetComponentInParent<SlimePiece>() != null || c.GetComponentInParent<Guard>() != null;
 
-        // Jarak tembus pandang ke arah `delta` (berhenti di dinding/prop).
-        private float Clip(Vector2 from, Vector2 delta)
+        // Jarak tembus pandang ke arah `delta` (berhenti di dinding/prop). `ignore` = collider yang dianggap tembus.
+        private float Clip(Vector2 from, Vector2 delta) => Clip(from, delta, null);
+
+        private float Clip(Vector2 from, Vector2 delta, Collider2D ignore)
         {
             float best = delta.magnitude;
             foreach (var h in Physics2D.RaycastAll(from, delta.normalized, best))
-                if (!IsSeeThrough(h.collider)) best = Mathf.Min(best, h.distance);
+                if (h.collider != ignore && !IsSeeThrough(h.collider)) best = Mathf.Min(best, h.distance);
             return best;
         }
 
-        private bool LineOfSight(Vector2 from, Vector2 to) => Clip(from, to - from) >= Vector2.Distance(from, to) - 0.05f;
+        private bool LineOfSight(Vector2 from, Vector2 to, Collider2D ignore = null) =>
+            Clip(from, to - from, ignore) >= Vector2.Distance(from, to) - 0.05f;
 
-        // Panas atau menyala (Ramuan Api, Lumut Pendar, ...): dilihat Familiar Api dari jauh.
-        private static bool IsHot(SlimePiece p) =>
-            p.Body.State.EmitsLight || p.Body.State.Get(TraitKind.Temperature) == "panas";
+        // ---- indra ----
 
-        private float RangeFor(SlimePiece p)
+        private Sight Evaluate()
         {
+            var best = default(Sight);
+            if (brain != null)
+                foreach (var p in brain.Pieces)
+                {
+                    if (p == null || p.IsHidden) continue;
+                    var s = SeePiece(p);
+                    if (s.valid && Better(s, best)) best = s;
+                }
+            foreach (var f in FriendSlime.All)
+            {
+                if (f == null || !f.IsExposed) continue;
+                var s = SeeFriend(f);
+                if (s.valid && Better(s, best)) best = s;
+            }
+            return best;
+        }
+
+        private static bool Better(Sight a, Sight b) => !b.valid || a.rate > b.rate;
+
+        private Sight SeePiece(SlimePiece p)
+        {
+            var st = p.Body.State;
+            bool hot = st.EmitsLight || st.Get(TraitKind.Temperature) == "panas";
             // tubuh besar terlihat lebih jauh, tubuh kecil/gelap (Esens Bayang) lebih dekat (desain-v2 bagian 5)
-            float r = viewRange * (p.Body.State.EmitsLight ? glowRangeMultiplier : 1f) * p.Body.State.SightMultiplier;
-            if (heatSightRange > 0f && IsHot(p)) r = Mathf.Max(r, heatSightRange);
-            return r;
+            float range = viewRange * (st.EmitsLight ? glowRangeMultiplier : 1f) * st.SightMultiplier;
+            if (heatSightRange > 0f && hot) range = Mathf.Max(range, heatSightRange);
+            var s = Sense(p.Center, range, hot, st.EmitsLight, st.SmellRadius);
+            s.piece = p;
+            return s;
         }
 
-        private bool CanSee(SlimePiece p, out float distance)
+        private Sight SeeFriend(FriendSlime f)
         {
-            distance = 0f;
-            if (p == null || p.IsDisguised) return false;   // potongan yang nyamar tidak terlihat
-            if (!VisionMath.InCone(Eye, forward, p.Center, RangeFor(p), viewAngle)) return false;
-            // buta di gelap: hanya melihat yang terang atau panas
-            if (needsLightToSee && !IsHot(p) && LightExposure.At(p.Center) < litThreshold) return false;
-            distance = Vector2.Distance(Eye, p.Center);
-            return LineOfSight(Eye, p.Center);
+            float range = viewRange * SlimeBodyState.MassSight(f.Recipe != null ? f.Recipe.Size : 1);
+            var s = Sense(f.Center, range, false, false, 0f);
+            s.friend = f;
+            return s;
         }
 
-        // Suara (gumpalan dilempar, dsb.): datangi dan periksa, curiga tidak naik.
+        private Sight Sense(Vector2 c, float range, bool hot, bool glows, float smell)
+        {
+            var s = new Sight { pos = c };
+            float distEye = Vector2.Distance(Eye, c);
+            // kerucut pandang (Familiar: buta di gelap kecuali yang panas/menyala)
+            if (VisionMath.InCone(Eye, forward, c, range, viewAngle)
+                && (!needsLightToSee || hot || LightExposure.At(c) >= litThreshold) && LineOfSight(Eye, c))
+            {
+                s.valid = s.cone = true;
+                s.rate = VisionMath.DistanceFactor(distEye, range);
+                return s;
+            }
+            // radius sadar (termasuk belakang)
+            if (Vector2.Distance(Body, c) <= awarenessRadius && LineOfSight(Body, c))
+            {
+                s.valid = s.near = true;
+                s.rate = awarenessRate;
+                return s;
+            }
+            // cahaya = bahaya: terlihat dari segala arah dalam jarak tertentu
+            if (distEye <= lightSightRange && (glows || LightExposure.At(c) >= litThreshold) && LineOfSight(Eye, c))
+            {
+                s.valid = s.light = true;
+                s.rate = lightRate;
+                return s;
+            }
+            // penciuman (tidak butuh garis pandang atau cahaya)
+            if (smellRange > 0f && smell > 0f && Vector2.Distance(Body, c) <= (smellRange + smell) * 0.5f)
+            {
+                s.valid = s.smell = true;
+                s.rate = smellRate;
+            }
+            return s;
+        }
+
+        // Titik ini terlihat (kerucut/radius sadar/cahaya)? Untuk transformasi yang terlihat.
+        private bool SeesPoint(Vector2 c)
+        {
+            if (VisionMath.InCone(Eye, forward, c, viewRange, viewAngle)
+                && (!needsLightToSee || LightExposure.At(c) >= litThreshold) && LineOfSight(Eye, c)) return true;
+            if (Vector2.Distance(Body, c) <= awarenessRadius && LineOfSight(Body, c)) return true;
+            return Vector2.Distance(Eye, c) <= lightSightRange && LightExposure.At(c) >= litThreshold && LineOfSight(Eye, c);
+        }
+
+        // ---- kejadian ----
+
+        // Suara (tuas, pintu, langkah berat, Dentum): datangi dan periksa, curiga tidak naik.
         private void OnNoise(Vector2 position, float radius)
         {
-            if (state == State.Caught || state == State.Alert) return;
+            if (state == State.Caught || state == State.Chase || state == State.Inspect || state == State.Alert) return;
             if (Vector2.Distance(Body, position) > radius) return;
             lastSeen = position;
             state = State.Search;
         }
 
-        private void OnEnable() => NoiseBus.Noise += OnNoise;
-        private void OnDisable() => NoiseBus.Noise -= OnNoise;
-
-        // Umpan (potongan nyamar yang menyala/berbau) di dalam kerucut. Umpan yang baru diperiksa diabaikan sebentar.
-        private bool TryNoticeBait(out SlimePiece bait)
+        // Penjaga lain berteriak: datang ke tempat itu.
+        private void OnAlerted(Guard caller, Vector2 pos)
         {
-            bait = null;
-            if (brain == null) return false;
-            foreach (var p in brain.Pieces)
+            if (caller == this || state == State.Chase || state == State.Caught || state == State.Inspect) return;
+            if (Vector2.Distance(Body, pos) > callRadius && Vector2.Distance(Body, caller.Body) > callRadius) return;
+            lastSeen = pos;
+            Suspicion = Mathf.Max(Suspicion, Mathf.Min(0.9f, searchThreshold + 0.3f));
+            state = State.Search;
+        }
+
+        // Alarm penyadapan: semua penjaga lebih cepat curiga dan mendatangi toples.
+        private void OnJarAlarm(Jar jar)
+        {
+            alarmed = true;
+            if (jar == null || state == State.Chase || state == State.Caught || state == State.Inspect) return;
+            lastSeen = jar.transform.position;
+            Suspicion = Mathf.Max(Suspicion, searchThreshold);
+            state = State.Search;
+        }
+
+        // Transformasi (belah, gabung, Shift, masuk/keluar tempat sembunyi). Terlihat = curiga melonjak.
+        private void OnTransformed(Vector2 pos, HidingSpot spot, bool entering)
+        {
+            if (state == State.Caught || (goal != null && (goal.IsComplete || goal.IsFailed))) return;
+            if (!SeesPoint(pos)) return;
+            if (spot != null && entering)
             {
-                if (p == null || !p.IsBait || (p == lastBait && baitCooldown > 0f)) continue;
-                // pencium: umpan berbau tercium dari segala arah (tembus tikungan)
-                float smell = p.Body.State.SmellRadius;
-                if (smellRange > 0f && smell > 0f && Vector2.Distance(Body, p.Center) <= smellRange + smell * 0.5f)
-                {
-                    bait = p;
-                    return true;
-                }
-                if (!VisionMath.InCone(Eye, forward, p.Center, RangeFor(p), viewAngle)) continue;
-                if (!LineOfSight(Eye, p.Center)) continue;
-                bait = p;
-                return true;
+                BeginInspect(spot, true);   // terlihat masuk: penjaga tahu persis di mana
+                return;
             }
-            return false;
+            Suspicion = Mathf.Min(1f, Suspicion + transformSuspicion);
+            lastSeen = pos;
+            if (!alertedSound) { alertedSound = true; AudioDirector.Play(AudioDirector.Sfx.Alert, Body); }
+            if (state == State.Chase || state == State.Inspect) return;
+            state = State.Alert;
+            if (Suspicion >= 1f) StartChase(new Sight { valid = true, pos = pos, piece = brain != null ? brain.Active : null });
         }
 
-        // Mencium slime berbau yang sedang bergerak di dekatnya (tidak butuh garis pandang atau cahaya).
-        private bool CanSmell(SlimePiece p)
-        {
-            if (smellRange <= 0f || p == null || p.IsDisguised) return false;
-            float smell = p.Body.State.SmellRadius;
-            return smell > 0f && Vector2.Distance(Body, p.Center) <= (smellRange + smell) * 0.5f;
-        }
-
-        // Ikuti jejak: pindah ke titik bau yang lebih baru dari yang terakhir diikuti.
-        private bool Sniff()
-        {
-            if (smellRange <= 0f) return false;
-            if ((sniffTimer -= Time.deltaTime) > 0f) return false;
-            sniffTimer = 0.3f;
-            // Dengan peta jalan, pencium langsung menuju titik bau terbaru (lewat jalur A*).
-            // Tanpa peta (sandbox): hanya titik yang terjangkau lurus.
-            System.Func<Vector2, bool> reach = NavGrid.Available ? null : p => LineOfSight(Body, p);
-            if (!ScentTrail.Freshest(Body, smellRange, trackedTime, out var m, reach)) return false;
-            trackedTime = m.time;
-            lastSeen = m.position;
-            return true;
-        }
-
-        private bool CanSense(SlimePiece p)
-        {
-            if (p == null || p.IsDisguised) return false;
-            return Vector2.Distance(Body, p.Center) <= awarenessRadius && LineOfSight(Body, p.Center);
-        }
-
-        // Slime yang berdiri di cahaya (atau menyala sendiri) terlihat dari segala arah dalam jarak tertentu,
-        // walau tidak di dalam kerucut. Cahaya = bahaya, bukan hiasan.
-        private bool SeesInLight(SlimePiece p)
-        {
-            if (p == null || p.IsDisguised) return false;
-            if (Vector2.Distance(Eye, p.Center) > lightSightRange) return false;
-            bool lit = p.Body.State.EmitsLight || LightExposure.At(p.Center) >= litThreshold;
-            return lit && LineOfSight(Eye, p.Center);
-        }
+        // ---- loop ----
 
         private void Update()
         {
@@ -297,48 +398,39 @@ namespace GooNapped
                 return;
             }
 
-            if (baitCooldown > 0f) baitCooldown -= Time.deltaTime;
-            var target = brain != null ? brain.Active : null;
-            SeesTarget = CanSee(target, out float dist);
-            bool near = !SeesTarget && CanSense(target);
-            InLight = !SeesTarget && !near && SeesInLight(target);
-            Smells = !SeesTarget && !near && !InLight && CanSmell(target);
-            Senses = near || InLight || Smells;
+            var sight = Evaluate();
+            SeesTarget = sight.valid && sight.cone;
+            Senses = sight.valid && !sight.cone;
+            InLight = sight.valid && sight.light;
+            Smells = sight.valid && sight.smell;
 
-            if (SeesTarget || Senses)
+            if (state == State.Chase) { ChaseStep(sight); UpdateVisuals(); return; }
+            WatchHidingSpots();
+            if (state == State.Inspect) { InspectStep(); UpdateVisuals(); return; }
+
+            if (sight.valid)
             {
-                float rate = SeesTarget ? VisionMath.DistanceFactor(dist, RangeFor(target))
-                           : near ? awarenessRate : InLight ? lightRate : smellRate;
+                float rate = sight.rate * VisionMath.MismatchMultiplier(TotalMismatch(), mismatchBonus);
                 // bunyi "hm?" sekali tiap kali mulai curiga (diulang lagi setelah curiga turun ke 0)
-                if (!alerted) { alerted = true; AudioDirector.Play(AudioDirector.Sfx.Alert, Body); }
-                rate *= VisionMath.MismatchMultiplier(TotalMismatch(), mismatchBonus);
-                Suspicion = Mathf.Min(1f, Suspicion + Time.deltaTime * rate / Mathf.Max(0.05f, fillTime));
-                lastSeen = target.Center;
+                if (!alertedSound) { alertedSound = true; AudioDirector.Play(AudioDirector.Sfx.Alert, Body); }
+                float fill = fillTime * (alarmed ? alarmFillMultiplier : 1f);
+                Suspicion = Mathf.Min(1f, Suspicion + Time.deltaTime * rate / Mathf.Max(0.05f, fill));
+                lastSeen = sight.pos;
                 state = State.Alert;
                 if (Suspicion >= 1f)
                 {
-                    state = State.Caught;
-                    AudioDirector.Play(AudioDirector.Sfx.Caught, Body);
-                    if (goal != null) goal.Fail("Ketahuan " + guardName);
+                    StartChase(sight);
                     UpdateVisuals();
                     return;
                 }
-            }
-            else if (state != State.Search && state != State.Blocked && TryNoticeBait(out var bait))
-            {
-                // umpan menyala di depan mata: datangi dan periksa, curiga ke pemain tidak naik
-                lastSeen = bait.Center;
-                lastBait = bait;
-                baitCooldown = baitIgnoreTime;
-                state = State.Search;
             }
             else
             {
                 float decay = state == State.Search || state == State.LookAround ? decayPerSecond * 0.4f : decayPerSecond;
                 Suspicion = Mathf.Max(0f, Suspicion - decay * Time.deltaTime);
-                if (Suspicion <= 0f) alerted = false;
-                // pencium menyusuri jejak bau (dari mana pun asalnya: pemain atau potongan berbau)
-                if (state != State.Blocked && Sniff()) state = State.Search;
+                if (Suspicion <= 0f) alertedSound = false;
+                // pencium menyusuri jejak bau (dari mana pun asalnya: pemain, potongan, lumpur)
+                if (Sniff()) state = State.Search;
             }
 
             switch (state)
@@ -346,9 +438,9 @@ namespace GooNapped
                 case State.Alert:
                     // menoleh cepat ke arah slime
                     TurnTowards(lastSeen - Eye, turnSpeed * 1.6f);
-                    if (!SeesTarget && !Senses)
+                    if (!sight.valid)
                     {
-                        if (Suspicion >= searchThreshold) { state = State.Search; }
+                        if (Suspicion >= searchThreshold) state = State.Search;
                         else { state = State.LookAround; timer = lookAroundTime * 0.5f; lookBase = forward; }
                     }
                     break;
@@ -356,10 +448,10 @@ namespace GooNapped
                 case State.Search:
                     // datangi tempat terakhir slime terlihat
                     var toSeen = lastSeen - Body;
-                    if (toSeen.magnitude < searchStopDistance ||!TryMove(lastSeen - (Vector2.up * 0.22f), speed * searchSpeedMultiplier))
+                    if (toSeen.magnitude < searchStopDistance || !TryMove(lastSeen - FootToBody, speed * searchSpeedMultiplier * (alarmed ? 1.15f : 1f)))
                     {
                         state = State.LookAround;
-                        timer = lookAroundTime;
+                        timer = lookAroundTime * (longSearch ? 1.6f : 1f);
                         lookBase = forward;
                     }
                     break;
@@ -367,11 +459,12 @@ namespace GooNapped
                 case State.LookAround:
                     // diam sambil menyapu pandangan kiri-kanan
                     timer -= Time.deltaTime;
-                    float phase = (lookAroundTime - timer) / lookAroundTime * Mathf.PI * 2f;
+                    float total = lookAroundTime * (longSearch ? 1.6f : 1f);
+                    float phase = (total - timer) / total * Mathf.PI * 2f;
                     float baseA = Mathf.Atan2(lookBase.y, lookBase.x) * Mathf.Rad2Deg;
                     float want = baseA + Mathf.Sin(phase) * lookAroundAngle;
                     TurnTowards(new Vector2(Mathf.Cos(want * Mathf.Deg2Rad), Mathf.Sin(want * Mathf.Deg2Rad)), turnSpeed);
-                    if (timer <= 0f) state = State.Patrol;
+                    if (timer <= 0f) { state = State.Patrol; longSearch = false; }
                     break;
 
                 case State.Wait:
@@ -382,17 +475,9 @@ namespace GooNapped
                     }
                     break;
 
-                case State.Blocked:
-                    TurnTowards(lastSeen - Eye, turnSpeed);
-                    if ((timer -= Time.deltaTime) <= 0f)
-                    {
-                        pointIndex = (pointIndex - 1 + patrolPoints.Count) % patrolPoints.Count;
-                        state = State.Patrol;
-                    }
-                    break;
-
                 case State.Patrol:
                     if (patrolPoints.Count == 0) break;
+                    if (inspectsHidingSpots && TryRoutineInspect()) break;
                     var to = patrolPoints[pointIndex] - rb.position;
                     if (to.magnitude < 0.05f)
                     {
@@ -400,18 +485,168 @@ namespace GooNapped
                         timer = waitAtPoint;
                         break;
                     }
-                    var blocker = PieceAhead(to);
-                    if (blocker != null)
-                    {
-                        lastSeen = blocker.Center;
-                        state = State.Blocked;
-                        timer = blockedStare;
-                        break;
-                    }
                     TryMove(patrolPoints[pointIndex], speed);
                     break;
             }
             UpdateVisuals();
+        }
+
+        // ---- mengejar ----
+
+        private void StartChase(Sight s)
+        {
+            state = State.Chase;
+            chase = s;
+            loseTimer = 0f;
+            Suspicion = 1f;
+            lastSeen = s.pos;
+            AudioDirector.Play(AudioDirector.Sfx.Alert, Body, 1f);
+            AudioDirector.Play(AudioDirector.Sfx.Caught, Body, 0.35f, 0.1f);   // teriakan memanggil penjaga lain
+            Alerted?.Invoke(this, lastSeen);
+        }
+
+        // Posisi target sekarang kalau masih di luar (belum sembunyi / selamat).
+        private bool TargetPosition(out Vector2 pos, out float radius)
+        {
+            if (chase.piece != null && !chase.piece.IsHidden) { pos = chase.piece.Center; radius = chase.piece.Radius; return true; }
+            if (chase.friend != null && chase.friend.IsExposed) { pos = chase.friend.Center; radius = 0.25f * chase.friend.transform.localScale.x; return true; }
+            pos = lastSeen;
+            radius = 0f;
+            return false;
+        }
+
+        private void ChaseStep(Sight sight)
+        {
+            if (sight.valid)
+            {
+                // target yang sama, atau target lain kalau target lama sudah lolos dari pandangan
+                bool same = (chase.piece != null && sight.piece == chase.piece) || (chase.friend != null && sight.friend == chase.friend);
+                if (same || loseTimer > 0.3f)
+                {
+                    chase = sight;
+                    lastSeen = sight.pos;
+                    loseTimer = 0f;
+                }
+            }
+            else loseTimer += Time.deltaTime;
+
+            bool exposed = TargetPosition(out var tp, out float tr);
+            if (exposed && Vector2.Distance(Body, tp) <= catchDistance + tr + 0.28f) { Catch(chase); return; }
+
+            // target bersembunyi tepat di depan mata (tidak sempat lolos): periksa tempat itu
+            if (!exposed && chase.piece != null && chase.piece.HidingIn != null && loseTimer < 0.6f)
+            {
+                BeginInspect(chase.piece.HidingIn, true);
+                return;
+            }
+
+            if (loseTimer >= loseSightTime)
+            {
+                // lolos: cari di tempat terakhir terlihat, lebih lama dari biasa
+                state = State.Search;
+                Suspicion = 0.95f;
+                longSearch = true;
+                return;
+            }
+            Vector2 dest = exposed && loseTimer <= 0f ? tp : lastSeen;
+            if (!TryMove(dest - FootToBody, speed * chaseSpeedMultiplier) || (dest - Body).magnitude < 0.25f)
+                loseTimer += Time.deltaTime;   // sampai di titik terakhir tanpa melihat apa-apa: lebih cepat menyerah
+        }
+
+        private void Catch(Sight s)
+        {
+            state = State.Caught;
+            AudioDirector.Play(AudioDirector.Sfx.Caught, Body);
+            string who = s.friend != null ? s.friend.Name + " was caught by " : "Caught by ";
+            if (goal != null) goal.Fail(who + guardName);
+            UpdateVisuals();
+        }
+
+        // ---- tempat sembunyi ----
+
+        // Barang berisi slime yang ditatap dari dekat makin mencurigakan. Penuh = periksa.
+        private void WatchHidingSpots()
+        {
+            if (state == State.Inspect || state == State.Chase) return;
+            foreach (var spot in HidingSpot.All)
+            {
+                if (spot == null || !spot.Occupied) continue;
+                Vector2 c = spot.Center;
+                bool staring = VisionMath.InCone(Eye, forward, c, stareRange, viewAngle) && LineOfSight(Eye, c, spot.Collider);
+                if (!staring && Vector2.Distance(Body, c) <= awarenessRadius) staring = LineOfSight(Body, c, spot.Collider);
+                if (staring && needsLightToSee && LightExposure.At(c) < litThreshold) staring = false;
+                if (!staring) continue;
+                spot.Stare(Time.deltaTime, alarmed ? 1f / alarmFillMultiplier : 1f);
+                if (spot.Suspicion >= 1f) { BeginInspect(spot, false); return; }
+            }
+        }
+
+        // Pemeriksa: berhenti dan memeriksa tempat sembunyi di dekat jalurnya walau tidak curiga.
+        private bool TryRoutineInspect()
+        {
+            foreach (var spot in HidingSpot.All)
+            {
+                if (spot == null || Vector2.Distance(Body, spot.Center) > inspectRadius) continue;
+                if (inspectedAt.TryGetValue(spot, out var t) && Time.time - t < reinspectDelay) continue;
+                BeginInspect(spot, false);
+                return true;
+            }
+            return false;
+        }
+
+        private void BeginInspect(HidingSpot spot, bool known)
+        {
+            if (spot == null) return;
+            state = State.Inspect;
+            inspectSpot = spot;
+            inspectKnown = known;
+            inspectArrived = false;
+            timer = inspectTime;
+            lastSeen = spot.Center;
+            if (known) { Suspicion = 1f; AudioDirector.Play(AudioDirector.Sfx.Alert, Body, 1f); }
+        }
+
+        private void InspectStep()
+        {
+            var spot = inspectSpot;
+            if (spot == null) { state = State.LookAround; timer = lookAroundTime; lookBase = forward; return; }
+            Vector2 front = spot.ExitPoint(rb.position, 0.3f);
+            if (!inspectArrived)
+            {
+                bool far = (front - rb.position).magnitude > 0.3f && (spot.Center - Body).magnitude > inspectRadius * 0.8f;
+                if (far && TryMove(front, speed * (inspectKnown ? chaseSpeedMultiplier : searchSpeedMultiplier))) return;
+                inspectArrived = true;
+            }
+            TurnTowards(spot.Center - Eye, turnSpeed * 1.5f);
+            if ((timer -= Time.deltaTime) > 0f) return;
+            inspectedAt[spot] = Time.time;
+            if (spot.Occupied)
+            {
+                // isi pertama yang ditemukan tertangkap (pemain/potongan, atau teman)
+                var s = new Sight { valid = true, pos = spot.Center };
+                if (spot.Pieces.Count > 0) s.piece = spot.Pieces[0]; else s.friend = spot.Friends[0];
+                Catch(s);
+                return;
+            }
+            spot.ClearSuspicion();
+            state = State.LookAround;
+            timer = lookAroundTime * 0.6f;
+            lookBase = forward;
+        }
+
+        // Ikuti jejak: pindah ke titik bau yang lebih baru dari yang terakhir diikuti.
+        private bool Sniff()
+        {
+            if (smellRange <= 0f) return false;
+            if ((sniffTimer -= Time.deltaTime) > 0f) return false;
+            sniffTimer = 0.3f;
+            // Dengan peta jalan, pencium langsung menuju titik bau terbaru (lewat jalur A*).
+            // Tanpa peta (sandbox): hanya titik yang terjangkau lurus.
+            Func<Vector2, bool> reach = NavGrid.Available ? null : p => LineOfSight(Body, p);
+            if (!ScentTrail.Freshest(Body, smellRange, trackedTime, out var m, reach)) return false;
+            trackedTime = m.time;
+            lastSeen = m.position;
+            return true;
         }
 
         // ---- jalan: lurus kalau bebas, kalau tidak ikuti jalur A* (NavGrid) ----
@@ -457,7 +692,8 @@ namespace GooNapped
             }
             else path.Clear();
 
-            TurnTowards(d, turnSpeed);
+            float turn = state == State.Chase ? turnSpeed * 2.5f : turnSpeed;
+            TurnTowards(d, turn);
             float facing = Mathf.Clamp01(Mathf.Cos(Vector2.Angle(forward, d) * Mathf.Deg2Rad));
             if (facing < 0.3f) return true;   // masih berbelok di tempat
             float step = spd * facing * Time.deltaTime;
@@ -493,20 +729,6 @@ namespace GooNapped
             return true;
         }
 
-        // Potongan slime tepat di jalur menuju tujuan (jarak badan), atau null.
-        // Dicek terhadap arah TUJUAN, bukan arah hadap: setelah putar balik, golem tidak tersangkut lagi.
-        private SlimePiece PieceAhead(Vector2 toward)
-        {
-            if (brain == null) return null;
-            foreach (var p in brain.Pieces)
-            {
-                if (p == null) continue;
-                var d = p.Center - Body;
-                if (d.magnitude < blockDistance && Vector2.Angle(toward, d) < 50f) return p;
-            }
-            return null;
-        }
-
         private void LateUpdate()
         {
             if (hoverHeight > 0f) Hover();
@@ -514,7 +736,7 @@ namespace GooNapped
             if (!moving || stepInterval <= 0f) { stepTimer = 0f; return; }
             if ((stepTimer -= Time.deltaTime) <= 0f)
             {
-                stepTimer = stepInterval;
+                stepTimer = stepInterval * (state == State.Chase ? 0.6f : 1f);
                 AudioDirector.Play(AudioDirector.Sfx.GolemStep, Body, 0.8f);
             }
         }
