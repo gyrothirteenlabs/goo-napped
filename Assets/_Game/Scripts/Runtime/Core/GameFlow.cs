@@ -7,7 +7,7 @@ namespace GooNapped
     // Progres disimpan di PlayerPrefs (cukup untuk jam). Level baru: tambahkan namanya di Levels (urut).
     //
     // Desain v2 (11 Nov): level C1_L01–C2_L04 adalah level v1 dan sekarang jadi SANDBOX (jawaban 71), tidak di alur game.
-    // Sampai 11 level v2 dibangun (desain-v2 bagian 3), alur game memakai sandbox ProtoV2 sebagai satu-satunya level.
+    // Level v2: blockout 11 level (desain-v2 bagian 3) di Scenes/Levels/V2, dibangun GooNapped > Blockout > Semua level v2.
     // Di editor, scene yang belum ada di Build Settings tetap bisa dimuat lewat path (Build Settings = keputusan tim).
     public static class GameFlow
     {
@@ -18,7 +18,11 @@ namespace GooNapped
         public const string Hub = "Markas";
         // Level yang dituju setelah markas.
         public static string PendingNext { get; private set; } = "";
-        public static readonly string[] Levels = { "ProtoV2" };
+        public static readonly string[] Levels =
+        {
+            "L01_Gate", "L02_Hedge", "L03_Mud", "L04_Cells", "L05_CellBlock", "L06_DrainLab",
+            "L07_GreatHall", "L08_Dining", "L09_Gallery", "L10_Tower", "L11_Summit",
+        };
         // Level v1 (sandbox, tidak dimainkan dari menu). Disimpan untuk referensi tool/test.
         public static readonly string[] V1Levels = { "C1_L01", "C1_L02", "C1_L03", "C1_L04", "C2_L01", "C2_L02", "C2_L03", "C2_L04" };
         const string UnlockKey = "gn_unlocked";

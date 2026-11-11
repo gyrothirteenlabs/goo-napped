@@ -560,6 +560,7 @@ namespace GooNapped
             huntTimer = huntInterval;
             var a = brain != null ? brain.Active : null;
             if (a == null) return false;
+            if (a.HidingIn != null && a.HidingIn.IsSafe) return false;   // di ventilasi: aman total, tidak diburu
             var guess = a.Center + UnityEngine.Random.insideUnitCircle * huntError;
             var cell = NavGrid.CellOf(guess);
             if (NavGrid.Available && !NavGrid.Walkable(cell)) guess = a.Center;

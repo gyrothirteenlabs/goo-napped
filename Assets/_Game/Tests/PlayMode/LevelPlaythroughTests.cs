@@ -318,6 +318,9 @@ namespace GooNapped.Tests
             var guards = Object.FindObjectsByType<Guard>(FindObjectsSortMode.None);
             if (guards.Length == 0) Assert.Pass("Tanpa penjaga.");
             var reached = guards.ToDictionary(g => g, g => new bool[g.PatrolPoints.Count]);
+            // pemburu (Alkemis) memang mendatangi pemain yang diam: perburuan dimatikan, test ini hanya cek patroli + spawn
+            var huntField = typeof(Guard).GetField("huntInterval", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            foreach (var g in guards) huntField.SetValue(g, 0f);
             Time.timeScale = 4f;
             float end = Time.time + 40f;
             while (Time.time < end && !goal.IsFailed)

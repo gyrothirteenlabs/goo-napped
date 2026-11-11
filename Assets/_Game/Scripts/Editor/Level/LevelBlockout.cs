@@ -361,6 +361,287 @@ namespace GooNapped.EditorTools
             Build(SandboxInteract);
         }
 
+        // ===== Level v2 (desain-v2 bagian 3). Blockout kasar, layout final dari tim desainer. =====
+        static readonly Config V2_L01_Gate = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L01_Gate.unity",
+            recipe = null,
+            recipe2 = null,
+            next = "L02_Hedge",
+            note = "L01 GERBANG (level pembuka, menyusup). Tutorial gerak.\n" +
+                   "Monster Gerbang (@) menjaga halaman gerbang dan menyapu pandangan. Lewati pandangannya di celah lorong,\n" +
+                   "lalu menyelinap lewat celah pagar (~) ke taman. Ventilasi A = checkpoint, X = masuk ke taman. Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S.....#...............#",
+                "#......#.@.............#",
+                "#......#...............#",
+                "#..L...####.############",
+                "#......................#",
+                "###.#########~##########",
+                "#.........#............#",
+                "#..A......#.....L....X.#",
+                "#.........~............#",
+                "########################",
+            },
+        };
+
+        static readonly Config V2_L02_Hedge = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L02_Hedge.unity",
+            recipe = null,
+            recipe2 = null,
+            next = "L03_Mud",
+            note = "L02 TAMAN PAGAR (menyusup). Golem patroli, pagar tanaman menutup pandangan, lentera = bahaya.\n" +
+                   "Baca timing patroli, lewat di belakang golem. X = lanjut ke jalan lumpur. Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S...#.........#.......#",
+                "#....#..g...G..#...L...#",
+                "#....#.........#.......#",
+                "#..........#.......#...#",
+                "###.####...#.h.....#...#",
+                "#......#...#.......#...#",
+                "#..A...#...#####...#.H.#",
+                "#......#...........#...#",
+                "#....L.....k.....K...X.#",
+                "########################",
+            },
+        };
+
+        static readonly Config V2_L03_Mud = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L03_Mud.unity",
+            recipe = null,
+            recipe2 = null,
+            next = "L04_Cells",
+            note = "L03 JALAN LUMPUR (menyusup). Anjing Lendir mencium jejak; lumpur (m) meninggalkan jejak bau beberapa detik.\n" +
+                   "Cuci di genangan (=). Golem menjaga dekat ventilasi turun (X) ke bawah tanah. Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S....#................#",
+                "#.....#..d.........D...#",
+                "#.....#................#",
+                "#..mmmmmmmmmm....=.....#",
+                "#.....#.....####.####..#",
+                "###.###.....#.......#..#",
+                "#.......g...#...A...#..#",
+                "#...........#.......#G.#",
+                "#..L......mmm.......#.X#",
+                "########################",
+            },
+        };
+
+        static readonly Config V2_L04_Cells = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L04_Cells.unity",
+            recipe = "Friend_Pip",
+            recipe2 = null,
+            next = "L05_CellBlock",
+            note = "L04 PENJARA KOSONG (penyelamatan). Sel-sel kosong, golem bawah tanah.\n" +
+                   "Ruang eksperimen: Pip (kecil, aura Embun). Esens pertama (w) -> belah ke toples -> F -> kawal ke ventilasi. Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S..#..#..#..#.........#",
+                "#...#..#..#..#..1..w...#",
+                "#...#..#..#..#.........#",
+                "#...........L..........#",
+                "#..g.............G.....#",
+                "#......................#",
+                "#...#..#..#..####.######",
+                "#.A.#..#..#..#........X#",
+                "#...#..#..#..#.........#",
+                "########################",
+            },
+        };
+
+        static readonly Config V2_L05_CellBlock = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L05_CellBlock.unity",
+            recipe = "Friend_Bolu",
+            recipe2 = null,
+            next = "L06_DrainLab",
+            note = "L05 LORONG SEL (penyelamatan). Tempat sembunyi pertama (T tong, P peti).\n" +
+                   "Bolu (besar, aura Batu): makan Pendar (l) lalu Batu (b) TERAKHIR (berat = lambat dan berisik). Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#...........#.......#",
+                "#....#..T....T...#..1....#",
+                "#....#...........#.l..b..#",
+                "#....####.####.###.......#",
+                "#........................#",
+                "#..d................D....#",
+                "#........................#",
+                "####.#######.#######.#####",
+                "#.A.......T.....P.......X#",
+                "#..g.................G...#",
+                "##########################",
+            },
+        };
+
+        static readonly Config V2_L06_DrainLab = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L06_DrainLab.unity",
+            recipe = "Friend_Tok",
+            recipe2 = "Friend_Lumi",
+            next = "L07_GreatHall",
+            note = "L06 LAB PENYADAP (penyelamatan, 2 toples). Familiar Api (melihat yang menyala) dan Mata Penyihir\n" +
+                   "(memeriksa tempat sembunyi + membongkar tiruan beraura salah). Tok (aura Bayang, esens u), Lumi (aura Pendar, esens l). Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#.......L.......#...#",
+                "#....#..1.........2..#...#",
+                "#....#...u.....l.....#.A.#",
+                "#....#...............#...#",
+                "#....###.#########.###...#",
+                "#........................#",
+                "#..f...........F.........#",
+                "#........................#",
+                "#.T.......5........6...X.#",
+                "##########################",
+            },
+        };
+
+        static readonly Config V2_L07_GreatHall = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L07_GreatHall.unity",
+            recipe = "Friend_Dad",
+            recipe2 = null,
+            next = "L08_Dining",
+            note = "L07 AULA BESAR (penyelamatan). Zirah Hampa buta tapi memburu suara: lantai berderit (c) dan vas (q) berbahaya.\n" +
+                   "Golem bergiliran istirahat di z (shift jaga). Ayah (besar, aura Bara): Embun (w) lalu Bara (r) terakhir. Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#..............#....#",
+                "#....#..3......4....#.1..#",
+                "#....#..............#.w.r#",
+                "#....#..cccccccccc..#....#",
+                "#....######.#########.####",
+                "#........................#",
+                "#....q....g.......G...z..#",
+                "#........................#",
+                "#.A..................X...#",
+                "##########################",
+            },
+        };
+
+        static readonly Config V2_L08_Dining = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L08_Dining.unity",
+            recipe = "Friend_Mom",
+            recipe2 = null,
+            next = "L09_Gallery",
+            note = "L08 RUANG MAKAN (penyelamatan). Banyak tempat sembunyi, tapi Pelayan Tudung rutin memeriksanya. Anjing di bawah.\n" +
+                   "Ibu (besar, aura Embun): Belerang (y) lalu Embun (w) terakhir (bau Belerang ikut ke tiruan). Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#.........T....#....#",
+                "#....#..T..P.......q#..1.#",
+                "#....#..............#..y.#",
+                "#....#..7........8..#.w..#",
+                "#....####.###########.####",
+                "#........................#",
+                "#..d...........D.....q...#",
+                "#..T.....P..........T....#",
+                "#.A..................X...#",
+                "##########################",
+            },
+        };
+
+        static readonly Config V2_L09_Gallery = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L09_Gallery.unity",
+            recipe = "Friend_Sis",
+            recipe2 = null,
+            next = "L10_Tower",
+            note = "L09 GALERI (penyelamatan). Lukisan Bermata diam menyapu pandangan; curiga penuh = alarm memanggil Mata Penyihir.\n" +
+                   "Adik (kecil, aura Belerang): esens y. Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#....p......p...#...#",
+                "#....#...............#.1.#",
+                "#....#....T....T.....#.y.#",
+                "#....#...............#...#",
+                "#....###.##########.##.###",
+                "#........................#",
+                "#..5..............6......#",
+                "#........................#",
+                "#.A..................X...#",
+                "##########################",
+            },
+        };
+
+        static readonly Config V2_L10_Tower = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L10_Tower.unity",
+            recipe = "Friend_Gran",
+            recipe2 = null,
+            next = "L11_Summit",
+            note = "L10 TANGGA MENARA (ujian). Campuran Golem, Anjing, Zirah Hampa. Peti (B) bisa didorong ke pelat (o) untuk membuka pintu.\n" +
+                   "Nenek (besar, aura Beku): Batu (b) lalu Beku (i) terakhir. Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#...........|...#...#",
+                "#....#..B........#...#.1.#",
+                "#....#........o..#...#.b.#",
+                "#....#...........#.i.....#",
+                "#....######.######.#######",
+                "#........................#",
+                "#..g.........G....d....D.#",
+                "#........................#",
+                "#.A....3......4......X...#",
+                "##########################",
+            },
+        };
+
+        static readonly Config V2_L11_Summit = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/V2/L11_Summit.unity",
+            recipe = null,
+            recipe2 = null,
+            next = "Ending",
+            note = "L11 PUNCAK (final, menyusup). Alkemis memburu (tiap beberapa detik mendatangi perkiraan posisimu) dan memeriksa\n" +
+                   "tempat sembunyi. Lukisan mengawasi. X = ruang raja (adegan final menyusul: katup aura, Segel Raja). Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#.......p...........#",
+                "#....#..T.........P......#",
+                "#....#...................#",
+                "#..A.###.####.#####.######",
+                "#........................#",
+                "#...9..................0.#",
+                "#........................#",
+                "#.T...........T.......X..#",
+                "##########################",
+            },
+        };
+
+        static readonly Config[] V2Levels = { V2_L01_Gate, V2_L02_Hedge, V2_L03_Mud, V2_L04_Cells, V2_L05_CellBlock, V2_L06_DrainLab, V2_L07_GreatHall, V2_L08_Dining, V2_L09_Gallery, V2_L10_Tower, V2_L11_Summit };
+
+        [MenuItem("GooNapped/Blockout/Semua level v2")]
+        public static void BuildAllV2()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/_Game/Scenes/Levels/V2"))
+                AssetDatabase.CreateFolder("Assets/_Game/Scenes/Levels", "V2");
+            foreach (var c in V2Levels)
+            {
+                if (AssetDatabase.LoadAssetAtPath<SceneAsset>(c.scene) == null)
+                    AssetDatabase.CopyAsset("Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity", c.scene);
+                Build(c);
+            }
+        }
+
         // Galeri musuh unik (BUKAN level): tiap musuh di ruangannya sendiri untuk dilihat dan disetel.
         static readonly Config SandboxEnemies = new Config
         {

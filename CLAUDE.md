@@ -14,7 +14,7 @@ Nama sementara: **Goo-napped** (nama final diputuskan setelah game jadi).
 
 ## Status (11 Nov 2026, minggu 2)
 - **v1 lengkap dan lolos QA otomatis, sudah di `main`** (PR #2–#5): gerak, makan bahan, belah/gabung/Shift, toples + resep, Golem/Familiar/Anjing, pathfinding A*, HUD UI Toolkit, sistem cerita (strip + dialog), menu/pause/progres, props (pintu, tuas, pelat, celah), 8 level blockout, validator level + bot QA.
-- **v2 dimulai 11 Nov** di `feat/redesign-lore`. Urutan kerja ada di `docs/desain-v2.md` bagian 17, progres di `docs/backlog.md`.
+- **v2 (11 Nov)** di `feat/redesign-lore`: semua sistem v2 + 6 musuh unik + kekuatan teman + markas + benda interaksi + blockout 11 level (`Scenes/Levels/V2`). Lolos validator dan bot. Progres: `docs/backlog.md`.
 - Belum (tim desainer): desain slime final + teman, sprite musuh baru, tileset 3 area + puncak, props tempat sembunyi, toples 2 ukuran, isi cerita, audio final. Belum ada playtest manusia.
 - Mood: **gelap**, palet beda per area (`art/CLAUDE.md`). `art/palette.hex` masih USULAN.
 - `docs/rundown-level.md` adalah rundown v1 dan sudah usang. Daftar level v2 ada di `docs/desain-v2.md` bagian 3.

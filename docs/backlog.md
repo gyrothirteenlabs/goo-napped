@@ -3,7 +3,7 @@
 Status: ✅ selesai (prototipe) · 🔧 sedang dikerjakan · ⬜ belum. Sumber desain: `docs/desain-v2.md` (urutan kerja bagian 17).
 Branch: `feat/redesign-lore`. Backlog v1 (resep 2–3 ciri, telan teman, nyamar bebas) ada di riwayat git `main`.
 Ruang uji semua sistem v2: `Scenes/Sandbox/ProtoV2` (menu GooNapped > Blockout > Sandbox ProtoV2). Alur game sementara:
-Menu → Intro → ProtoV2 → Ending, sampai 11 level v2 dibangun.
+Menu → Intro → L01 … L11 (Markas di antaranya) → Ending.
 
 ## Inti v2 (selesai 11 Nov)
 | | Fitur | Catatan |
@@ -29,7 +29,7 @@ Menu → Intro → ProtoV2 → Ending, sampai 11 level v2 dibangun.
 | ✅ | Pergantian shift jaga: penjaga bertugas N dtk lalu istirahat di titik tertentu, pos kosong sebentar (menunggu tenang dulu kalau sedang curiga) | `GuardShift`, legenda `z` |
 | ✅ | Barang rapuh (tersenggol = pecah + bunyi), lantai berderit (tubuh besar/berat/teman besar = bunyi), peti dorong (massa >= 2, per tile, menekan pelat, menutup pandangan) | `FragileItem`, `CreakyFloor`, `PushCrate`, legenda `q c B`. Uji: `Sandbox/ProtoInteract` |
 | ✅ | Musuh unik (perilaku + prefab placeholder): Lukisan Bermata (diam, menyapu, alarm), Monster Gerbang (diam, sorot = tertangkap), Zirah Hampa (buta, pendengaran x1.8), Mata Penyihir (periksa tempat sembunyi + bongkar toples aura salah), Pelayan Tudung (periksa tempat sembunyi), Alkemis (pemburu tiap 9 dtk) | `Guard` (Perilaku khusus), `Prefabs/Enemies/*_Placeholder`, legenda `p @ 3-4 5-6 7-8 9-0`, uji `Sandbox/ProtoEnemies`. **Sprite final: tim** |
-| ⬜ | Blockout 11 level v2 | menunggu OK daftar level (desain-v2 bagian 18) |
+| ✅ | Blockout 11 level v2 (L01_Gate s/d L11_Summit, sesuai daftar usulan desain-v2 bagian 3), alur Intro > L01 > Markas > ... > L11 > Ending. Lolos validator + bot tamat semua | `Scenes/Levels/V2`, menu GooNapped > Blockout > Semua level v2. **Peta masih kecil**: bot tanpa penjaga 11–29 dtk/level, target manusia 2–4 menit; layout final dan ukuran: tim desainer. L11 belum punya adegan final (katup aura, Segel Raja) |
 | ⬜ | Isi cerita (strip, dialog, catatan) | tim |
 | ⬜ | Build Settings ke daftar level v2 | ProjectSettings = keputusan tim |
 

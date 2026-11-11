@@ -14,7 +14,7 @@ namespace GooNapped.Tests
     // Scene dibuka ADDITIVE lalu ditutup lagi, jadi scene yang sedang kamu edit tidak tersentuh.
     public class LevelValidationTests
     {
-        static readonly string[] SandboxScenes = { "Assets/_Game/Scenes/Sandbox/ProtoProps.unity" };
+        static readonly string[] SandboxScenes = { "Assets/_Game/Scenes/Sandbox/ProtoProps.unity", "Assets/_Game/Scenes/Sandbox/ProtoV2.unity" };
 
         static IEnumerable<string> LevelPaths()
         {
@@ -94,7 +94,8 @@ namespace GooNapped.Tests
                 int i = GameFlow.IndexOf(name);
                 string want = i >= 0 && i + 1 < GameFlow.Levels.Length ? GameFlow.Levels[i + 1] : GameFlow.Ending;
                 if (next != want) p.Add($"LevelGoal.nextScene = '{next}', seharusnya '{want}' (urutan GameFlow.Levels).");
-                if (!BuildSceneNames().Contains(next)) p.Add($"Scene berikutnya '{next}' tidak ada di Build Settings.");
+                // Build Settings = keputusan tim (dicek AlurGame_SemuaSceneAdaDiBuild); di sini cukup scene-nya ada di project
+                if (GameFlow.FindScenePath(next) == null) p.Add($"Scene berikutnya '{next}' tidak ada di Assets/_Game/Scenes.");
             }
 
             // 3. objek tidak di dalam tembok
