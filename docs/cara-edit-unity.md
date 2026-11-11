@@ -25,6 +25,8 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `b` `l` `w` `r` `y` `i` `u` | Esens Batu, Pendar, Embun, Bara, Belerang, Beku, Bayang |
    | `T` / `P` | tempat sembunyi: tong (muat 1) / peti (muat 2) |
    | `m` / `=` | lumpur (jejak bau) / genangan (mencuci lumpur) |
+   | `q` / `c` / `B` | vas rapuh / lantai berderit / peti dorong |
+   | `z` | tempat istirahat penjaga terdekat (memasang `GuardShift`: tugas 12 dtk, istirahat 8 dtk; ubah di Inspector) |
    | `n` | kursi teman di markas (diisi berurutan dari `friends` di config; tampil kalau sudah diselamatkan) |
    | `L` | lentera |
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |

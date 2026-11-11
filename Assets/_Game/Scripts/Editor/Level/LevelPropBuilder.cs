@@ -14,6 +14,9 @@ namespace GooNapped.EditorTools
     //   barrel_placeholder.png      frame 0 (tempat sembunyi muat 1)
     //   crate_placeholder.png       frame 0 (tempat sembunyi muat 2)
     //   vent_placeholder.png        frame 0 lubang ventilasi, frame 1 lubang exit (ke area berikutnya)
+    //   vase_placeholder.png        frame 0 utuh, frame 1 pecah (barang rapuh)
+    //   creaky_placeholder.png      frame 0 (lantai papan berderit)
+    //   pushcrate_placeholder.png   frame 0 (peti dorong)
     // Menu: GooNapped > Placeholder > Props level (pintu, tuas, pelat, celah, tempat sembunyi)
     public static class LevelPropBuilder
     {
@@ -140,6 +143,26 @@ namespace GooNapped.EditorTools
                 for (int k = 0; k < 4; k++) Rect(ox + 12 + k * 7, 10, 3, 28, IronLight);
             }
             Save("vent_placeholder");
+
+            // vas rapuh: utuh / pecahan di lantai
+            Begin(2);
+            var Clay = new Color32(170, 110, 80, 255); var ClayDark = new Color32(120, 72, 52, 255);
+            Rect(19, 6, 10, 4, ClayDark); Rect(16, 10, 16, 14, Clay); Rect(18, 24, 12, 4, ClayDark); Rect(20, 28, 8, 4, Clay);
+            Rect(20, 14, 3, 6, new Color32(210, 150, 110, 255));
+            Rect(48 + 12, 4, 6, 3, Clay); Rect(48 + 22, 6, 5, 3, ClayDark); Rect(48 + 30, 3, 6, 4, Clay); Rect(48 + 18, 9, 4, 2, ClayDark);
+            Save("vase_placeholder");
+
+            // lantai papan berderit: papan memanjang dengan celah dan paku
+            Begin(1);
+            for (int i = 0; i < 4; i++) { Rect(2, 2 + i * 11, 44, 9, i % 2 == 0 ? Wood : WoodDark); Rect(6, 6 + i * 11, 2, 2, Iron); Rect(40, 6 + i * 11, 2, 2, Iron); }
+            Save("creaky_placeholder");
+
+            // peti dorong: kotak berbingkai besi dengan pegangan
+            Begin(1);
+            Rect(6, 2, 36, 34, Iron); Rect(9, 5, 30, 28, Wood);
+            Rect(9, 17, 30, 3, WoodDark); Rect(22, 5, 3, 28, WoodDark);
+            Rect(18, 34, 12, 3, IronLight);
+            Save("pushcrate_placeholder");
         }
 
         // ---------- prefab ----------
@@ -217,6 +240,37 @@ namespace GooNapped.EditorTools
                 box.size = Vector2.one;
                 go.AddComponent<Crawlspace>();
                 SavePrefab(go, "Crawlspace");
+            }
+            // barang rapuh: trigger di sekitar vas, anak "Visual" yang miring/berganti sprite saat pecah
+            {
+                var go = new GameObject("FragileVase");
+                var vis = NewProp("Visual", Frame("vase_placeholder", 0), 0);
+                vis.transform.SetParent(go.transform, false);
+                var cc = go.AddComponent<CircleCollider2D>();
+                cc.isTrigger = true;
+                cc.offset = new Vector2(0f, 0.35f);
+                cc.radius = 0.42f;
+                var fi = go.AddComponent<FragileItem>();
+                Set(fi, "spriteRenderer", p => p.objectReferenceValue = vis.GetComponent<SpriteRenderer>());
+                Set(fi, "brokenSprite", p => p.objectReferenceValue = Frame("vase_placeholder", 1));
+                SavePrefab(go, "FragileVase");
+            }
+            {
+                var go = NewProp("CreakyFloor", Frame("creaky_placeholder", 0), -95);
+                var box = go.AddComponent<BoxCollider2D>();
+                box.isTrigger = true;
+                box.offset = new Vector2(0f, 0.5f);
+                box.size = new Vector2(0.9f, 0.9f);
+                go.AddComponent<CreakyFloor>();
+                SavePrefab(go, "CreakyFloor");
+            }
+            {
+                var go = NewProp("PushCrate", Frame("pushcrate_placeholder", 0), 0);
+                var box = go.AddComponent<BoxCollider2D>();
+                box.offset = new Vector2(0f, 0.5f);
+                box.size = new Vector2(0.92f, 0.92f);
+                go.AddComponent<PushCrate>();
+                SavePrefab(go, "PushCrate");
             }
             // ventilasi: trigger (bisa diinjak), HidingSpot aman (tidak pernah dicurigai), muat banyak
             foreach (bool exit in new[] { false, true })

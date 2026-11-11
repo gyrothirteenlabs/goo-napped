@@ -55,6 +55,9 @@ namespace GooNapped
                     if (requireHeavy && !p.Body.State.IsHeavy) { lightOnPlate = p.IsControlled; continue; }
                     now = true;
                 }
+            // peti dorong juga menekan (termasuk pelat berat)
+            foreach (var c in PushCrate.All)
+                if (c != null && !c.IsSliding && Vector2.Distance(c.Center, Center) <= radius + 0.2f) now = true;
             // teman yang disuruh menunggu di pelat ikut menekan; pelat berat hanya oleh teman besar (desain-v2 bagian 6)
             foreach (var f in FriendSlime.All)
             {

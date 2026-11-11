@@ -9,6 +9,10 @@ namespace GooNapped
     {
         public static event Action<Vector2, float> Noise;
 
+        // Domain Reload mati di project ini: buang pendengar sisa Play sebelumnya.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => Noise = null;
+
         public static void Emit(Vector2 position, float radius) => Noise?.Invoke(position, radius);
     }
 }

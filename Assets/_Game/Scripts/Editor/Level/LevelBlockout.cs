@@ -22,6 +22,8 @@ namespace GooNapped.EditorTools
     //           A  lubang ventilasi (aman, checkpoint, jaringan "A")   X  lubang ventilasi EXIT (level selesai)
     //           m  lumpur (jejak bau beberapa detik)   =  genangan air (mencuci lumpur)
     //           n  kursi teman di markas (diisi berurutan dari Config.friends; tampil kalau sudah diselamatkan)
+    //           q  barang rapuh (vas: tersenggol = pecah, berisik)   c  lantai berderit (tubuh besar/berat = berisik)
+    //           B  peti dorong (massa >= 2, satu tile per dorongan)   z  tempat istirahat Golem terdekat (shift jaga)
     //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
     //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
     public static class LevelBlockout
@@ -326,6 +328,36 @@ namespace GooNapped.EditorTools
             },
         };
 
+        // Ruang uji benda interaksi (BUKAN level): vas rapuh, lantai berderit, peti dorong ke pelat, Golem dengan shift jaga.
+        static readonly Config SandboxInteract = new Config
+        {
+            scene = "Assets/_Game/Scenes/Sandbox/ProtoInteract.unity",
+            next = "",
+            note = "SANDBOX ProtoInteract: benda interaksi desain v2 bagian 10. Bukan desain level.\n" +
+                   "Vas (q): tersenggol = pecah, bunyinya memancing Golem. Lantai berderit (c): berbunyi kalau tubuhmu besar/berat.\n" +
+                   "Peti (B): makan esens (w) dulu supaya massa 2, dorong peti ke kanan sampai pelat (o) di depan tembok: pintu terbuka.\n" +
+                   "Golem bertugas 12 dtk lalu istirahat 8 dtk di titik z: lewati posnya saat kosong. Exit = lubang X.",
+            map = new[]
+            {
+                "####################",
+                "#S...#.......#..z..#",
+                "#..w.#..q....#.....#",
+                "#....|.......###.###",
+                "#.B.o#..cccc.......#",
+                "#....#.......gG..X.#",
+                "#....#.......#.....#",
+                "####################",
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/Sandbox ProtoInteract")]
+        public static void BuildSandboxInteract()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(SandboxInteract.scene) == null)
+                AssetDatabase.CopyAsset("Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity", SandboxInteract.scene);
+            Build(SandboxInteract);
+        }
+
         [MenuItem("GooNapped/Blockout/Markas")]
         public static void BuildHub()
         {
@@ -505,12 +537,14 @@ namespace GooNapped.EditorTools
                 if (propRoot == null) propRoot = new GameObject("LevelProps").transform;
                 if (AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Door.prefab") == null ||
                     AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/HidingSpot_Barrel.prefab") == null ||
-                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Vent.prefab") == null) LevelPropBuilder.BuildAll();
+                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Vent.prefab") == null ||
+                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/PushCrate.prefab") == null) LevelPropBuilder.BuildAll();
                 return propRoot;
             }
 
             int h = c.map.Length, w = c.map[0].Length;
             int hubSlot = 0;
+            var breakPoints = new List<Vector2>();
             const string golemKeys = "ghkfvd";   // g h k = Golem Batu, f v = Familiar Api, d = Anjing Lendir
             var golemStart = new Dictionary<char, Vector2>();
             var golemEnd = new Dictionary<char, Vector2>();
@@ -616,6 +650,18 @@ namespace GooNapped.EditorTools
                             Set(hf, "bodyRenderer", q => q.objectReferenceValue = go.transform.Find("Friend_Body").GetComponent<SpriteRenderer>());
                             break;
                         }
+                        case 'q':
+                            Spawn(P + "Level/FragileVase.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "FragileVase");
+                            break;
+                        case 'c':
+                            Spawn(P + "Level/CreakyFloor.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "CreakyFloor");
+                            break;
+                        case 'B':
+                            Spawn(P + "Level/PushCrate.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "PushCrate");
+                            break;
+                        case 'z':
+                            breakPoints.Add(pos);
+                            break;
                         case 'T':
                         case 'P':
                         {
@@ -668,6 +714,21 @@ namespace GooNapped.EditorTools
                     p.GetArrayElementAtIndex(0).vector2Value = a;
                     p.GetArrayElementAtIndex(1).vector2Value = b;
                 });
+            }
+
+            // shift jaga: tiap titik istirahat dipasang ke penjaga terdekat
+            foreach (var bp in breakPoints)
+            {
+                Guard nearestGuard = null;
+                float bestG = float.MaxValue;
+                foreach (var g in guardRoot.GetComponentsInChildren<Guard>())
+                {
+                    float dg = Vector2.Distance(bp, g.transform.position);
+                    if (dg < bestG) { bestG = dg; nearestGuard = g; }
+                }
+                if (nearestGuard == null) continue;
+                var gs = nearestGuard.GetComponent<GuardShift>() ?? nearestGuard.gameObject.AddComponent<GuardShift>();
+                Set(gs, "breakPoint", q => q.vector2Value = bp);
             }
 
             // sambungkan tiap tuas/pelat ke pintu terdekat

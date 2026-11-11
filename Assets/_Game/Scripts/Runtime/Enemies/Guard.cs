@@ -165,6 +165,15 @@ namespace GooNapped
         public string GuardName => guardName;
         // Untuk tool/test QA (cek level): setelan patroli dan penglihatan.
         public IReadOnlyList<Vector2> PatrolPoints => patrolPoints;
+
+        // Ganti rute patroli (pergantian shift jaga). Mulai dari titik pertama rute baru.
+        public void SetPatrol(List<Vector2> points)
+        {
+            if (points == null || points.Count == 0) return;
+            patrolPoints = new List<Vector2>(points);
+            pointIndex = 0;
+            if (state == State.Wait) state = State.Patrol;
+        }
         public float ViewRange => viewRange;
         public float ViewAngle => viewAngle;
         public float AwarenessRadius => awarenessRadius;
