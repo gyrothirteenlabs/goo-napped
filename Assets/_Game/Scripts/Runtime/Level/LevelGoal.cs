@@ -81,8 +81,7 @@ namespace GooNapped
         private IEnumerator LoadNext()
         {
             yield return new WaitForSeconds(nextDelay);
-            if (string.IsNullOrEmpty(nextScene)) GameFlow.LoadMainMenu();
-            else GameFlow.Load(nextScene);
+            GameFlow.LoadAfterLevel(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name, nextScene);
         }
 
         // Dipanggil penjaga saat menangkap pemain/potongan/teman.

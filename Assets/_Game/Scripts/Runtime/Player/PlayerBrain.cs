@@ -207,6 +207,10 @@ namespace GooNapped
             var jar = FindNear<Jar>(a, interactRadius);
             if (jar != null && jar.HasFriend) return InsertIntoJar(a, jar);
 
+            // markas: bicara dengan teman
+            var hubFriend = FindNear<HubFriend>(a, interactRadius + 0.3f);
+            if (hubFriend != null) { hubFriend.Talk(); return true; }
+
             // padamkan lentera: butuh tubuh dingin
             var lamp = FindNear<Extinguishable>(a, interactRadius);
             if (lamp != null && lamp.IsLit)

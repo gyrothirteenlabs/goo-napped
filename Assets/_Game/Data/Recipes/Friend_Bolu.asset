@@ -19,4 +19,8 @@ MonoBehaviour:
   size: 2
   power: 1
   jarLine: Psst! Over here! I'm too big to squeeze out on my own.
+  hubLines:
+  - If you need a distraction, I can bang on the vent walls. Loud enough to wake
+    a golem!
+  - Thanks for getting me out. I owe you one. Maybe two.
   bodyMaterial: {fileID: 2100000, guid: 20e0135d637aa194fb127897d46d01b7, type: 2}

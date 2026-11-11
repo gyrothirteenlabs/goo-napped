@@ -19,4 +19,8 @@ MonoBehaviour:
   size: 2
   power: 0
   jarLine: So the clear one survived. Just like the old songs said.
+  hubLines:
+  - The old songs said a clear slime would fool the jar spirit. I never believed
+    them.
+  - The Gloam fears its own jar. Remember that at the top.
   bodyMaterial: {fileID: 2100000, guid: e35c66af44975394aa89369a4b674894, type: 2}

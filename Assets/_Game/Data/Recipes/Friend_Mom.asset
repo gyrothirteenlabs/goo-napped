@@ -19,4 +19,7 @@ MonoBehaviour:
   size: 2
   power: 4
   jarLine: My brave little blob... careful, they check the jars.
+  hubLines:
+  - My little blob... I can breathe a mist through the vents to hide you.
+  - Promise me you'll be careful.
   bodyMaterial: {fileID: 2100000, guid: 678de0cabe5df0f499f6a1b1d094d586, type: 2}

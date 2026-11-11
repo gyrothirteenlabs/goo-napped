@@ -19,4 +19,7 @@ MonoBehaviour:
   size: 1
   power: 2
   jarLine: Still alive, little one? Then get this old bell-keeper out.
+  hubLines:
+  - I can smother a lamp through the grates. Dark is your friend down there.
+  - That machine upstairs... it hums like the old bell. I don't like it.
   bodyMaterial: {fileID: 2100000, guid: 8f2e9a90e70675e4c8b0f7a025c12db1, type: 2}

@@ -32,6 +32,9 @@ namespace GooNapped.Tests
         private string failure;
 
         const string PowersKey = "gn_powers";
+        const string RescuedKey = "gn_rescued";
+        private string savedRescued;
+        private bool hadRescued;
         private string savedPowers;
         private bool hadPowers;
 
@@ -42,6 +45,8 @@ namespace GooNapped.Tests
             savedUnlock = PlayerPrefs.GetInt(UnlockKey, 0);
             hadPowers = PlayerPrefs.HasKey(PowersKey);
             savedPowers = PlayerPrefs.GetString(PowersKey, "");
+            hadRescued = PlayerPrefs.HasKey(RescuedKey);
+            savedRescued = PlayerPrefs.GetString(RescuedKey, "");
         }
 
         [OneTimeTearDown]
@@ -49,6 +54,7 @@ namespace GooNapped.Tests
         {
             if (hadUnlock) PlayerPrefs.SetInt(UnlockKey, savedUnlock); else PlayerPrefs.DeleteKey(UnlockKey);
             if (hadPowers) PlayerPrefs.SetString(PowersKey, savedPowers); else PlayerPrefs.DeleteKey(PowersKey);
+            if (hadRescued) PlayerPrefs.SetString(RescuedKey, savedRescued); else PlayerPrefs.DeleteKey(RescuedKey);
             PlayerPrefs.Save();
         }
 

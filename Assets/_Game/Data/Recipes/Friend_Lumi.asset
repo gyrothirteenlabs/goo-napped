@@ -19,4 +19,7 @@ MonoBehaviour:
   size: 1
   power: 3
   jarLine: I knew someone would see my glow.
+  hubLines:
+  - My glow is coming back. I can make a crystal copy of a slime to fool them.
+  - Guards chase anything that shines. Use that.
   bodyMaterial: {fileID: 2100000, guid: 483730f32c813ae499b350d57a015805, type: 2}

@@ -19,4 +19,7 @@ MonoBehaviour:
   size: 1
   power: 0
   jarLine: Blip?! You came for me! Hurry, the pipes are draining me...
+  hubLines:
+  - You did it, Blip! The vents are ours now. Old slime tunnels, too small for monsters.
+  - I'll keep watch from here. Go find the others!
   bodyMaterial: {fileID: 2100000, guid: 678de0cabe5df0f499f6a1b1d094d586, type: 2}

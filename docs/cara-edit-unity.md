@@ -25,6 +25,7 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `b` `l` `w` `r` `y` `i` `u` | Esens Batu, Pendar, Embun, Bara, Belerang, Beku, Bayang |
    | `T` / `P` | tempat sembunyi: tong (muat 1) / peti (muat 2) |
    | `m` / `=` | lumpur (jejak bau) / genangan (mencuci lumpur) |
+   | `n` | kursi teman di markas (diisi berurutan dari `friends` di config; tampil kalau sudah diselamatkan) |
    | `L` | lentera |
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |
    | `f`/`F`, `v`/`V` | titik awal/akhir patroli Familiar Api 1, 2 |
@@ -67,6 +68,8 @@ Play di scene level. HUD: ukuran (massa), aura, ciri lain, status (LIT, GLOWING,
 1. `Assets/_Game/Data/Recipes/` > **Create > GooNapped > Teman (Friend)**, nama `Friend_<Nama>`.
 2. Isi: nama (Inggris), **tepat 1 Trait Warna** (aura), `Size` 1 (kecil) atau 2 (besar), `Power` (kekuatan setelah selamat), `Jar Line` (kalimat saat didekati), material palet.
 3. Tiruan butuh massa = `Size` (pemain massa `Size + 1`), esens terakhir = aura.
+
+Kalimat teman di markas: `Hub Lines` (bergantian tiap diajak bicara, bahasa Inggris). Kalimat saat toples didekati: `Jar Line`.
 
 ## 4. Palet warna slime per aura (desainer)
 Material `Art/Materials/Slime_*` (shader `GooNapped/PixelToonLit`): `Band 1..4` gelap ke terang, `Outline`, `Min Light`.

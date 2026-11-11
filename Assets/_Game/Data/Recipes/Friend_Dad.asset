@@ -19,4 +19,7 @@ MonoBehaviour:
   size: 2
   power: 0
   jarLine: Blip! Thank goodness. Your mother is somewhere upstairs.
+  hubLines:
+  - You've grown braver than I ever was.
+  - Your mother is upstairs. Bring her home.
   bodyMaterial: {fileID: 2100000, guid: 8520ea3f27702a249a0fdb94e03432d9, type: 2}

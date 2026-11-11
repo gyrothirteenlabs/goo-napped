@@ -21,6 +21,7 @@ namespace GooNapped.EditorTools
     //           T  tong (tempat sembunyi, muat 1)   P  peti (tempat sembunyi, muat 2)
     //           A  lubang ventilasi (aman, checkpoint, jaringan "A")   X  lubang ventilasi EXIT (level selesai)
     //           m  lumpur (jejak bau beberapa detik)   =  genangan air (mencuci lumpur)
+    //           n  kursi teman di markas (diisi berurutan dari Config.friends; tampil kalau sudah diselamatkan)
     //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
     //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
     public static class LevelBlockout
@@ -33,6 +34,8 @@ namespace GooNapped.EditorTools
         {
             public string scene, recipe, recipe2, next, note;
             public string[] map;
+            // markas: teman untuk kursi `n`, berurutan (aset Data/Recipes/Friend_*)
+            public string[] friends;
         }
 
         static readonly Config C1L01 = new Config
@@ -300,6 +303,37 @@ namespace GooNapped.EditorTools
             },
         };
 
+        // Markas di jaringan ventilasi (desain-v2 bagian 12): muncul di antara level. Teman yang sudah diselamatkan duduk di
+        // kursinya dan bisa diajak bicara (E). Ventilasi exit = lanjut ke level berikutnya.
+        static readonly Config Hub = new Config
+        {
+            scene = "Assets/_Game/Scenes/Story/Markas.unity",
+            next = "",
+            friends = new[] { "Friend_Pip", "Friend_Bolu", "Friend_Tok", "Friend_Lumi", "Friend_Dad", "Friend_Mom", "Friend_Sis", "Friend_Gran" },
+            note = "MARKAS (hideout) di saluran lendir tua. Bukan desain final: layout dan art dari tim desainer.\n" +
+                   "Teman yang sudah diselamatkan (RescueLog) duduk di kursi n. E di dekatnya = bicara (RecipeData.HubLines).\n" +
+                   "Lubang X = lanjut ke level berikutnya (GameFlow.PendingNext). Dibangun oleh GooNapped > Blockout > Markas.",
+            map = new[]
+            {
+                "################",
+                "#..n...L...n...#",
+                "#n...........n.#",
+                "#......S.......#",
+                "#n...........n.#",
+                "#..n...L...n...#",
+                "#......X.......#",
+                "################",
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/Markas")]
+        public static void BuildHub()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(Hub.scene) == null)
+                AssetDatabase.CopyAsset("Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity", Hub.scene);
+            Build(Hub);
+        }
+
         [MenuItem("GooNapped/Blockout/Sandbox ProtoV2")]
         public static void BuildSandboxV2()
         {
@@ -476,6 +510,7 @@ namespace GooNapped.EditorTools
             }
 
             int h = c.map.Length, w = c.map[0].Length;
+            int hubSlot = 0;
             const string golemKeys = "ghkfvd";   // g h k = Golem Batu, f v = Familiar Api, d = Anjing Lendir
             var golemStart = new Dictionary<char, Vector2>();
             var golemEnd = new Dictionary<char, Vector2>();
@@ -565,6 +600,20 @@ namespace GooNapped.EditorTools
                             bc.isTrigger = true;
                             bc.size = new Vector2(0.9f, 0.9f);
                             if (ch == 'm') z.AddComponent<MudZone>(); else z.AddComponent<WashZone>();
+                            break;
+                        }
+                        case 'n':
+                        {
+                            if (c.friends == null || hubSlot >= c.friends.Length) break;
+                            var data = Load<RecipeData>(D + "Recipes/" + c.friends[hubSlot++] + ".asset");
+                            var go = (GameObject)PrefabUtility.InstantiatePrefab(Load<GameObject>(P + "Characters/FriendSlime.prefab"), PropRoot());
+                            PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                            go.name = "Hub_" + data.FriendName;
+                            go.transform.position = pos;
+                            Object.DestroyImmediate(go.GetComponent<FriendSlime>());
+                            var hf = go.AddComponent<HubFriend>();
+                            Set(hf, "friend", q => q.objectReferenceValue = data);
+                            Set(hf, "bodyRenderer", q => q.objectReferenceValue = go.transform.Find("Friend_Body").GetComponent<SpriteRenderer>());
                             break;
                         }
                         case 'T':

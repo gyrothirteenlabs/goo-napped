@@ -19,4 +19,7 @@ MonoBehaviour:
   size: 1
   power: 0
   jarLine: Blip! I wasn't scared. Okay, maybe a little.
+  hubLines:
+  - I knew you'd come. I told everyone you would!
+  - When we're home, I'm sleeping for a week.
   bodyMaterial: {fileID: 2100000, guid: 7ff42e68e63781d41807a6e408c92c4d, type: 2}

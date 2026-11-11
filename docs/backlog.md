@@ -25,7 +25,7 @@ Menu → Intro → ProtoV2 → Ending, sampai 11 level v2 dibangun.
 | | Fitur | Catatan |
 |---|---|---|
 | ✅ | Kekuatan teman dari dalam ventilasi: Shift pilih, A/D pilih lubang, E pakai. Dentum, Padam (10 dtk), Umpan Kristal (dikejar lalu pecah), Kabut (6 dtk). Terbuka saat teman pembawanya selamat (PlayerPrefs `gn_powers`), jatah isi ulang tiap checkpoint | `FriendPowers`, `Decoy`, `MistCloud`. Di ProtoV2: selamatkan Bolu = Dentum |
-| ⬜ | Markas antar level (teman berkumpul, dialog) | |
+| ✅ | Markas antar level: teman yang sudah selamat duduk di kursinya (PlayerPrefs `gn_rescued`), E = bicara (`RecipeData.HubLines`, placeholder), ventilasi exit = level berikutnya. Level terakhir langsung ke Ending | scene `Story/Markas` (GooNapped > Blockout > Markas), `HubFriend`, `RescueLog`, `GameFlow.LoadAfterLevel` |
 | ⬜ | Pergantian shift jaga (puzzle) | |
 | ⬜ | Barang rapuh, lantai berderit, peti dorong | desain-v2 bagian 10 |
 | ⬜ | Musuh unik: Monster Gerbang, Mata Penyihir, Zirah Hampa, Pelayan Tudung, Lukisan Bermata, Alkemis | butuh art tim |

@@ -22,6 +22,8 @@ namespace GooNapped
         [SerializeField] private FriendPower power = FriendPower.None;
         [Tooltip("Kalimat pertama teman saat pemain mendekati toplesnya (bahasa Inggris). Kosong = tanpa dialog.")]
         [SerializeField, TextArea] private string jarLine = "";
+        [Tooltip("Kalimat teman di markas (bahasa Inggris), bergantian tiap diajak bicara. Placeholder sampai tim menulis cerita.")]
+        [SerializeField, TextArea] private string[] hubLines = new string[0];
         [Tooltip("Material palet body teman (Slime_*). Kosong = material prefab.")]
         [SerializeField] private Material bodyMaterial;
 
@@ -30,6 +32,7 @@ namespace GooNapped
         public int Size => Mathf.Max(1, size);
         public FriendPower Power => power;
         public string JarLine => jarLine;
+        public string[] HubLines => hubLines;
         public Material BodyMaterial => bodyMaterial;
         // Aura teman = nilai ciri Warna ("" kalau data v1 tanpa warna).
         public string Aura
