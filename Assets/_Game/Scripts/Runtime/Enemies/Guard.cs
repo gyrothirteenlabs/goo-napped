@@ -113,6 +113,25 @@ namespace GooNapped
         [Tooltip("Tempat yang sudah diperiksa dilewati selama ini (detik).")]
         [SerializeField] private float reinspectDelay = 12f;
 
+        [Header("Perilaku khusus (musuh unik, desain-v2 bagian 9)")]
+        [Tooltip("Tidak bisa berpindah (Lukisan Bermata, Monster Gerbang).")]
+        [SerializeField] private bool stationary;
+        [Tooltip("Diam + curiga penuh: true = langsung tertangkap (Monster Gerbang), false = bunyikan alarm memanggil penjaga (Lukisan).")]
+        [SerializeField] private bool stationaryCatches;
+        [Tooltip("Arah pandang dasar saat diam/patroli satu titik.")]
+        [SerializeField] private Vector2 facing = Vector2.down;
+        [Tooltip("Sapuan pandangan kiri-kanan saat bertugas (derajat). 0 = tidak menyapu.")]
+        [SerializeField] private float sweepAngle;
+        [SerializeField] private float sweepSpeed = 0.6f;
+        [Tooltip("Pengali radius suara yang terdengar (Zirah Hampa: buta, pendengarannya tajam).")]
+        [SerializeField] private float hearingMultiplier = 1f;
+        [Tooltip("Mata Penyihir: toples berisi tiruan beraura salah di dekat jalurnya langsung dibongkar (alarm).")]
+        [SerializeField] private bool inspectsJars;
+        [Tooltip("Pemburu (Alkemis): tiap N detik mendatangi perkiraan posisi pemain. 0 = tidak memburu.")]
+        [SerializeField] private float huntInterval;
+        [Tooltip("Ketidaktepatan perkiraan posisi pemburu (unit).")]
+        [SerializeField] private float huntError = 2.5f;
+
         [Header("Tampilan")]
         [SerializeField] private Material coneMaterial;
         [SerializeField] private int coneSortingOrder = -50;
@@ -213,6 +232,7 @@ namespace GooNapped
                 var d = patrolPoints[1] - patrolPoints[0];
                 if (d.sqrMagnitude > 1e-4f) forward = d.normalized;
             }
+            else if (facing.sqrMagnitude > 1e-4f) forward = facing.normalized;
         }
 
         private void OnEnable()
@@ -254,7 +274,11 @@ namespace GooNapped
         {
             float best = delta.magnitude;
             foreach (var h in Physics2D.RaycastAll(from, delta.normalized, best))
+            {
+                // jarak 0 = titik mata ada DI DALAM collider (musuh tinggi di lorong sempit): jangan dianggap terhalang
+                if (h.distance <= 1e-3f) continue;
                 if (h.collider != ignore && !IsSeeThrough(h.collider)) best = Mathf.Min(best, h.distance);
+            }
             return best;
         }
 
@@ -362,7 +386,7 @@ namespace GooNapped
         private void OnNoise(Vector2 position, float radius)
         {
             if (state == State.Caught || state == State.Chase || state == State.Inspect || state == State.Alert) return;
-            if (Vector2.Distance(Body, position) > radius) return;
+            if (Vector2.Distance(Body, position) > radius * hearingMultiplier) return;
             lastSeen = position;
             state = State.Search;
         }
@@ -371,7 +395,8 @@ namespace GooNapped
         private void OnAlerted(Guard caller, Vector2 pos)
         {
             if (caller == this || state == State.Chase || state == State.Caught || state == State.Inspect) return;
-            if (Vector2.Distance(Body, pos) > callRadius && Vector2.Distance(Body, caller.Body) > callRadius) return;
+            float reach = Mathf.Max(callRadius, caller.callRadius);   // alarm lukisan terdengar lebih jauh dari teriakan
+            if (Vector2.Distance(Body, pos) > reach && Vector2.Distance(Body, caller.Body) > reach) return;
             lastSeen = pos;
             Suspicion = Mathf.Max(Suspicion, Mathf.Min(0.9f, searchThreshold + 0.3f));
             state = State.Search;
@@ -496,6 +521,8 @@ namespace GooNapped
                 case State.Patrol:
                     if (patrolPoints.Count == 0) break;
                     if (inspectsHidingSpots && TryRoutineInspect()) break;
+                    if (inspectsJars) InspectJars();
+                    if (huntInterval > 0f && Hunt()) break;
                     var to = patrolPoints[pointIndex] - rb.position;
                     if (to.magnitude < 0.05f)
                     {
@@ -506,13 +533,59 @@ namespace GooNapped
                     TryMove(patrolPoints[pointIndex], speed);
                     break;
             }
+            // bertugas di tempat: pandangan menyapu kiri-kanan
+            if (sweepAngle > 0f && (state == State.Wait || (state == State.Patrol && !moving)))
+            {
+                float baseA = Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg + Mathf.Sin(Time.time * sweepSpeed * Mathf.PI) * sweepAngle;
+                TurnTowards(new Vector2(Mathf.Cos(baseA * Mathf.Deg2Rad), Mathf.Sin(baseA * Mathf.Deg2Rad)), turnSpeed);
+            }
             UpdateVisuals();
+        }
+
+        // Mata Penyihir: bongkar tiruan beraura salah di dekatnya.
+        private void InspectJars()
+        {
+            if (jars == null) return;
+            foreach (var j in jars)
+                if (j != null && j.HasDecoy && !j.AlarmRaised && j.DecoyMismatch > 0 && Vector2.Distance(Body, j.transform.position) <= inspectRadius + 0.6f)
+                    j.RaiseAlarm();
+        }
+
+        // Pemburu: berkala mendatangi perkiraan posisi pemain (tidak tepat), lalu menyapu pandangan di sana.
+        private float huntTimer = -1f;
+        private bool Hunt()
+        {
+            if (huntTimer < 0f) huntTimer = huntInterval;
+            if ((huntTimer -= Time.deltaTime) > 0f) return false;
+            huntTimer = huntInterval;
+            var a = brain != null ? brain.Active : null;
+            if (a == null) return false;
+            var guess = a.Center + UnityEngine.Random.insideUnitCircle * huntError;
+            var cell = NavGrid.CellOf(guess);
+            if (NavGrid.Available && !NavGrid.Walkable(cell)) guess = a.Center;
+            lastSeen = guess;
+            state = State.Search;
+            return true;
         }
 
         // ---- mengejar ----
 
+        private float stationaryAlarmAt = -99f;
+
         private void StartChase(Sight s)
         {
+            if (stationary)
+            {
+                // tidak bisa mengejar: Monster Gerbang menangkap dengan sorotnya, Lukisan membunyikan alarm
+                if (stationaryCatches) { Catch(s); return; }
+                state = State.Alert;
+                lastSeen = s.pos;
+                if (Time.time - stationaryAlarmAt < 4f) return;
+                stationaryAlarmAt = Time.time;
+                AudioDirector.Play(AudioDirector.Sfx.Caught, Body, 0.8f, 0.1f);
+                Alerted?.Invoke(this, s.pos);
+                return;
+            }
             state = State.Chase;
             chase = s;
             loseTimer = 0f;
@@ -700,6 +773,7 @@ namespace GooNapped
         // Menoleh ke tujuan lalu jalan; melambat saat masih berbelok. false = tidak ada jalan ke sana.
         private bool TryMove(Vector2 dest, float spd)
         {
+            if (stationary) { TurnTowards(dest + FootToBody - Eye, turnSpeed); return false; }
             var bodyDest = dest + FootToBody;
             var d = dest - rb.position;
             if (d.sqrMagnitude < 1e-4f) return true;

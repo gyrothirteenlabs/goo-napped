@@ -24,6 +24,9 @@ namespace GooNapped.EditorTools
     //           n  kursi teman di markas (diisi berurutan dari Config.friends; tampil kalau sudah diselamatkan)
     //           q  barang rapuh (vas: tersenggol = pecah, berisik)   c  lantai berderit (tubuh besar/berat = berisik)
     //           B  peti dorong (massa >= 2, satu tile per dorongan)   z  tempat istirahat Golem terdekat (shift jaga)
+    //           musuh unik (desain-v2 bagian 9), titik awal/akhir patroli:
+    //           3/4 Zirah Hampa   5/6 Mata Penyihir   7/8 Pelayan Tudung   9/0 Alkemis
+    //           p  Lukisan Bermata (diam, menyapu, alarm)   @  Monster Gerbang (diam, sorot = tertangkap)
     //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
     //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
     public static class LevelBlockout
@@ -358,6 +361,42 @@ namespace GooNapped.EditorTools
             Build(SandboxInteract);
         }
 
+        // Galeri musuh unik (BUKAN level): tiap musuh di ruangannya sendiri untuk dilihat dan disetel.
+        static readonly Config SandboxEnemies = new Config
+        {
+            scene = "Assets/_Game/Scenes/Sandbox/ProtoEnemies.unity",
+            recipe = "Friend_Pip",
+            next = "",
+            note = "SANDBOX ProtoEnemies: musuh unik desain v2 bagian 9 (sprite placeholder). Bukan desain level.\n" +
+                   "Atas: Lukisan Bermata (p, diam menyapu, curiga penuh = alarm), Zirah Hampa (3-4, buta, memburu suara).\n" +
+                   "Tengah: Mata Penyihir (5-6, periksa tempat sembunyi + bongkar toples beraura salah: makan Esens Batu lalu masukkan ke toples Pip),\n" +
+                   "Pelayan Tudung (7-8, membuka tempat sembunyi). Bawah: Monster Gerbang (@, sorot = tertangkap), Alkemis (9-0, pemburu).",
+            map = new[]
+            {
+                "##########################",
+                "#S........#..p...#.......#",
+                "#.........#......#...3...#",
+                "#..w.b...........#.......#",
+                "#.........#..........4...#",
+                "####.#########.######.####",
+                "#5........6#...7.......8.#",
+                "#..T...J...#...T....P....#",
+                "#..........#.............#",
+                "######.#########.#########",
+                "#9..........@...........0#",
+                "#.....................X..#",
+                "##########################",
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/Sandbox ProtoEnemies")]
+        public static void BuildSandboxEnemies()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(SandboxEnemies.scene) == null)
+                AssetDatabase.CopyAsset("Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity", SandboxEnemies.scene);
+            Build(SandboxEnemies);
+        }
+
         [MenuItem("GooNapped/Blockout/Markas")]
         public static void BuildHub()
         {
@@ -546,6 +585,12 @@ namespace GooNapped.EditorTools
             int hubSlot = 0;
             var breakPoints = new List<Vector2>();
             const string golemKeys = "ghkfvd";   // g h k = Golem Batu, f v = Familiar Api, d = Anjing Lendir
+            var uniqueStart = new Dictionary<char, string> { { '3', "HollowArmor" }, { '5', "WitchEye" }, { '7', "ClocheButler" }, { '9', "Alchemist" } };
+            var uniqueEnd = new Dictionary<char, char> { { '4', '3' }, { '6', '5' }, { '8', '7' }, { '0', '9' } };
+            var uniqueSingle = new Dictionary<char, string> { { 'p', "Portrait" }, { '@', "GateBeast" } };
+            var uStart = new Dictionary<char, Vector2>();
+            var uEnd = new Dictionary<char, Vector2>();
+            var uSingles = new List<(string kind, Vector2 pos)>();
             var golemStart = new Dictionary<char, Vector2>();
             var golemEnd = new Dictionary<char, Vector2>();
             // esens (aset Data/Ingredients/Essence_<nama>): b batu, l pendar, w embun, r bara, y belerang, i beku, u bayang
@@ -687,7 +732,10 @@ namespace GooNapped.EditorTools
                             break;
                         }
                         default:
-                            if (golemKeys.IndexOf(ch) >= 0) golemStart[ch] = pos;
+                            if (uniqueStart.ContainsKey(ch)) uStart[ch] = pos;
+                            else if (uniqueEnd.TryGetValue(ch, out var sk)) uEnd[sk] = pos;
+                            else if (uniqueSingle.TryGetValue(ch, out var single)) uSingles.Add((single, pos));
+                            else if (golemKeys.IndexOf(ch) >= 0) golemStart[ch] = pos;
                             else if (golemKeys.IndexOf(char.ToLowerInvariant(ch)) >= 0) golemEnd[char.ToLowerInvariant(ch)] = pos;
                             else if (ingredients.TryGetValue(ch, out var id))
                             {
@@ -714,6 +762,24 @@ namespace GooNapped.EditorTools
                     p.GetArrayElementAtIndex(0).vector2Value = a;
                     p.GetArrayElementAtIndex(1).vector2Value = b;
                 });
+            }
+
+            // musuh unik: patroli 2 titik, atau diam di tempat
+            foreach (var kv in uStart)
+            {
+                var b = uEnd.TryGetValue(kv.Key, out var e) ? e : kv.Value;
+                var g = Spawn(P + "Enemies/" + uniqueStart[kv.Key] + "_Placeholder.prefab", guardRoot, kv.Value, uniqueStart[kv.Key] + "_" + (++gi));
+                Set(g.GetComponent<Guard>(), "patrolPoints", q =>
+                {
+                    q.arraySize = 2;
+                    q.GetArrayElementAtIndex(0).vector2Value = kv.Value;
+                    q.GetArrayElementAtIndex(1).vector2Value = b;
+                });
+            }
+            foreach (var (kind, sp) in uSingles)
+            {
+                var g = Spawn(P + "Enemies/" + kind + "_Placeholder.prefab", guardRoot, sp, kind + "_" + (++gi));
+                Set(g.GetComponent<Guard>(), "patrolPoints", q => { q.arraySize = 1; q.GetArrayElementAtIndex(0).vector2Value = sp; });
             }
 
             // shift jaga: tiap titik istirahat dipasang ke penjaga terdekat

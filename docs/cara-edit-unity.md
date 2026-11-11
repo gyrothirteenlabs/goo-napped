@@ -27,6 +27,8 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `m` / `=` | lumpur (jejak bau) / genangan (mencuci lumpur) |
    | `q` / `c` / `B` | vas rapuh / lantai berderit / peti dorong |
    | `z` | tempat istirahat penjaga terdekat (memasang `GuardShift`: tugas 12 dtk, istirahat 8 dtk; ubah di Inspector) |
+   | `p` / `@` | Lukisan Bermata / Monster Gerbang (diam; arah pandang dasar = `Facing` di Inspector) |
+   | `3`/`4` `5`/`6` `7`/`8` `9`/`0` | titik awal/akhir Zirah Hampa, Mata Penyihir, Pelayan Tudung, Alkemis |
    | `n` | kursi teman di markas (diisi berurutan dari `friends` di config; tampil kalau sudah diselamatkan) |
    | `L` | lentera |
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |
@@ -89,6 +91,7 @@ Inspector `Guard`:
 | Cahaya | `Light Sight Range`, `Lit Threshold`, `Light Rate` |
 | Curiga | `Fill Time`, `Decay Per Second`, `Search Threshold`, `Look Around Time`, `Transform Suspicion` (lonjakan saat melihat transformasi), `Alarm Fill Multiplier` |
 | Mengejar | `Chase Speed Multiplier` (Golem 1.8, Familiar 1.5, Anjing 1.45), `Lose Sight Time`, `Catch Distance`, `Call Radius` (teriakan) |
+| Perilaku khusus | `Stationary` + `Stationary Catches` (diam: tangkap atau alarm), `Facing`, `Sweep Angle`/`Sweep Speed`, `Hearing Multiplier`, `Inspects Jars`, `Hunt Interval`/`Hunt Error` |
 | Tempat sembunyi | `Stare Range`, `Inspects Hiding Spots` (pemeriksa), `Inspect Radius`, `Inspect Time`, `Reinspect Delay` |
 
 ## 6. Menyetel rasa gerak slime

@@ -28,7 +28,7 @@ Menu → Intro → ProtoV2 → Ending, sampai 11 level v2 dibangun.
 | ✅ | Markas antar level: teman yang sudah selamat duduk di kursinya (PlayerPrefs `gn_rescued`), E = bicara (`RecipeData.HubLines`, placeholder), ventilasi exit = level berikutnya. Level terakhir langsung ke Ending | scene `Story/Markas` (GooNapped > Blockout > Markas), `HubFriend`, `RescueLog`, `GameFlow.LoadAfterLevel` |
 | ✅ | Pergantian shift jaga: penjaga bertugas N dtk lalu istirahat di titik tertentu, pos kosong sebentar (menunggu tenang dulu kalau sedang curiga) | `GuardShift`, legenda `z` |
 | ✅ | Barang rapuh (tersenggol = pecah + bunyi), lantai berderit (tubuh besar/berat/teman besar = bunyi), peti dorong (massa >= 2, per tile, menekan pelat, menutup pandangan) | `FragileItem`, `CreakyFloor`, `PushCrate`, legenda `q c B`. Uji: `Sandbox/ProtoInteract` |
-| ⬜ | Musuh unik: Monster Gerbang, Mata Penyihir, Zirah Hampa, Pelayan Tudung, Lukisan Bermata, Alkemis | butuh art tim |
+| ✅ | Musuh unik (perilaku + prefab placeholder): Lukisan Bermata (diam, menyapu, alarm), Monster Gerbang (diam, sorot = tertangkap), Zirah Hampa (buta, pendengaran x1.8), Mata Penyihir (periksa tempat sembunyi + bongkar toples aura salah), Pelayan Tudung (periksa tempat sembunyi), Alkemis (pemburu tiap 9 dtk) | `Guard` (Perilaku khusus), `Prefabs/Enemies/*_Placeholder`, legenda `p @ 3-4 5-6 7-8 9-0`, uji `Sandbox/ProtoEnemies`. **Sprite final: tim** |
 | ⬜ | Blockout 11 level v2 | menunggu OK daftar level (desain-v2 bagian 18) |
 | ⬜ | Isi cerita (strip, dialog, catatan) | tim |
 | ⬜ | Build Settings ke daftar level v2 | ProjectSettings = keputusan tim |
