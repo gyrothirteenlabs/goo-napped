@@ -216,8 +216,24 @@ namespace GooNapped
             // pemimpin sudah di dalam ventilasi: susul sampai lubangnya lalu ikut masuk (selamat)
             bool leaderInVent = Leader.HidingIn != null && Leader.HidingIn.IsSafe;
             if (leaderInVent && Vector2.Distance(transform.position, Leader.HidingIn.transform.position) < 0.55f) { Save(); return; }
-            float gap = Time.time < closeInUntil || leaderInVent ? 0.02f : followGap * (1f + 0.95f * QueueIndex());
+            bool closing = Time.time < closeInUntil || leaderInVent;
+            // jarak minimum antar badan (tepi ke tepi + sela), supaya teman tidak menumpuk dengan pemain
+            float minSep = closing ? 0f : Leader.Radius + Radius + 0.12f;
+            int q = QueueIndex();
+            float gap = closing ? 0.02f : Mathf.Max(followGap, minSep + 0.1f) + q * Mathf.Max(followGap, 2f * Radius + 0.2f);
             Vector2 pos = transform.position;
+            float straight = Vector2.Distance(pos, lead);
+
+            if (!closing && straight < minSep + q * 0.6f)
+            {
+                // pemain berbalik dan mendekat: jangan menyusuri jejak lama (itu menembus badan pemain).
+                // Buang jejak lama, dan menyingkir sedikit kalau pemain menempel.
+                trail.Clear();
+                trail.Add(lead);
+                if (straight < minSep && q == 0) StepAway(pos, lead, speed * 0.6f * Time.deltaTime);
+                return;
+            }
+
             // jalan di jejak selama jarak (sepanjang jejak) ke pemain masih lebih dari gap
             // batas iterasi + langkah minimum: tanpa ini langkah super kecil (presisi float) bisa membuat loop tak berujung
             for (int guard = 0; guard < 64 && budget > 1e-5f && trail.Count > 0; guard++)
@@ -227,7 +243,10 @@ namespace GooNapped
                 var next = trail[0];
                 float d = Vector2.Distance(pos, next);
                 float step = Mathf.Min(budget, d, slack);
-                if (d <= 1e-3f || step >= d - 1e-4f)
+                Vector2 cand = d <= 1e-3f || step >= d - 1e-4f ? next : Vector2.MoveTowards(pos, next, step);
+                // jangan masuk ke badan pemain atau teman lain di barisan
+                if (!closing && (Vector2.Distance(cand, lead) < minSep || Crowded(cand))) break;
+                if (cand == next)
                 {
                     pos = next;
                     trail.RemoveAt(0);
@@ -236,12 +255,48 @@ namespace GooNapped
                 else
                 {
                     if (step < 1e-4f) break;
-                    pos = Vector2.MoveTowards(pos, next, step);
+                    pos = cand;
                     budget -= step;
                 }
                 moved = true;
             }
             if (moved) transform.position = pos;
+        }
+
+        // Jari-jari badan teman (collider prefab 0.25, ikut skala ukuran).
+        private float Radius => 0.25f * transform.localScale.x;
+
+        // Langkah ke titik ini menabrak teman yang berjalan DI DEPAN dalam barisan (pemimpin sama, lebih dulu mengikuti)?
+        // Hanya mengalah ke yang di depan, dan hanya kalau langkahnya makin mendekat: dua teman yang terlanjur
+        // bertumpuk tetap bisa saling menjauh (tanpa ini keduanya saling mengunci).
+        private bool Crowded(Vector2 at)
+        {
+            Vector2 pos = transform.position;
+            foreach (var f in All)
+            {
+                if (f == null || f == this || f.State != Mode.Following || f.Leader != Leader || f.followSince >= followSince) continue;
+                Vector2 o = f.transform.position;
+                float limit = Radius + f.Radius + 0.05f;
+                if (Vector2.Distance(at, o) < limit && Vector2.Distance(at, o) < Vector2.Distance(pos, o)) return true;
+            }
+            return false;
+        }
+
+        // Menyingkir menjauhi pemain yang menempel, kalau tempat tujuannya tidak tembok.
+        private void StepAway(Vector2 pos, Vector2 lead, float dist)
+        {
+            var dir = pos - lead;
+            if (dir.sqrMagnitude < 1e-6f) dir = Vector2.down;
+            var cand = pos + dir.normalized * dist;
+            var c = cand + Vector2.up * 0.22f * transform.localScale.y;
+            foreach (var h in Physics2D.OverlapCircleAll(c, Radius * 0.9f))
+            {
+                if (h == null || h.isTrigger) continue;
+                if (h.GetComponentInParent<SlimePiece>() != null || h.GetComponentInParent<Guard>() != null) continue;
+                return;   // tembok/barang: tetap di tempat
+            }
+            transform.position = cand;
+            moved = true;
         }
 
         private float PathLength(Vector2 from)

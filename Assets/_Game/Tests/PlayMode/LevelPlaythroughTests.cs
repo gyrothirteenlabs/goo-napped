@@ -192,7 +192,8 @@ namespace GooNapped.Tests
                        Vector2.Distance(f.transform.position, brain.Active.transform.position) > 1.4f)) yield return null;
                 Assert.IsTrue(brain.ToggleHide(brain.Active), "C di lubang exit tidak masuk ventilasi. Pesan: " + brain.Message);
                 yield return WaitGame(1.5f);
-                Assert.IsTrue(goal.IsComplete, $"Masuk ventilasi exit tapi level tidak selesai (teman selamat {goal.Saved}/{goal.Required}). Pesan: {brain.Message}");
+                string fs = string.Join("; ", FriendSlime.All.Where(f => f != null).Select(f => f.Name + " " + f.State + " @" + ((Vector2)f.transform.position).ToString("F1")));
+                Assert.IsTrue(goal.IsComplete, $"Masuk ventilasi exit tapi level tidak selesai (teman selamat {goal.Saved}/{goal.Required}). Pemain @{((Vector2)brain.Active.transform.position).ToString("F1")}. Teman: {fs}. Pesan: {brain.Message}");
                 route.Add("ventilasi exit");
             }
             else

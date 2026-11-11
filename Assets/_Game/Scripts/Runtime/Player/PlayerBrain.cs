@@ -47,7 +47,7 @@ namespace GooNapped
         [Tooltip("Jarak ke tempat sembunyi supaya bisa masuk (C).")]
         [SerializeField] private float hideRadius = 0.9f;
         [Tooltip("Teman yang mengikuti dalam jarak ini ikut masuk tempat sembunyi/ventilasi bersama pemain.")]
-        [SerializeField] private float friendJoinRadius = 1.6f;
+        [SerializeField] private float friendJoinRadius = 2.4f;
 
         [Header("Jeda aksi (anti spam)")]
         [Tooltip("Jeda minimum antar Shift (detik).")]
@@ -136,6 +136,8 @@ namespace GooNapped
             {
                 // di dalam tempat sembunyi: diam, hanya C (keluar), Shift, dan F. Di ventilasi: A/D pindah lubang.
                 var vent = Vent.Of(a.HidingIn);
+                // di lubang exit: level selesai begitu teman terakhir yang menyusul ikut masuk
+                if (vent != null && vent.ExitsLevel && goal != null && goal.TryComplete(a)) return;
                 float x = move.ReadValue<Vector2>().x;
                 if (vent != null && Mathf.Abs(x) > 0.5f && !ventStick) { ventStick = true; TravelVent(a, vent, x < 0f ? -1 : 1); }
                 if (Mathf.Abs(x) <= 0.5f) ventStick = false;
