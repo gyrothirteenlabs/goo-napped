@@ -10,15 +10,29 @@ namespace GooNapped
     {
         private static Light2D[] lights = new Light2D[0];
         private static float nextRefresh;
+        private static bool forceRefresh = true;
+
+        // Daftar lampu dimuat ulang tiap Play dan tiap ganti scene, lalu tiap 2 detik (lampu bisa muncul/hilang).
+        // Dulu: scene tanpa lampu titik mencari ulang SETIAP pemanggilan (penjaga memanggil tiap frame).
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void Init()
+        {
+            lights = new Light2D[0];
+            forceRefresh = true;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private static void OnSceneLoaded(UnityEngine.SceneManagement.Scene s, UnityEngine.SceneManagement.LoadSceneMode m) => forceRefresh = true;
 
         private static void Refresh()
         {
-            // static bertahan antar scene/Play mode: muat ulang kalau daftar basi (lampu sudah hancur) atau jamnya ter-reset
             float now = Time.unscaledTime;
-            bool stale = lights.Length == 0 || lights[0] == null || nextRefresh - now > 5f;
+            bool stale = forceRefresh || (lights.Length > 0 && lights[0] == null) || nextRefresh - now > 5f;
             if (!stale && now < nextRefresh) return;
             lights = Object.FindObjectsByType<Light2D>(FindObjectsSortMode.None);
-            nextRefresh = Time.unscaledTime + 2f;
+            nextRefresh = now + 2f;
+            forceRefresh = false;
         }
 
         public static float At(Vector2 point)

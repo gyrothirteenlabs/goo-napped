@@ -4,7 +4,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "GooNapped.Runtime"
+        "GooNapped.Runtime",
+        "GooNapped.Tests.Shared"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

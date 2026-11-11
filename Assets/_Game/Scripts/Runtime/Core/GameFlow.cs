@@ -8,7 +8,9 @@ namespace GooNapped
     public static class GameFlow
     {
         public const string MainMenu = "MainMenu";
-        public static readonly string[] Levels = { "C1_L01", "C1_L02", "C1_L03", "C1_L04", "C2_L01" };
+        public const string Intro = "Intro";
+        public const string Ending = "Ending";
+        public static readonly string[] Levels = { "C1_L01", "C1_L02", "C1_L03", "C1_L04", "C2_L01", "C2_L02", "C2_L03", "C2_L04" };
         const string UnlockKey = "gn_unlocked";
 
         public static int IndexOf(string scene) => System.Array.IndexOf(Levels, scene);

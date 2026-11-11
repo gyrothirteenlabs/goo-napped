@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09b143d257710e34198c112c86d7af17, type: 3}
+  m_Name: Story_Contoh
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.StorySequence
+  pages:
+  - layout: 0
+    image: {fileID: 21300000, guid: 5ee38ba08bafe094ca3ced09252d7814, type: 3}
+    lines:
+    - speaker: 
+      text: '[Baris 1: gambar kiri, teks bertumpuk kanan]'
+      portrait: {fileID: 0}
+    - speaker: 
+      text: '[Baris 2]'
+      portrait: {fileID: 0}
+    - speaker: 
+      text: '[Baris 3: teks panjang otomatis turun ke baris berikutnya kalau tidak
+        muat]'
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  - layout: 1
+    image: {fileID: 21300000, guid: d2b2e1a9bba6dbe4e818ba33239ea005, type: 3}
+    lines:
+    - speaker: 
+      text: '[Gambar lebar di atas, teks di bawah]'
+      portrait: {fileID: 0}
+    - speaker: 
+      text: '[Baris 2]'
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  - layout: 2
+    image: {fileID: 21300000, guid: d2b2e1a9bba6dbe4e818ba33239ea005, type: 3}
+    lines: []
+    autoAdvance: 0
+  - layout: 3
+    image: {fileID: 0}
+    lines:
+    - speaker: '[Nama]'
+      text: '[Kotak dialog: game tetap terlihat di belakang]'
+      portrait: {fileID: 21300000, guid: 1afc13e5564a4764bbd90b0f0ebd9255, type: 3}
+    - speaker: '[Nama lain]'
+      text: '[Baris dialog berikutnya]'
+      portrait: {fileID: 21300000, guid: 1afc13e5564a4764bbd90b0f0ebd9255, type: 3}
+    autoAdvance: 0
+  pauseGame: 1
+  skippable: 1

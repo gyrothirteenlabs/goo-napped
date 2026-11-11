@@ -14,6 +14,19 @@ namespace GooNapped.Tests
             new[] { new Trait(TraitKind.Temperature, "panas") }, emitsLight: true);
 
         [Test]
+        public void BahanBerat_LangkahBerisik_SampaiTertimpa()
+        {
+            var s = new SlimeBodyState();
+            Assert.AreEqual(0f, s.StepNoiseRadius);
+            var batu = IngredientData.Create("batu", new[] { new Trait(TraitKind.Weight, "berat") }, stepNoiseRadius: 2.2f);
+            var ringan = IngredientData.Create("bulu", new[] { new Trait(TraitKind.Weight, "ringan") });
+            s.Eat(batu);
+            Assert.AreEqual(2.2f, s.StepNoiseRadius);
+            s.Eat(ringan);   // ciri berat tertimpa: bahan batu tidak aktif lagi
+            Assert.AreEqual(0f, s.StepNoiseRadius);
+        }
+
+        [Test]
         public void Baru_Netral()
         {
             var s = new SlimeBodyState();
@@ -131,6 +144,35 @@ namespace GooNapped.Tests
             s.Vomit();
             Assert.IsNull(s.Vomit(), "perut kosong");
             Assert.AreEqual(0, s.TraitCount);
+        }
+        static IngredientData GaramBeku() => IngredientData.Create("garambeku",
+            new[] { new Trait(TraitKind.Color, "putih"), new Trait(TraitKind.Temperature, "dingin") }, extinguishes: true);
+
+        static IngredientData LumutPendar() => IngredientData.Create("lumutpendar",
+            new[] { new Trait(TraitKind.Shine, "berkilau"), new Trait(TraitKind.Color, "hijau") }, emitsLight: true);
+
+        [Test]
+        public void GaramBeku_MemadamkanYangSudahDimakan()
+        {
+            var s = new SlimeBodyState();
+            s.Eat(LumutPendar());
+            Assert.IsTrue(s.EmitsLight);
+            s.Eat(GaramBeku());
+            Assert.IsFalse(s.EmitsLight, "lumut masih punya ciri kilau, tapi nyalanya padam");
+            Assert.AreEqual("berkilau", s.Get(TraitKind.Shine));
+            Assert.AreEqual("dingin", s.Get(TraitKind.Temperature));
+
+            var s2 = new SlimeBodyState();
+            var lumut = LumutPendar();
+            s2.Eat(GaramBeku());
+            s2.Eat(lumut);
+            Assert.IsTrue(s2.EmitsLight, "garam dimakan SEBELUM lumut: tidak memadamkan");
+            s2.Eat(GaramBeku());
+            s2.Eat(lumut);
+            Assert.IsTrue(s2.EmitsLight, "dimakan lagi = menyala lagi");
+
+            var c = s.Clone();
+            Assert.IsFalse(c.EmitsLight, "potongan mewarisi status padam");
         }
     }
 }

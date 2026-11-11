@@ -1,0 +1,68 @@
+/* Gaya cutscene & dialog, terinspirasi tata letak game horor 16-bit (latar hitam, gambar berbingkai, teks putih besar).
+   PLACEHOLDER: font dan warna final oleh tim desainer. Font pixel: set -unity-font-definition di .story-root. */
+
+.story-root { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.story--hidden { display: none; }
+
+.backdrop { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgb(0, 0, 0); }
+.backdrop--hidden { display: none; }
+
+.layout { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: none; }
+.layout--active { display: flex; }
+
+.story-image {
+    -unity-background-scale-mode: scale-to-fit;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* teks cerita: putih, besar, sedikit renggang */
+.line {
+    color: rgb(236, 236, 236);
+    font-size: 15px;
+    white-space: normal;
+    margin-bottom: 9px;
+    letter-spacing: 1px;
+}
+.line-speaker { color: rgb(150, 155, 175); font-size: 10px; margin-bottom: 1px; }
+
+/* 1) gambar tinggi kiri + teks bertumpuk kanan */
+.layout-left { flex-direction: row; align-items: center; justify-content: center; padding: 18px 28px; }
+.left-image { width: 34%; height: 92%; margin-right: 26px; }
+.left-lines { width: 46%; height: 92%; justify-content: flex-start; }
+
+/* 2) gambar lebar atas + teks bawah */
+.layout-top { flex-direction: column; align-items: center; padding: 14px 40px; }
+.top-image { width: 74%; height: 52%; margin-bottom: 26px; }
+.top-lines { width: 56%; }
+
+/* 3) gambar saja */
+.layout-only { flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.only-image { width: 76%; height: 48%; }
+.only-lines { width: 60%; margin-top: 18px; }
+
+/* 4) kotak dialog bawah (game tetap terlihat) */
+.layout-dialogue { flex-direction: column; justify-content: flex-end; }
+.dialogue-box {
+    flex-direction: row;
+    align-items: flex-start;
+    background-color: rgb(0, 0, 0);
+    height: 30%;
+    padding: 14px 40px;
+}
+.portrait {
+    width: 72px; height: 72px;
+    margin-right: 26px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-color: rgb(30, 50, 90);
+}
+.portrait--hidden { display: none; }
+.dialogue-col { flex-grow: 1; flex-shrink: 1; }
+.speaker { color: rgb(150, 160, 200); font-size: 10px; margin-bottom: 4px; }
+.dialogue-text { color: rgb(200, 205, 240); font-size: 15px; white-space: normal; letter-spacing: 1px; }
+
+.next-indicator {
+    position: absolute; right: 22px; bottom: 14px;
+    color: rgb(236, 236, 236); font-size: 12px; -unity-font-style: bold;
+}
+.next--hidden { opacity: 0; }
+.skip-hint { position: absolute; right: 12px; top: 6px; color: rgba(150, 150, 160, 0.6); font-size: 8px; }

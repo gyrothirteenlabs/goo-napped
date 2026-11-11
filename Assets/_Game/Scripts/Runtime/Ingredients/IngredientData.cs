@@ -21,6 +21,10 @@ namespace GooNapped
         [SerializeField] private bool emitsLight;
         [Tooltip("Radius bau (unit). 0 = tidak berbau. Dicium Anjing Lendir.")]
         [SerializeField, Min(0f)] private float smellRadius;
+        [Tooltip("Memadamkan: bahan yang sudah dimakan sebelumnya berhenti menyala (Garam Beku).")]
+        [SerializeField] private bool extinguishes;
+        [Tooltip("Radius suara tiap mendarat (unit). 0 = langkah senyap seperti biasa. Bahan berat = berisik, terdengar penjaga tembus tembok.")]
+        [SerializeField, Min(0f)] private float stepNoiseRadius;
 
         [Header("Tampilan")]
         [Tooltip("Material palet body (Slime_*) saat bahan ini menentukan warna tubuh. Kosong = tidak mengubah.")]
@@ -34,12 +38,15 @@ namespace GooNapped
         public float SpeedMultiplier => speedMultiplier;
         public bool EmitsLight => emitsLight;
         public float SmellRadius => smellRadius;
+        public bool Extinguishes => extinguishes;
+        public float StepNoiseRadius => stepNoiseRadius;
         public Material BodyMaterial => bodyMaterial;
         public Color PlaceholderTint => placeholderTint;
 
         // Untuk test dan tool editor (aset biasa dibuat lewat menu Create).
         public static IngredientData Create(string id, IEnumerable<Trait> traits, float speedMultiplier = 1f,
-            bool emitsLight = false, float smellRadius = 0f, Material bodyMaterial = null, Color? tint = null)
+            bool emitsLight = false, float smellRadius = 0f, Material bodyMaterial = null, Color? tint = null,
+            bool extinguishes = false, float stepNoiseRadius = 0f)
         {
             var d = CreateInstance<IngredientData>();
             d.name = id;
@@ -51,6 +58,8 @@ namespace GooNapped
             d.smellRadius = smellRadius;
             d.bodyMaterial = bodyMaterial;
             d.placeholderTint = tint ?? Color.white;
+            d.extinguishes = extinguishes;
+            d.stepNoiseRadius = stepNoiseRadius;
             return d;
         }
     }

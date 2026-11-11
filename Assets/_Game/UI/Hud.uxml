@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- HUD level. Layout di sini, tampilan (warna, ukuran, font) di Hud.uss. Isi diisi GameHud.cs lewat nama elemen. -->
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="root" class="hud-root" picking-mode="Ignore">
+        <ui:VisualElement class="top-row" picking-mode="Ignore">
+            <ui:VisualElement name="body-panel" class="panel body-panel" picking-mode="Ignore">
+                <ui:Label text="TUBUH" class="panel-title" />
+                <ui:VisualElement name="traits" class="chip-row" />
+                <ui:VisualElement name="tags" class="chip-row" />
+            </ui:VisualElement>
+            <ui:VisualElement name="recipes" class="recipes" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement class="spacer" picking-mode="Ignore" />
+        <ui:Label name="toast" class="toast" />
+        <ui:VisualElement class="bottom-row" picking-mode="Ignore">
+            <ui:VisualElement name="stats" class="panel stats" picking-mode="Ignore">
+                <ui:Label name="pieces" class="stat" />
+                <ui:Label name="carried" class="stat" />
+                <ui:Label name="blob" class="stat" />
+            </ui:VisualElement>
+            <ui:Label name="controls" class="controls" />
+        </ui:VisualElement>
+        <ui:Label name="banner" class="banner" />
+    </ui:VisualElement>
+</ui:UXML>

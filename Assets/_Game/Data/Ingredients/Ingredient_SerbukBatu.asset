@@ -22,5 +22,7 @@ MonoBehaviour:
   speedMultiplier: 0.6
   emitsLight: 0
   smellRadius: 0
+  extinguishes: 0
+  stepNoiseRadius: 2.2
   bodyMaterial: {fileID: 2100000, guid: 20e0135d637aa194fb127897d46d01b7, type: 2}
   placeholderTint: {r: 0.6, g: 0.63, b: 0.68, a: 1}

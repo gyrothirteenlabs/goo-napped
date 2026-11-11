@@ -10,13 +10,13 @@ Engine **Unity 6 (6000.3.28f1)**, URP 2D. Art dibuat di **Blender** lalu dirende
 
 1. Install **Unity 6000.3.28f1** (Unity Hub) dan **Git LFS** (`git lfs install`). Sprite, `.blend`, dan audio disimpan lewat LFS.
 2. Clone repo, buka folder ini di Unity Hub.
-3. Buka scene `Assets/_Game/Scenes/Boot/Boot.unity`, tekan **Play** (masuk menu utama → Mulai / Pilih level). Atau buka scene level langsung, misal `Scenes/Levels/Chapter1/C1_L01.unity`. Level bersambung otomatis: C1_L01 → C1_L04 → C2_L01.
+3. Buka scene `Assets/_Game/Scenes/Boot/Boot.unity`, tekan **Play** (masuk menu utama → Mulai / Pilih level). Atau buka scene level langsung, misal `Scenes/Levels/Chapter1/C1_L01.unity`. Level bersambung otomatis: C1_L01 → C1_L04 → C2_L01 → C2_L04.
 
 ### Kontrol
 | Tombol | Aksi |
 |---|---|
 | WASD / panah | Gerak (lompatan kecil yang merayap) |
-| E | Makan bahan / tukar dengan isi toples / telan teman |
+| E | Makan bahan / tukar dengan isi toples / telan teman / padamkan lentera (butuh tubuh dingin) |
 | Space | Belah diri (ke arah hadap) / gabung kalau menyentuh potongan lain |
 | Shift | Pindah kendali ke potongan lain (yang ditinggal otomatis nyamar) |
 | Tahan C | Nyamar jadi barang di tempat |
@@ -39,6 +39,7 @@ Intip toples (lihat resep) → makan bahan sesuai resep (urutan penting: ciri se
 | [docs/panduan-blender-3d.md](docs/panduan-blender-3d.md) | Model Blender → sprite 48 px (template + add-on 1 klik) | Desainer 3D |
 | [docs/panduan-art-desainer.md](docs/panduan-art-desainer.md) | Aturan sprite 2D: albedo flat, normal map, tile | Desainer 2D |
 | [docs/rundown-level.md](docs/rundown-level.md) | Usulan urutan chapter & level | Desainer level |
+| [docs/cara-edit-unity.md#8-cerita-cutscene--dialog](docs/cara-edit-unity.md) | Menulis cutscene & dialog (tanpa kode) | Penulis cerita |
 | [docs/backlog.md](docs/backlog.md) | Daftar fitur: selesai / dikerjakan / berikutnya | Semua |
 | [docs/ai-vs-tim.md](docs/ai-vs-tim.md) | Pembagian kerja tim dan AI | Semua |
 | [CLAUDE.md](CLAUDE.md), [art/CLAUDE.md](art/CLAUDE.md) | Keputusan desain + aturan teknis (juga dibaca asisten AI) | Semua |
@@ -59,6 +60,7 @@ Assets/
       Tiles/              aset Tile (Placeholder/ = blockout)
       Animations/  Fonts/
     Audio/  Music/  SFX/  (proto_* = placeholder hasil sintesis)
+    UI/                   UI Toolkit: Hud.uxml (layout), Hud.uss (gaya), HudPanelSettings, tema
     Data/                 ScriptableObject: Ingredients/, Recipes/, Levels/
     Prefabs/              Characters/  Enemies/  Props/  Level/  Systems/  UI/
     Scenes/

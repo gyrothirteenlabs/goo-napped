@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4918916805122359023}
   - component: {fileID: 2271818785324583230}
   - component: {fileID: 3046492034972842579}
+  - component: {fileID: 6625867052249881954}
   m_Layer: 0
   m_Name: Familiar_Placeholder
   m_TagString: Untagged
@@ -199,6 +200,8 @@ MonoBehaviour:
   glowRangeMultiplier: 1.4
   awarenessRadius: 0.7
   awarenessRate: 0.5
+  smellRange: 0
+  smellRate: 0.8
   lightSightRange: 4.5
   litThreshold: 0.35
   lightRate: 0.7
@@ -313,6 +316,24 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6625867052249881954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3308723976227863607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fcd80295de9f8a4e890b8a4c5807744, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.GuardMeter
+  material: {fileID: 2100000, guid: e411a68cb555ca44e928a3e07ff9a307, type: 2}
+  questionSprite: {fileID: 0}
+  exclaimSprite: {fileID: 0}
+  barWidth: 0.6
+  calmColor: {r: 1, g: 0.85, b: 0.3, a: 1}
+  alertColor: {r: 1, g: 0.25, b: 0.2, a: 1}
 --- !u!1 &3759535595324098457
 GameObject:
   m_ObjectHideFlags: 0

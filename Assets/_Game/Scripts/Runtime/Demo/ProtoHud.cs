@@ -46,6 +46,7 @@ namespace GooNapped
                 if (a.Body.State.EmitsLight) sb.Append("  [menyala]");
                 if (a.Body.State.SpeedMultiplier < 1f) sb.Append("  [lambat]");
                 if (!a.IsDisguised && LightExposure.At(a.Center) >= 0.35f) sb.Append("  <color=#ffc861>[kena cahaya: penjaga di dekat bisa melihat]</color>");
+                if (a.Body.State.SmellRadius > 0f) sb.Append("  <color=#e6d36a>[berbau: meninggalkan jejak]</color>");
                 if (a.IsDisguised) sb.Append("  [nyamar]");
                 sb.AppendLine();
                 sb.Append("Potongan: ").Append(brain.Pieces.Count).Append("   Gumpalan: ")
@@ -67,9 +68,9 @@ namespace GooNapped
             {
                 if (g == null) continue;
                 int n = Mathf.RoundToInt(g.Suspicion * 10);
-                sb.Append(g.SeesTarget || g.Senses ? "<color=#ff5a5f>" : "<color=#8a92a0>").Append("Curiga ")
+                sb.Append(g.SeesTarget || g.Senses ? "<color=#ff5a5f>" : "<color=#8a92a0>").Append(g.GuardName).Append(" ")
                   .Append(new string('#', n)).Append(new string('.', 10 - n))
-                  .Append(g.InLight ? "  (kamu di cahaya)" : "").AppendLine("</color>");
+                  .Append(g.InLight ? "  (kamu di cahaya)" : g.Smells ? "  (kamu tercium)" : "").AppendLine("</color>");
             }
             if (!string.IsNullOrEmpty(brain.Message)) sb.Append("<color=#ffc861>").Append(brain.Message).AppendLine("</color>");
             if (goal != null && goal.IsComplete) sb.AppendLine("<color=#6fd27e><b>LEVEL SELESAI</b></color>");

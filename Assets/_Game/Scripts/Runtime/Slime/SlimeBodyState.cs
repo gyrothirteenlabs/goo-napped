@@ -11,6 +11,8 @@ namespace GooNapped
         private readonly Dictionary<TraitKind, Trait> traits = new Dictionary<TraitKind, Trait>();
         private readonly Dictionary<TraitKind, IngredientData> owners = new Dictionary<TraitKind, IngredientData>();
         private readonly List<IngredientData> eaten = new List<IngredientData>();
+        // Bahan yang nyalanya sudah dipadamkan (Garam Beku dimakan sesudahnya). Dimakan lagi = menyala lagi.
+        private readonly HashSet<IngredientData> doused = new HashSet<IngredientData>();
 
         public IReadOnlyList<IngredientData> Eaten => eaten;
         public IEnumerable<Trait> Traits => traits.Values;
@@ -25,6 +27,12 @@ namespace GooNapped
                 traits[t.kind] = t;
                 owners[t.kind] = ingredient;
             }
+            if (ingredient.Extinguishes)
+            {
+                foreach (var i in owners.Values)
+                    if (i != ingredient) doused.Add(i);
+            }
+            else doused.Remove(ingredient);
         }
 
         public bool Has(TraitKind kind) => traits.ContainsKey(kind);
@@ -57,7 +65,7 @@ namespace GooNapped
         {
             get
             {
-                foreach (var i in ActiveIngredients()) if (i.EmitsLight) return true;
+                foreach (var i in ActiveIngredients()) if (i.EmitsLight && !doused.Contains(i)) return true;
                 return false;
             }
         }
@@ -68,6 +76,17 @@ namespace GooNapped
             {
                 float r = 0f;
                 foreach (var i in ActiveIngredients()) r = Mathf.Max(r, i.SmellRadius);
+                return r;
+            }
+        }
+
+        // Radius suara tiap mendarat (0 = senyap). Diambil dari bahan aktif paling berisik.
+        public float StepNoiseRadius
+        {
+            get
+            {
+                float r = 0f;
+                foreach (var i in ActiveIngredients()) r = Mathf.Max(r, i.StepNoiseRadius);
                 return r;
             }
         }
@@ -100,6 +119,7 @@ namespace GooNapped
             foreach (var kv in traits) c.traits[kv.Key] = kv.Value;
             foreach (var kv in owners) c.owners[kv.Key] = kv.Value;
             c.eaten.AddRange(eaten);
+            c.doused.UnionWith(doused);
             return c;
         }
 
@@ -112,7 +132,11 @@ namespace GooNapped
             {
                 if (traits.ContainsKey(kv.Key)) continue;
                 traits[kv.Key] = kv.Value;
-                if (other.owners.TryGetValue(kv.Key, out var o)) owners[kv.Key] = o;
+                if (other.owners.TryGetValue(kv.Key, out var o))
+                {
+                    owners[kv.Key] = o;
+                    if (other.doused.Contains(o)) doused.Add(o);
+                }
             }
         }
 
@@ -134,6 +158,7 @@ namespace GooNapped
             traits.Clear();
             owners.Clear();
             eaten.Clear();
+            doused.Clear();
         }
     }
 }

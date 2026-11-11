@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2194830599562288910}
   - component: {fileID: 1399312291757890606}
   - component: {fileID: 2037925879734831105}
+  - component: {fileID: 5496262281266619332}
   m_Layer: 0
   m_Name: Lantern
   m_TagString: Untagged
@@ -237,6 +238,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &5496262281266619332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3479900456812259716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b0af049e1bbf154c8c93f8a713a38ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.Extinguishable
+  lightSource: {fileID: 0}
+  crackle: {fileID: 0}
+  flame: {fileID: 0}
+  noiseRadius: 3
 --- !u!1 &8525291882969088693
 GameObject:
   m_ObjectHideFlags: 0

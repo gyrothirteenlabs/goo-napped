@@ -51,6 +51,12 @@ namespace GooNapped
         [Tooltip("Laju curiga di radius sadar dibanding terlihat langsung.")]
         [SerializeField] private float awarenessRate = 0.5f;
 
+        [Header("Penciuman (Anjing Lendir)")]
+        [Tooltip("Jarak mencium jejak/umpan bau (0 = tidak bisa mencium). Mencium tembus tikungan, tidak butuh cahaya.")]
+        [SerializeField] private float smellRange;
+        [Tooltip("Laju curiga saat mencium slime berbau di dekatnya.")]
+        [SerializeField] private float smellRate = 0.8f;
+
         [Header("Cahaya")]
         [Tooltip("Slime yang berdiri di cahaya (terang >= ambang) terlihat dari segala arah sejauh ini.")]
         [SerializeField] private float lightSightRange = 4.5f;
@@ -113,6 +119,23 @@ namespace GooNapped
         public bool Senses { get; private set; }
         // Slime terlihat karena berdiri di cahaya (bukan karena kerucut/radius).
         public bool InLight { get; private set; }
+        // Slime tercium (penjaga pencium).
+        public bool Smells { get; private set; }
+        public string GuardName => guardName;
+        // Untuk tool/test QA (cek level): setelan patroli dan penglihatan.
+        public IReadOnlyList<Vector2> PatrolPoints => patrolPoints;
+        public float ViewRange => viewRange;
+        public float ViewAngle => viewAngle;
+        public float AwarenessRadius => awarenessRadius;
+        public float EyeHeight => eyeHeight;
+        public bool NeedsLightToSee => needsLightToSee;
+        public float LightSightRange => lightSightRange;
+        public float LitThreshold => litThreshold;
+        // Untuk indikator di atas kepala: sedang mencari/memeriksa ("?") atau sedang melihat/merasakan slime ("!").
+        public bool IsSearching => state == State.Search || state == State.LookAround;
+        public bool IsAlerted => state == State.Alert || state == State.Caught;
+        public float HeadHeight => eyeHeight + 0.55f;
+        private float trackedTime = -999f, sniffTimer;
         private bool alerted;
         private float stepTimer;
         public Vector2 Forward => forward;
@@ -210,12 +233,42 @@ namespace GooNapped
             foreach (var p in brain.Pieces)
             {
                 if (p == null || !p.IsBait || (p == lastBait && baitCooldown > 0f)) continue;
+                // pencium: umpan berbau tercium dari segala arah (tembus tikungan)
+                float smell = p.Body.State.SmellRadius;
+                if (smellRange > 0f && smell > 0f && Vector2.Distance(Body, p.Center) <= smellRange + smell * 0.5f)
+                {
+                    bait = p;
+                    return true;
+                }
                 if (!VisionMath.InCone(Eye, forward, p.Center, RangeFor(p), viewAngle)) continue;
                 if (!LineOfSight(Eye, p.Center)) continue;
                 bait = p;
                 return true;
             }
             return false;
+        }
+
+        // Mencium slime berbau yang sedang bergerak di dekatnya (tidak butuh garis pandang atau cahaya).
+        private bool CanSmell(SlimePiece p)
+        {
+            if (smellRange <= 0f || p == null || p.IsDisguised) return false;
+            float smell = p.Body.State.SmellRadius;
+            return smell > 0f && Vector2.Distance(Body, p.Center) <= (smellRange + smell) * 0.5f;
+        }
+
+        // Ikuti jejak: pindah ke titik bau yang lebih baru dari yang terakhir diikuti.
+        private bool Sniff()
+        {
+            if (smellRange <= 0f) return false;
+            if ((sniffTimer -= Time.deltaTime) > 0f) return false;
+            sniffTimer = 0.3f;
+            // Dengan peta jalan, pencium langsung menuju titik bau terbaru (lewat jalur A*).
+            // Tanpa peta (sandbox): hanya titik yang terjangkau lurus.
+            System.Func<Vector2, bool> reach = NavGrid.Available ? null : p => LineOfSight(Body, p);
+            if (!ScentTrail.Freshest(Body, smellRange, trackedTime, out var m, reach)) return false;
+            trackedTime = m.time;
+            lastSeen = m.position;
+            return true;
         }
 
         private bool CanSense(SlimePiece p)
@@ -248,11 +301,13 @@ namespace GooNapped
             SeesTarget = CanSee(target, out float dist);
             bool near = !SeesTarget && CanSense(target);
             InLight = !SeesTarget && !near && SeesInLight(target);
-            Senses = near || InLight;
+            Smells = !SeesTarget && !near && !InLight && CanSmell(target);
+            Senses = near || InLight || Smells;
 
             if (SeesTarget || Senses)
             {
-                float rate = SeesTarget ? VisionMath.DistanceFactor(dist, RangeFor(target)) : near ? awarenessRate : lightRate;
+                float rate = SeesTarget ? VisionMath.DistanceFactor(dist, RangeFor(target))
+                           : near ? awarenessRate : InLight ? lightRate : smellRate;
                 // bunyi "hm?" sekali tiap kali mulai curiga (diulang lagi setelah curiga turun ke 0)
                 if (!alerted) { alerted = true; AudioDirector.Play(AudioDirector.Sfx.Alert, Body); }
                 rate *= VisionMath.MismatchMultiplier(TotalMismatch(), mismatchBonus);
@@ -281,6 +336,8 @@ namespace GooNapped
                 float decay = state == State.Search || state == State.LookAround ? decayPerSecond * 0.4f : decayPerSecond;
                 Suspicion = Mathf.Max(0f, Suspicion - decay * Time.deltaTime);
                 if (Suspicion <= 0f) alerted = false;
+                // pencium menyusuri jejak bau (dari mana pun asalnya: pemain atau potongan berbau)
+                if (state != State.Blocked && Sniff()) state = State.Search;
             }
 
             switch (state)
@@ -356,23 +413,82 @@ namespace GooNapped
             UpdateVisuals();
         }
 
-        // Menoleh ke tujuan lalu jalan; melambat saat masih berbelok. false = jalan tertutup tembok.
+        // ---- jalan: lurus kalau bebas, kalau tidak ikuti jalur A* (NavGrid) ----
+        private readonly List<Vector2> path = new List<Vector2>();   // titik tengah BADAN (bukan kaki)
+        private Vector2 pathGoal;
+        private float repathTimer;
+        private static readonly Vector2 FootToBody = Vector2.up * 0.22f;
+
+        // Seluruh garis dari badan ke titik `to` bebas tembok untuk badan selebar ini?
+        private bool SegmentClear(Vector2 from, Vector2 to)
+        {
+            var d = to - from;
+            float len = d.magnitude;
+            if (len < 1e-3f) return true;
+            foreach (var h in Physics2D.CircleCastAll(from, 0.28f, d / len, len))
+                if (h.distance > 0f && !IsSeeThrough(h.collider)) return false;
+            return true;
+        }
+
+        // Menoleh ke tujuan lalu jalan; melambat saat masih berbelok. false = tidak ada jalan ke sana.
         private bool TryMove(Vector2 dest, float spd)
         {
+            var bodyDest = dest + FootToBody;
             var d = dest - rb.position;
             if (d.sqrMagnitude < 1e-4f) return true;
+            repathTimer -= Time.deltaTime;
+
+            Vector2 waypoint = dest;
+            if (!SegmentClear(Body, bodyDest) && NavGrid.Available)
+            {
+                if (path.Count == 0 || (dest - pathGoal).sqrMagnitude > 0.25f || repathTimer <= 0f)
+                {
+                    if (!NavGrid.FindPath(Body, bodyDest, path)) return false;
+                    pathGoal = dest;
+                    repathTimer = 0.8f;
+                }
+                // haluskan: lompati titik berikutnya kalau titik sesudahnya sudah terlihat langsung
+                while (path.Count > 1 && SegmentClear(Body, path[1])) path.RemoveAt(0);
+                if (path.Count > 0 && (path[0] - Body).sqrMagnitude < 0.01f) path.RemoveAt(0);
+                if (path.Count > 0) waypoint = path[0] - FootToBody;
+                d = waypoint - rb.position;
+                if (d.sqrMagnitude < 1e-4f) return true;
+            }
+            else path.Clear();
+
             TurnTowards(d, turnSpeed);
             float facing = Mathf.Clamp01(Mathf.Cos(Vector2.Angle(forward, d) * Mathf.Deg2Rad));
             if (facing < 0.3f) return true;   // masih berbelok di tempat
             float step = spd * facing * Time.deltaTime;
-            // cek tembok di depan. Hit dengan jarak 0 = sudah bersinggungan dari awal (lorong sempit): abaikan,
-            // kalau tidak golem tersangkut di lorong selebar 1 tile.
-            int n = Physics2D.CircleCast(Body, 0.3f, d.normalized, new ContactFilter2D { useTriggers = false }, castHits, step + 0.05f);
-            for (int i = 0; i < n; i++)
-                if (castHits[i].distance > 0f && !IsSeeThrough(castHits[i].collider)) return false;
-            moveTarget = dest;
+            if (PathClear(d.normalized, step))
+            {
+                moveTarget = waypoint;
+            }
+            else
+            {
+                // menyusur tembok: diagonal terhalang sudut -> coba sumbu dominan dulu, lalu sumbu lainnya
+                var ax = new Vector2(Mathf.Sign(d.x), 0f);
+                var ay = new Vector2(0f, Mathf.Sign(d.y));
+                var first = Mathf.Abs(d.x) >= Mathf.Abs(d.y) ? ax : ay;
+                var second = first == ax ? ay : ax;
+                Vector2 dir;
+                if (Mathf.Abs(Vector2.Dot(first, d)) > 0.05f && PathClear(first, step)) dir = first;
+                else if (Mathf.Abs(Vector2.Dot(second, d)) > 0.05f && PathClear(second, step)) dir = second;
+                else return false;
+                moveTarget = rb.position + dir * Mathf.Min(0.5f, Mathf.Abs(Vector2.Dot(dir, d)));
+            }
             moveSpeed = spd * facing;
             moving = true;
+            return true;
+        }
+
+        // Cek tembok di arah `dir`. Hit dengan jarak 0 = sudah bersinggungan dari awal (lorong sempit): abaikan,
+        // kalau tidak penjaga tersangkut di lorong selebar 1 tile.
+        private bool PathClear(Vector2 dir, float step)
+        {
+            int n = Physics2D.CircleCast(Body, 0.3f, dir, new ContactFilter2D { useTriggers = false }, castHits, step + 0.05f);
+            for (int i = 0; i < n; i++)
+                if (castHits[i].distance > 0f && !IsSeeThrough(castHits[i].collider)) return false;
             return true;
         }
 

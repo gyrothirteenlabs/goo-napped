@@ -100,6 +100,7 @@ namespace GooNapped
             if (pieces.Count == 0)
                 pieces.AddRange(FindObjectsByType<SlimePiece>(FindObjectsSortMode.None));
             goal = FindFirstObjectByType<LevelGoal>();
+            if (ScentTrail.MarkSprite == null) ScentTrail.MarkSprite = blobSprite;
             SetActive(0);
         }
 
@@ -108,6 +109,7 @@ namespace GooNapped
             var a = Active;
             if (a == null) return;
             if (goal != null && (goal.IsFailed || goal.IsComplete)) { a.Move(Vector2.zero); return; }
+            if (StoryPlayer.IsPlaying) { a.Move(Vector2.zero); return; }   // dialog/cutscene: input terkunci
             if (messageTimer > 0f && (messageTimer -= Time.deltaTime) <= 0f) Message = "";
             // jeda setelah aksi (belah, gabung, Shift): tidak bisa bergerak/aksi lain, supaya tidak bisa di-spam
             if (lockTimer > 0f) { lockTimer -= Time.deltaTime; a.Move(Vector2.zero); return; }
@@ -148,13 +150,18 @@ namespace GooNapped
             return best;
         }
 
+        // Pesan HUD dari objek level (pintu terkunci, celah terlalu sempit, ...).
+        public void Notify(string text) => Say(text);
+
         private void Say(string text)
         {
             Message = text;
             messageTimer = 3f;
         }
 
-        // Tombol E. Urutan: telan teman -> tukar dengan isi toples -> makan bahan.
+        // Tombol E. Urutan: telan teman -> tukar dengan isi toples -> makan bahan -> lentera -> tuas -> petunjuk toples.
+        // Tukar hanya dicoba kalau memang bisa (≥2 potongan, potongan ini tidak membawa teman); kalau tidak, bahan di
+        // dekat toples tetap bisa dimakan dan petunjuk "belah dulu" baru muncul kalau tidak ada aksi lain.
         public bool Interact()
         {
             var a = Active;
@@ -170,9 +177,37 @@ namespace GooNapped
             }
 
             var jar = FindNear<Jar>(a, interactRadius);
-            if (jar != null && jar.HasFriend) return SwapWithJar(a, jar);
+            if (jar != null && !jar.HasFriend) jar = null;
+            if (jar != null && pieces.Count >= 2 && a.Carried.Count == 0) return SwapWithJar(a, jar);
 
-            return a.TryEat();
+            if (a.TryEat()) return true;
+
+            // padamkan lentera: butuh tubuh dingin
+            var lamp = FindNear<Extinguishable>(a, interactRadius);
+            if (lamp != null && lamp.IsLit)
+            {
+                if (a.Body.State.Get(TraitKind.Temperature) != "dingin")
+                {
+                    Say("Butuh tubuh dingin (Garam Beku / Air Embun) untuk memadamkan.");
+                    return true;
+                }
+                lamp.Extinguish();
+                Say("Lentera padam. Desisnya terdengar penjaga di dekat!");
+                return true;
+            }
+
+            // tarik tuas: buka/tutup pintu yang tersambung (berisik)
+            var lever = FindNear<Lever>(a, interactRadius);
+            if (lever != null)
+            {
+                lever.Pull();
+                Say(lever.Message);
+                return true;
+            }
+
+            // di depan toples tapi belum bisa tukar: jelaskan kenapa
+            if (jar != null) return SwapWithJar(a, jar);
+            return false;
         }
 
         // Objektif 4: potongan aktif masuk toples sebagai tiruan, teman keluar di tempat potongan itu berdiri.

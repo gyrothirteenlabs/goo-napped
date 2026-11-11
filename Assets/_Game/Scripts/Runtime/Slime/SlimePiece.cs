@@ -57,6 +57,7 @@ namespace GooNapped
         public System.Collections.Generic.List<RecipeData> Carried { get; } = new System.Collections.Generic.List<RecipeData>();
         public Vector2 Center => col != null ? (Vector2)col.bounds.center : (Vector2)transform.position;
         public float Radius => col != null ? col.bounds.extents.x : 0.28f;
+        public Collider2D Collider => col;
 
         private void Awake()
         {
@@ -74,10 +75,17 @@ namespace GooNapped
             if (Motor != null) Motor.PhaseEntered -= OnHopPhase;
         }
 
-        // suara "plek" lembut tiap mendarat
+        // suara "plek" lembut tiap mendarat. Tubuh berat (Serbuk Batu) mendarat "dug": terdengar penjaga tembus tembok.
         private void OnHopPhase(SlimeMotor.HopPhase p)
         {
-            if (p == SlimeMotor.HopPhase.Land) AudioDirector.Play(AudioDirector.Sfx.SlimeStep, Center, 0.45f, 0.12f);
+            if (p != SlimeMotor.HopPhase.Land) return;
+            float noise = Body.State.StepNoiseRadius;
+            if (noise > 0f)
+            {
+                AudioDirector.Play(AudioDirector.Sfx.GolemStep, Center, 0.35f, 0.15f);
+                if (IsControlled) NoiseBus.Emit(Center, noise);
+            }
+            else AudioDirector.Play(AudioDirector.Sfx.SlimeStep, Center, 0.45f, 0.12f);
         }
 
         private void OnBodyChanged(SlimeBody b) => Motor.SpeedMultiplier = b.State.SpeedMultiplier;
@@ -154,6 +162,21 @@ namespace GooNapped
             return true;
         }
 
+        // Tubuh berbau meninggalkan jejak (diikuti Anjing Lendir): tiap berpindah ±0.4 unit, atau tiap 1.2 detik kalau diam.
+        private Vector2 lastScent;
+        private float scentTimer;
+
+        private void DropScent()
+        {
+            float r = Body.State.SmellRadius;
+            if (r <= 0f || animating) return;
+            scentTimer -= Time.deltaTime;
+            if (Vector2.Distance(Center, lastScent) < 0.4f && scentTimer > 0f) return;
+            ScentTrail.Drop(Center, r);
+            lastScent = Center;
+            scentTimer = 1.2f;
+        }
+
         // Muntahkan bahan terakhir ke lantai di depan: koreksi resep yang salah, atau jadikan bahan umpan di tempat lain.
         public bool TryVomit()
         {
@@ -216,6 +239,7 @@ namespace GooNapped
             }
             UpdateDisguise();
             ApplyDisguiseVisual();
+            DropScent();
             string dir = Facing.x != 0 ? "side" : (Facing.y > 0 ? "back" : "front");
             bool left = Facing.x != 0 ? Facing.x < 0 : anim.faceLeft;
             bool moving = IsControlled && !IsEating && Motor.IsHopping;

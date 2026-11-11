@@ -11,9 +11,14 @@ namespace GooNapped.EditorTools
     // Desainer: ubah peta di bawah lalu jalankan menu GooNapped > Blockout, atau gambar ulang langsung di Tilemap.
     //
     // Legenda:  # batu (tembok)   . lantai   S spawn pemain   E exit   J toples
-    //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   L lentera
+    //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   y Minyak Belerang   i Garam Beku   L lentera
+    //           J atau 1 = toples resep pertama (recipe), 2 = toples resep kedua (recipe2)
     //           g/G, h/H, k/K  titik awal / akhir patroli Golem 1, 2, 3 (garis lurus; huruf kecil = posisi awal)
     //           f/F, v/V       titik awal / akhir patroli Familiar Api 1, 2
+    //           d/D            titik awal / akhir patroli Anjing Lendir
+    //           |  pintu (tertutup)   /  tuas   o  pelat tekan   O  pelat tekan berat   ~  celah (lorong tikus, slime saja)
+    //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
+    //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
     public static class LevelBlockout
     {
         const string P = "Assets/_Game/Prefabs/";
@@ -22,7 +27,7 @@ namespace GooNapped.EditorTools
 
         class Config
         {
-            public string scene, recipe, next, note;
+            public string scene, recipe, recipe2, next, note;
             public string[] map;
         }
 
@@ -128,7 +133,7 @@ namespace GooNapped.EditorTools
         {
             scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L01.unity",
             recipe = "Recipe_Bara",
-            next = "",
+            next = "C2_L02",
             note = "BLOCKOUT C2_L01 (kenalan Familiar Api). Halaman kastil malam, sedikit lampu.\n" +
                    "Familiar Api melayang di jalan tengah: BUTA di gelap, tapi melihat yang panas/menyala dari jauh, dan membawa cahaya sendiri.\n" +
                    "Resep Bara: merah + berat. Serbuk Batu dulu, lalu Ramuan Api (merah + panas + menyala).\n" +
@@ -151,8 +156,134 @@ namespace GooNapped.EditorTools
             },
         };
 
+        static readonly Config C2L02 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L02.unity",
+            recipe = "Recipe_Lumpur",
+            next = "C2_L03",
+            note = "BLOCKOUT C2_L02 (kenalan Anjing Lendir). Kandang & selokan kastil.\n" +
+                   "Anjing Lendir: penglihatan pendek, tapi MENCIUM jejak bau dan mengikutinya (tembus tikungan, tidak butuh cahaya).\n" +
+                   "Resep Lumpur: kuning + berat. Serbuk Batu lalu Minyak Belerang (kuning + bau). Selama berbau kamu meninggalkan jejak.\n" +
+                   "Trik: belah saat masih berbau, tinggalkan potongan berbau nyamar sebagai umpan; atau muntahkan (Q) Minyak Belerang setelah tiruan masuk toples.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C2_L02. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S...#.........#.....J.#",
+                "#....#.###.###.#.......#",
+                "#.b..#.#.....#.###.#####",
+                "#....#.#..y..#.........#",
+                "##.###.##.####.###.###.#",
+                "#......d...........D...#",
+                "#.####.####.#####.####.#",
+                "#.#..#....#.....#......#",
+                "#.#y.#.L..#..b..#..L...#",
+                "#E...#....#.....#......#",
+                "########################",
+            },
+        };
+
+        static readonly Config C2L03 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L03.unity",
+            recipe = "Recipe_Percik",
+            next = "C2_L04",
+            note = "BLOCKOUT C2_L03 (ruang tungku). Familiar Api di lorong tengah, Golem di gudang bawah, banyak lentera.\n" +
+                   "Resep Percik: merah + berkilau. Lumut Pendar dulu, lalu Ramuan Api: dua-duanya menyala (Familiar melihat dari jauh).\n" +
+                   "Setelah tukar: makan Garam Beku (ruang toples) untuk MEMADAMKAN tubuh, lalu padamkan lentera (E, butuh tubuh dingin) di jalan kabur.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C2_L03. Layout final: tim desainer.",
+            map = new[]
+            {
+                "########################",
+                "#S..#....L.....#.......#",
+                "#...#.###.####.#...1.i.#",
+                "#.l.#.#......#.##.###.##",
+                "#...#.#..r...#.........#",
+                "##.##.#.####.#####.##..#",
+                "#.......f.........F....#",
+                "#.###.####.###.####.####",
+                "#.#..#..L#.......#....L#",
+                "#.#..#...#..g.....G....#",
+                "#E.......#.......#.....#",
+                "########################",
+            },
+        };
+
+        static readonly Config C2L04 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Levels/Chapter2/C2_L04.unity",
+            recipe = "Recipe_Ibu",
+            recipe2 = "Recipe_Adik",
+            next = "Ending",
+            note = "BLOCKOUT C2_L04 (ujian chapter 2). Gudang toples besar: DUA toples (ibu dan adik), Golem + Familiar + Anjing.\n" +
+                   "Resep Ibu: kuning + panas (Minyak Belerang + Ramuan Api: berbau DAN menyala).\n" +
+                   "Resep Adik: abu + dingin. Garam Beku dulu (putih + dingin), lalu Serbuk Batu (abu menimpa putih).\n" +
+                   "Butuh dua kali belah: setelah toples pertama, bentuk ulang tubuh (muntah Q / makan lagi) untuk toples kedua.\n" +
+                   "Dibangun oleh GooNapped > Blockout > C2_L04. Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################",
+                "#S...#.....1.....#....2..#",
+                "#....#.#########.#.......#",
+                "#.y..#.#.......#.#.##.##.#",
+                "#....#...L.....#.........#",
+                "##.###.###.#####.###.#####",
+                "#g.....................G.#",
+                "#.##.####.#####.####.###.#",
+                "#.#r.#..d.....D.#..f....F#",
+                "#.#..#.........#.#.......#",
+                "#.##.#..b..i...#.#..L....#",
+                "#E.......................#",
+                "##########################",
+            },
+        };
+
+        // Ruang uji props (BUKAN level, tidak masuk build): pintu+tuas, celah, pelat tekan, pelat berat.
+        static readonly Config SandboxProps = new Config
+        {
+            scene = "Assets/_Game/Scenes/Sandbox/ProtoProps.unity",
+            recipe = "Recipe_Ibu",
+            next = "",
+            note = "SANDBOX ProtoProps: ruang uji pintu, tuas, pelat tekan, celah. Bukan desain level.\n" +
+                   "Ruang A: tarik tuas (E) untuk membuka pintu ke ruang B (bunyinya memancing Golem).\n" +
+                   "Ruang B -> C lewat celah (~): slime bisa menyelinap, Golem tidak; tubuh berat (Serbuk Batu) tidak muat.\n" +
+                   "Ruang C: makan Minyak Belerang + Ramuan Api (resep Ibu), tukar dengan toples. Pintu ke exit dibuka pelat tekan:\n" +
+                   "belah, tinggalkan satu potongan di pelat, Shift ke potongan pembawa teman, lewat pintu.\n" +
+                   "Pelat berat (ruang A, bawah) hanya tertekan tubuh berat: makan Serbuk Batu dulu.\n" +
+                   "Dibangun oleh GooNapped > Blockout > Sandbox ProtoProps.",
+            map = new[]
+            {
+                "##########################",
+                "#S.....#.........#....J..#",
+                "#......|..g....G.~.y.....#",
+                "#..b../#.........#.....r.#",
+                "#......#.........#..o....#",
+                "#...O..#.........#####|###",
+                "####|###.........#.......#",
+                "#.l....#.........#...E...#",
+                "##########################",
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/Sandbox ProtoProps")]
+        public static void BuildSandboxProps()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(SandboxProps.scene) == null)
+                AssetDatabase.CopyAsset("Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity", SandboxProps.scene);
+            Build(SandboxProps);
+        }
+
         [MenuItem("GooNapped/Blockout/C2_L01")]
         public static void BuildC2L01() => Build(C2L01);
+
+        [MenuItem("GooNapped/Blockout/C2_L03")]
+        public static void BuildC2L03() => Build(C2L03);
+
+        [MenuItem("GooNapped/Blockout/C2_L04")]
+        public static void BuildC2L04() => Build(C2L04);
+
+        [MenuItem("GooNapped/Blockout/C2_L02")]
+        public static void BuildC2L02() => Build(C2L02);
 
         [MenuItem("GooNapped/Blockout/C1_L03")]
         public static void BuildC1L03() => Build(C1L03);
@@ -174,6 +305,9 @@ namespace GooNapped.EditorTools
         {
             BuildChapter1();
             Build(C2L01);
+            Build(C2L02);
+            Build(C2L03);
+            Build(C2L04);
         }
 
         [MenuItem("GooNapped/Blockout/C1_L01")]
@@ -281,19 +415,28 @@ namespace GooNapped.EditorTools
             var guardRoot = Find(scene, "Actors/Guards");
             var lights = Find(scene, "Lights");
             foreach (var t in new[] { spawn, exitRoot, jarRoot, ingRoot, guardRoot, lights }) Clear(t);
-            foreach (var n in new[] { "LevelSystems", "CameraBounds" })
+            foreach (var n in new[] { "LevelSystems", "CameraBounds", "LevelProps" })
             {
                 var old = GameObject.Find(n);
                 if (old != null) Object.DestroyImmediate(old);
             }
+            Transform propRoot = null;
+            var doors = new List<Door>();
+            var switches = new List<(Component comp, Vector2 pos)>();
+            Transform PropRoot()
+            {
+                if (propRoot == null) propRoot = new GameObject("LevelProps").transform;
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Door.prefab") == null) LevelPropBuilder.BuildAll();
+                return propRoot;
+            }
 
             int h = c.map.Length, w = c.map[0].Length;
-            const string golemKeys = "ghkfv";   // g h k = Golem Batu, f v = Familiar Api
+            const string golemKeys = "ghkfvd";   // g h k = Golem Batu, f v = Familiar Api, d = Anjing Lendir
             var golemStart = new Dictionary<char, Vector2>();
             var golemEnd = new Dictionary<char, Vector2>();
             var ingredients = new Dictionary<char, string>
             {
-                { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'w', "AirEmbun" }, { 'r', "RamuanApi" },
+                { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'w', "AirEmbun" }, { 'r', "RamuanApi" }, { 'y', "MinyakBelerang" }, { 'i', "GaramBeku" },
             };
             for (int row = 0; row < h; row++)
             {
@@ -331,15 +474,44 @@ namespace GooNapped.EditorTools
                             break;
                         }
                         case 'J':
+                        case '1':
+                        case '2':
                         {
-                            var j = Spawn(P + "Props/Jar.prefab", jarRoot, pos, "Jar_" + c.recipe.Replace("Recipe_", ""));
-                            var recipe = Load<RecipeData>(D + "Recipes/" + c.recipe + ".asset");
+                            string rn = ch == '2' ? c.recipe2 : c.recipe;
+                            var j = Spawn(P + "Props/Jar.prefab", jarRoot, pos, "Jar_" + rn.Replace("Recipe_", ""));
+                            var recipe = Load<RecipeData>(D + "Recipes/" + rn + ".asset");
                             Set(j.GetComponent<Jar>(), "recipe", p => p.objectReferenceValue = recipe);
                             break;
                         }
                         case 'L':
                             Spawn(P + "Level/Lantern.prefab", lights, pos, "Lantern");
                             break;
+                        case '|':
+                        {
+                            // props 1 tile: pivot di tepi bawah tile, collider di tengah tile
+                            var root = PropRoot();
+                            doors.Add(Spawn(P + "Level/Door.prefab", root, new Vector3(x + 0.5f, y, 0f), "Door").GetComponent<Door>());
+                            break;
+                        }
+                        case '~':
+                            Spawn(P + "Level/Crawlspace.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "Crawlspace");
+                            break;
+                        case '/':
+                        {
+                            var root = PropRoot();
+                            var lv = Spawn(P + "Level/Lever.prefab", root, pos, "Lever").GetComponent<Lever>();
+                            switches.Add((lv, new Vector2(x + 0.5f, y + 0.5f)));
+                            break;
+                        }
+                        case 'o':
+                        case 'O':
+                        {
+                            var root = PropRoot();
+                            string pf = ch == 'O' ? "PressurePlate_Heavy" : "PressurePlate";
+                            var pl = Spawn(P + "Level/" + pf + ".prefab", root, new Vector3(x + 0.5f, y, 0f), pf).GetComponent<PressurePlate>();
+                            switches.Add((pl, new Vector2(x + 0.5f, y + 0.5f)));
+                            break;
+                        }
                         default:
                             if (golemKeys.IndexOf(ch) >= 0) golemStart[ch] = pos;
                             else if (golemKeys.IndexOf(char.ToLowerInvariant(ch)) >= 0) golemEnd[char.ToLowerInvariant(ch)] = pos;
@@ -360,15 +532,31 @@ namespace GooNapped.EditorTools
             {
                 if (!golemStart.TryGetValue(key, out var a)) continue;
                 var b = golemEnd.TryGetValue(key, out var e) ? e : a;
-                bool familiar = key == 'f' || key == 'v';
-                var g = familiar
-                    ? Spawn(P + "Enemies/Familiar_Placeholder.prefab", guardRoot, a, "Familiar_" + (++gi))
-                    : Spawn(P + "Enemies/Golem_Placeholder.prefab", guardRoot, a, "Golem_Patroli_" + (++gi));
+                string kind = key == 'f' || key == 'v' ? "Familiar" : key == 'd' ? "Anjing" : "Golem";
+                var g = Spawn(P + "Enemies/" + kind + "_Placeholder.prefab", guardRoot, a, kind + "_" + (++gi));
                 Set(g.GetComponent<Guard>(), "patrolPoints", p =>
                 {
                     p.arraySize = 2;
                     p.GetArrayElementAtIndex(0).vector2Value = a;
                     p.GetArrayElementAtIndex(1).vector2Value = b;
+                });
+            }
+
+            // sambungkan tiap tuas/pelat ke pintu terdekat
+            foreach (var (comp, sp) in switches)
+            {
+                Door nearest = null;
+                float best = float.MaxValue;
+                foreach (var d in doors)
+                {
+                    float dd = Vector2.Distance(sp, (Vector2)d.transform.position + Vector2.up * 0.5f);
+                    if (dd < best) { best = dd; nearest = d; }
+                }
+                if (nearest == null) { Debug.LogWarning("Blockout: " + comp.name + " tidak punya pintu untuk disambung."); continue; }
+                Set(comp, "doors", p =>
+                {
+                    p.arraySize = 1;
+                    p.GetArrayElementAtIndex(0).objectReferenceValue = nearest;
                 });
             }
 

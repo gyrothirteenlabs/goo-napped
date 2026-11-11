@@ -36,7 +36,7 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
 | `Slime/SlimeBody` + `SlimeBodyState` | Ciri tubuh (logika murni, ada test). Makan menimpa ciri sejenis, jadi urutan penting. Efek samping (lambat, menyala, bau) aktif selama bahannya masih punya ciri. `Clone()` untuk belah, `Absorb()` untuk gabung (ciri potongan aktif menang), `MismatchCount()` untuk resep. |
 
 ## Data (ScriptableObject, `Assets/_Game/Data/`)
-- **`IngredientData`**: ciri (`Trait` = jenis + nilai teks), pengali kecepatan, menyala, radius bau, material palet body, warna placeholder.
+- **`IngredientData`**: ciri (`Trait` = jenis + nilai teks), pengali kecepatan, menyala, radius bau, memadamkan (`Extinguishes`), material palet body, warna placeholder.
 - **`RecipeData`**: nama teman, 2–3 ciri, material palet teman.
 - `Trait`: jenis `Color`, `Temperature`, `Weight`, `Shine`, `Smell`. Nilai teks bebas (huruf besar/spasi diabaikan saat dibandingkan).
 
@@ -49,6 +49,8 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
 | `Level/LevelGoal` | Menang: bawa semua teman ke exit. Kalah: `Fail()` dari penjaga → level diulang. `nextScene` = level berikutnya. |
 | `Level/LevelExit` | Trigger exit. |
 | `Level/CameraFollow` | Ikut potongan aktif, dijepit ke `CameraBounds`. |
+| `Level/Extinguishable` | Lentera/obor yang bisa dipadamkan (E) oleh tubuh bersuhu `dingin`. Desisnya `NoiseBus.Emit` (pengalih yang berisiko). |
+| `Level/NavGrid` + `Level/GridPath` | Pathfinding penjaga: peta sel dari Tilemap `Floor`/`Walls` (dibaca sekali per scene), A* 8 arah tanpa memotong sudut (`GridPath`, logika murni + test). `Guard.TryMove`: jalan lurus kalau garis bebas, kalau tidak ikuti jalur dan lompati titik yang sudah terlihat langsung. Scene tanpa Tilemap = jalan lurus + menyusur tembok. |
 | `Level/LightExposure` | Seberapa terang sebuah titik oleh Light 2D titik (bukan global), memperhitungkan tembok. Dipakai penjaga. |
 
 ## Penjaga
@@ -59,6 +61,7 @@ Ringkasan sistem untuk programmer. Semua script runtime ada di `Assets/_Game/Scr
 |---|---|
 | `Golem_Placeholder` | kerucut sempit & jauh, lambat, langkah berat |
 | `Familiar_Placeholder` | melayang (`hoverHeight`), kerucut lebar, `needsLightToSee` (buta di gelap), `heatSightRange` 7 (melihat yang panas/menyala dari jauh), membawa Light 2D sendiri |
+| `Anjing_Placeholder` | penglihatan pendek, `smellRange` 4.5: mencium slime berbau di dekatnya, menyusuri jejak bau (`ScentTrail`), terpancing umpan berbau dari segala arah |
 
 
 | State | Perilaku |
@@ -74,13 +77,25 @@ Cara slime terdeteksi (laju curiga berbeda-beda):
 1. **Kerucut pandang**: makin dekat makin cepat. Slime menyala terlihat 1.4× lebih jauh.
 2. **Radius sadar**: terlalu dekat dari arah mana pun (anti menguntit dari belakang).
 3. **Cahaya**: slime yang berdiri di cahaya lampu (atau menyala sendiri) terlihat dari segala arah dalam `lightSightRange`.
+4. **Bau** (penjaga dengan `smellRange`): slime berbau tercium dari dekat tanpa butuh cahaya atau garis pandang. Slime berbau meninggalkan titik bau (`Level/ScentTrail`, pudar 10 detik); pencium menyusuri titik terbaru yang terjangkau langsung, jadi ia mengikuti jalan yang dilalui slime.
 
 Potongan yang nyamar tidak terlihat. Potongan nyamar yang menyala/berbau = **umpan**, dan bunyi dari `NoiseBus.Emit` (gumpalan dilempar) = **pengalih**: penjaga mendatanginya tanpa menaikkan curiga.
 `VisionMath` berisi hitungan murni (kerucut, pengali salah resep, faktor jarak) dan punya test.
 
+## UI
+- `UI/GameHud` (anak `Hud` di prefab LevelSystems, UI Toolkit): chip ciri tubuh, tag status (kena cahaya, menyala, berbau, lambat, nyamar), kartu resep tiap toples yang sudah diintip (titik hijau = ciri cocok dengan tubuh potongan aktif; setelah ditukar = dibandingkan dengan tiruan), statistik bawah, pesan, banner selesai/ketahuan.
+- Layout `Assets/_Game/UI/Hud.uxml`, gaya `Hud.uss`, skala `HudPanelSettings` (referensi 960×540). Desainer mengubah tampilan lewat USS; nama elemen/kelas dipakai kode.
+- `UI/GuardMeter` (di tiap prefab penjaga): bar curiga + ikon `?` (memeriksa) / `!` (melihat/mencium) di atas kepala, material unlit supaya terbaca di gelap.
+- `Demo/ProtoHud` (HUD teks lama) tinggal dipakai di scene sandbox.
+
+## Cerita
+- `UI/StorySequence` (ScriptableObject): halaman berlayout `ImageLeft`/`ImageTop`/`ImageOnly`/`Dialogue`, baris teks, gambar, potret.
+- `UI/StoryPlayer` (prefab `Prefabs/UI/StoryUI`, UI Toolkit `Story.uxml`/`Story.uss`): antrean, ketik bertahap, fade antar halaman, lewati, jeda game (`Time.timeScale = 0`, semua pakai waktu unscaled). API statis `Play`, `Say`, `Next`, `IsPlaying`. `PlayerBrain` dan `PauseMenu` diam selama cerita.
+- `UI/StoryTrigger` (OnStart/OnEnter/Manual) dan `UI/StoryScene` (scene Intro/Ending → scene berikutnya).
+
 ## Alur game
 - `Core/GameFlow`: daftar level (`Levels`, urut), progres (PlayerPrefs `gn_unlocked`), `Load`, `ReloadCurrent`, `LoadMainMenu`. **Level baru wajib ditambahkan di `GameFlow.Levels` dan Build Settings.**
-- `Core/BootLoader` (scene Boot) → menu utama. `UI/MainMenuController` (scene MainMenu): Mulai/Lanjut, Pilih level (terkunci sampai level sebelumnya selesai), Reset progres.
+- `Core/BootLoader` (scene Boot) → menu utama. Mulai (baru) → scene `Intro` → C1_L01. Level terakhir → scene `Ending` → menu utama. `UI/MainMenuController` (scene MainMenu): Mulai/Lanjut, Pilih level (terkunci sampai level sebelumnya selesai), Reset progres.
 - `UI/PauseMenu` (di LevelSystems): Esc jeda, R ulang. Tampilan OnGUI = placeholder sampai UI desainer.
 - `LevelGoal`: selesai → buka level berikutnya → muat; level terakhir → menu utama.
 

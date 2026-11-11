@@ -17,8 +17,10 @@ Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double
 - Penjaga Golem Batu (patroli, kerucut lurus, tingkat curiga, ketahuan = ulang level) jalan di sandbox.
 - Nyamar jadi barang (tahan C, potongan yang ditinggal otomatis) + umpan (potongan nyamar yang menyala didatangi penjaga). Golem: datangi + sapu pandangan, radius sadar.
 - Blockout chapter 1 lengkap (C1_L01 tutorial, L02 kenalan Golem, L03 urutan makan + 2 golem, L04 umpan + gerbang), bisa dimainkan berurutan; kamera ikut potongan aktif. Dibangun dari peta teks: menu GooNapped > Blockout (`Scripts/Editor/Level/LevelBlockout.cs`).
-- Musuh ke-2 Familiar Api (C2_L01). Skill muntah (Q) + lempar gumpalan (F). Menu utama, pilih level, pause, restart, progres.
-- Belum: desain slime final (tim desainer), Anjing Lendir, Mata Penyihir, tileset level final, art bahan/toples, UI (sekarang HUD teks sementara `ProtoHud`).
+- Musuh ke-2 Familiar Api, musuh ke-3 Anjing Lendir + jejak bau. Chapter 2 blockout lengkap (C2_L01–L04). Garam Beku + lentera bisa dipadamkan. Skill muntah (Q) + lempar gumpalan (F). Menu utama, pilih level, pause, restart, progres.
+- HUD UI Toolkit (kartu resep, chip ciri, meter curiga), sistem cerita (cutscene + dialog, Intro/Ending tersambung, teks placeholder), pathfinding penjaga (A*), langkah berat berisik, VFX ciri tubuh, pintu/tuas/pelat tekan/celah (sandbox `ProtoProps`).
+- QA otomatis (10 Nov): validator level + integritas aset (EditMode), bot yang menamatkan 8 level + patroli + alur scene (PlayMode). Hasil & temuan: `docs/backlog.md` bagian QA. Jalankan Test Runner sebelum PR.
+- Belum: desain slime final (tim desainer), Mata Penyihir, tileset level final, art bahan/toples/props, tampilan UI final, isi cerita, playtest manusia (rasa & kesulitan stealth).
 - Mood: **gelap** (disetujui 10 Nov, lihat `art/CLAUDE.md`). `art/palette.hex` masih USULAN.
 - Usulan urutan chapter/level: `docs/rundown-level.md` (belum disepakati tim).
 
@@ -138,6 +140,6 @@ Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, 
 - Kerjaan teknis (kode, scene, shader, tooling, pipeline render) langsung kerjakan. Kerjaan desain art: bantu eksekusi kalau ada arahan dari tim desainer.
 
 ## Next step
-- Programmer: lihat `docs/backlog.md` (berikutnya: blockout C2_L02–L04, Anjing Lendir + bahan bau, UI asli). Sudah ada: `GolemGuard` + `VisionCone` (penjaga), `Jar`/`RecipeData`/`LevelGoal` (objektif). Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
+- Programmer: lihat `docs/backlog.md` (berikutnya: isi cerita oleh tim, poles, playtest). Sudah ada: `GolemGuard` + `VisionCone` (penjaga), `Jar`/`RecipeData`/`LevelGoal` (objektif). Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
 - Desainer: desain final slime + palet state bahan, tileset chapter 1 (albedo flat + normal), toples, Golem Batu.
 - Tim: daftar bahan + ciri, slime teman per chapter, daftar level.

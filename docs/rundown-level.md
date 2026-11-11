@@ -34,8 +34,8 @@ Masuk tembok kastil. Sebagian level di halaman terbuka (hujan/kabut), sebagian d
 | Level | Isi | Yang diajarkan |
 |---|---|---|
 | C2_L01 | Halaman kastil saat hujan, 1 Familiar Api | Menyala = terlihat dari jauh; resep butuh "panas" jadi harus berisiko |
-| C2_L02 | Ruang tungku, familiar + golem | Makan Ramuan Api paling akhir; Garam Beku untuk memadamkan diri |
-| C2_L03 | Kandang & selokan, Anjing Lendir | Bau meninggalkan jejak; potongan berbau sebagai umpan |
+| C2_L02 | Kandang & selokan, Anjing Lendir (blockout ada) | Bau meninggalkan jejak; potongan berbau sebagai umpan; muntahkan bahan bau |
+| C2_L03 | Ruang tungku, familiar + golem | Makan Ramuan Api paling akhir; Garam Beku untuk memadamkan diri |
 | C2_L04 | Gudang toples besar, ketiga musuh, slime keluarga pertama | Gabungan: umpan bau + nyamar + urutan makan |
 
 ## Chapter 3: Menara alkemis (kandidat dipotong kalau molor)
