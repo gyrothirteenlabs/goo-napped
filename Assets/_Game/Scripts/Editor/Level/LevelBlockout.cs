@@ -19,7 +19,7 @@ namespace GooNapped.EditorTools
     //           d/D            titik awal / akhir patroli Anjing Lendir
     //           |  pintu (tertutup)   /  tuas   o  pelat tekan   O  pelat tekan berat   ~  celah (lorong tikus, slime saja)
     //           T  tong (tempat sembunyi, muat 1)   P  peti (tempat sembunyi, muat 2)
-    //           V  lubang ventilasi (aman, checkpoint, jaringan "A")   X  lubang ventilasi EXIT (level selesai)
+    //           A  lubang ventilasi (aman, checkpoint, jaringan "A")   X  lubang ventilasi EXIT (level selesai)
     //           m  lumpur (jejak bau beberapa detik)   =  genangan air (mencuci lumpur)
     //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
     //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
@@ -277,7 +277,7 @@ namespace GooNapped.EditorTools
             recipe2 = "Friend_Bolu",
             next = "Ending",   // sementara jadi satu-satunya level di alur game (GameFlow.Levels)
             note = "SANDBOX ProtoV2: semua sistem desain v2 di satu ruang uji. Bukan desain level.\n" +
-                   "Ventilasi (V): C = masuk (aman, checkpoint), A/D = pindah lubang, C = keluar. Lubang X = exit level.\n" +
+                   "Ventilasi (A): C = masuk (aman, checkpoint), A/D = pindah lubang, C = keluar. Lubang X = exit level.\n" +
                    "Toples 1 (Pip, kecil, aura Embun/biru): makan 1 Esens Embun (w) lalu Space di depan toples.\n" +
                    "Toples 2 (Bolu, besar, aura Batu/abu): massa 3, esens TERAKHIR = Batu (b). Contoh: Pendar (l) lalu Batu.\n" +
                    "Teman keluar dan menunggu: F = ajak ikut / suruh tunggu. Bawa ke ventilasi mana pun = selamat.\n" +
@@ -289,11 +289,11 @@ namespace GooNapped.EditorTools
                 "##########################",
                 "#S.....#...........#.....#",
                 "#......#..w.....1..#..T..#",
-                "#..V...........l..b#.....#",
+                "#..A...........l..b#.....#",
                 "#......#...........|.../.#",
                 "####.######.####...2.#####",
                 "#g.................G.....#",
-                "#.##.###.####.####.###.V.#",
+                "#.##.###.####.####.###.A.#",
                 "#..mmmm....P.......=.....#",
                 "#X....d..........D.......#",
                 "##########################",
@@ -542,7 +542,7 @@ namespace GooNapped.EditorTools
                         case '~':
                             Spawn(P + "Level/Crawlspace.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "Crawlspace");
                             break;
-                        case 'V':
+                        case 'A':
                         case 'X':
                         {
                             var root = PropRoot();

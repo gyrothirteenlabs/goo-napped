@@ -218,13 +218,15 @@ namespace GooNapped
             float gap = Time.time < closeInUntil || leaderInVent ? 0.02f : followGap * (1f + 0.95f * QueueIndex());
             Vector2 pos = transform.position;
             // jalan di jejak selama jarak (sepanjang jejak) ke pemain masih lebih dari gap
-            while (budget > 0f && trail.Count > 0 && PathLength(pos) > gap)
+            // batas iterasi + langkah minimum: tanpa ini langkah super kecil (presisi float) bisa membuat loop tak berujung
+            for (int guard = 0; guard < 64 && budget > 1e-5f && trail.Count > 0; guard++)
             {
+                float slack = PathLength(pos) - gap;
+                if (slack <= 1e-3f) break;
                 var next = trail[0];
                 float d = Vector2.Distance(pos, next);
-                float slack = PathLength(pos) - gap;
                 float step = Mathf.Min(budget, d, slack);
-                if (d <= 1e-4f || step >= d - 1e-4f)
+                if (d <= 1e-3f || step >= d - 1e-4f)
                 {
                     pos = next;
                     trail.RemoveAt(0);
@@ -232,6 +234,7 @@ namespace GooNapped
                 }
                 else
                 {
+                    if (step < 1e-4f) break;
                     pos = Vector2.MoveTowards(pos, next, step);
                     budget -= step;
                 }
