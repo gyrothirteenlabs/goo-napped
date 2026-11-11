@@ -2,35 +2,48 @@ using UnityEngine;
 
 namespace GooNapped
 {
-    // Gerak slime = rangkaian lompatan kecil (hop), bukan meluncur rata:
-    //   Ancang (memipih, diam) -> Lompat (memanjang, terangkat, cepat) -> Mendarat (gepeng) -> Meluncur (melambat)
-    // Tahan arah = lompat berulang. Lepas = lompatan yang sedang berjalan diselesaikan lalu meluncur berhenti.
-    // Arah dikunci saat lepas landas (terasa berat/lengket), dengan sedikit belokan di udara.
+    // Gerak slime = lompatan rendah berulang. Rasa slime Terraria, tapi pendek karena ini game stealth:
+    //   Ancang (memipih) -> Lompat (memanjang, busur rendah ±5 px, bulat di puncak) -> Mendarat (gepeng + goyang jeli)
+    // Tahan arah = lompat berulang. Kecepatan naik-turun HALUS (tidak mati total di antara lompatan, itu yang janky).
+    // Lepas arah = lompatan yang sedang di udara diselesaikan, lalu meluncur pelan sampai berhenti (Slide).
+    // Di tanah arah bebas, di udara hanya bisa dibelokkan sedikit (terasa lengket).
+    // Massa/bahan berat (SpeedMultiplier < 1): lompatan lebih pendek, lebih rendah, ancang lebih lama.
     [RequireComponent(typeof(Rigidbody2D))]
     public class SlimeMotor : MonoBehaviour
     {
         public enum HopPhase { Idle, Windup, Air, Land, Slide }
 
         [Header("Kecepatan")]
-        [Tooltip("Kecepatan rata-rata (unit/detik) saat terus melompat.")]
-        [SerializeField] private float baseSpeed = 2.2f;
+        [Tooltip("Kecepatan dasar (massa 1, tanpa bahan berat). Rata-rata nyata ±86% dari ini karena kecepatan " +
+                 "menyusul target secara halus: 2.55 = ±2.2 unit/detik (diukur 11 Nov).")]
+        [SerializeField] private float baseSpeed = 2.55f;
+        [Tooltip("Bagian kecepatan udara yang tersisa saat menyentuh tanah di antara lompatan. 0 = berhenti total tiap lompat.")]
+        [SerializeField, Range(0f, 1f)] private float groundSpeedShare = 0.35f;
+        [Tooltip("Waktu (detik) kecepatan menyusul target. Kecil = kaku, besar = licin.")]
+        [SerializeField, Range(0.01f, 0.3f)] private float velocitySmoothing = 0.05f;
 
-        [Header("Waktu tiap fase (detik, kecepatan normal)")]
-        [SerializeField] private float windupTime = 0.08f;
-        [SerializeField] private float airTime = 0.14f;
-        [SerializeField] private float landTime = 0.05f;
-        [SerializeField] private float slideTime = 0.22f;
-        [Tooltip("Bagian jarak tiap siklus yang ditempuh saat meluncur (sisanya di udara). Besar = lebih banyak merayap.")]
-        [SerializeField, Range(0f, 0.8f)] private float slideShare = 0.5f;
+        [Header("Waktu fase (detik, kecepatan normal)")]
+        [SerializeField] private float crouchTime = 0.07f;
+        [SerializeField] private float hopTime = 0.26f;
+        [SerializeField] private float settleTime = 0.07f;
+        [Tooltip("Lama meluncur sampai berhenti setelah tombol arah dilepas.")]
+        [SerializeField] private float stopTime = 0.14f;
 
-        [Header("Rasa (stealth: kecil saja)")]
-        [Tooltip("Derajat/detik belokan saat di udara. Kecil = arah terkunci (lengket), besar = lincah.")]
-        [SerializeField] private float airSteer = 160f;
-        [Tooltip("Tinggi lompatan visual (unit). 0.035 = sekitar 2 px.")]
-        [SerializeField] private float hopHeight = 0.035f;
-        [SerializeField] private float windupSquash = -0.1f;
-        [SerializeField] private float airStretch = 0.07f;
-        [SerializeField] private float landKick = -2.5f;
+        [Header("Rasa")]
+        [Tooltip("Tinggi busur lompatan (unit). 0.1 = sekitar 5 px. Rendah karena stealth.")]
+        [SerializeField] private float hopArc = 0.1f;
+        [Tooltip("Derajat/detik belokan di udara. Kecil = lengket, besar = lincah.")]
+        [SerializeField] private float steerInAir = 260f;
+        [SerializeField] private float crouchSquash = -0.18f;
+        [SerializeField] private float takeoffStretch = 0.16f;
+        [SerializeField] private float fallStretch = 0.05f;
+        [Tooltip("Dorongan pegas jeli saat lepas landas (positif = melonjak).")]
+        [SerializeField] private float takeoffKick = 2.5f;
+        [Tooltip("Hentakan pegas jeli saat mendarat (negatif = gepeng).")]
+        [SerializeField] private float landImpact = -4.5f;
+        [Tooltip("Napas saat diam: squash/stretch kecil berulang.")]
+        [SerializeField] private float breathe = 0.025f;
+        [SerializeField] private float breatheRate = 1.3f;
 
         // Fase baru dimulai (untuk suara langkah, debu, dll.).
         public event System.Action<HopPhase> PhaseEntered;
@@ -40,24 +53,28 @@ namespace GooNapped
         private HopPhase phase = HopPhase.Idle;
         private float t;
         private Vector2 hopDir = Vector2.down;
-        private float slideStart;
+        private Vector2 velocity;
+        private float breatheOffset;
 
         // Arah yang diminta (panjang 0..1). Diisi SlimePiece, bukan langsung dari input.
         public Vector2 MoveInput { get; set; }
-        // 1 = normal, 0.6 = lambat (habis makan bahan berat): lompatan lebih pendek dan lebih lama ancangnya.
+        // 1 = normal. Di bawah 1 = lambat (massa besar, bahan berat): lompatan lebih pendek dan lebih lama ancangnya.
         public float SpeedMultiplier { get; set; } = 1f;
         public float MaxSpeed => baseSpeed * SpeedMultiplier;
         public Vector2 Velocity => rb != null ? rb.linearVelocity : Vector2.zero;
         public HopPhase Phase => phase;
         public bool IsHopping => phase != HopPhase.Idle;
+        public bool IsAirborne => phase == HopPhase.Air;
         // 0..1 sepanjang satu siklus lompat; dipakai untuk memilih frame sprite "move" supaya sinkron.
         public float CyclePhase { get; private set; }
 
         private float Mult => Mathf.Max(0.2f, SpeedMultiplier);
-        private float Windup => windupTime / Mult;
-        private float Land => landTime / Mult;
-        private float CycleTime => Windup + airTime + Land + slideTime;
-        private float CycleDistance => baseSpeed * Mult * (windupTime + airTime + landTime + slideTime);
+        private float Crouch => crouchTime / Mult;
+        private float Settle => settleTime / Mult;
+        private float Cycle => Crouch + hopTime + Settle;
+        // kecepatan di udara supaya rata-rata satu siklus = baseSpeed * Mult
+        private float AirSpeed => baseSpeed * Mult * Cycle / (hopTime + groundSpeedShare * (Crouch + Settle));
+        private float GroundSpeed => AirSpeed * groundSpeedShare;
 
         private void Awake()
         {
@@ -67,13 +84,15 @@ namespace GooNapped
             rb.freezeRotation = true;
             rb.interpolation = RigidbodyInterpolation2D.Interpolate;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            breatheOffset = Random.value * 10f;   // potongan-potongan tidak bernapas serempak
         }
 
-        // Potongan yang ditinggal (nyamar) tidak boleh terdorong.
+        // Potongan yang ditinggal tidak boleh terdorong.
         public void SetFrozen(bool frozen)
         {
             if (rb == null) rb = GetComponent<Rigidbody2D>();
             rb.linearVelocity = Vector2.zero;
+            velocity = Vector2.zero;
             rb.bodyType = frozen ? RigidbodyType2D.Kinematic : RigidbodyType2D.Dynamic;
             if (frozen) Stop();
         }
@@ -82,7 +101,9 @@ namespace GooNapped
         {
             MoveInput = Vector2.zero;
             phase = HopPhase.Idle;
+            t = 0f;
             CyclePhase = 0f;
+            velocity = Vector2.zero;
             if (rb != null && rb.bodyType == RigidbodyType2D.Dynamic) rb.linearVelocity = Vector2.zero;
             if (jelly != null) { jelly.Target = 0f; jelly.Lift = 0f; }
         }
@@ -93,18 +114,18 @@ namespace GooNapped
         {
             phase = p;
             t = 0f;
-            if (p == HopPhase.Land && jelly != null) jelly.Kick(landKick);
-            if (p == HopPhase.Slide) slideStart = SlideSpeed();
+            if (jelly != null)
+            {
+                if (p == HopPhase.Air) jelly.Kick(takeoffKick);
+                if (p == HopPhase.Land) jelly.Kick(landImpact * Mathf.Lerp(0.6f, 1f, Mult));
+            }
             PhaseEntered?.Invoke(p);
         }
 
-        private float AirSpeed() => CycleDistance * (1f - slideShare) / airTime;
-        // kecepatan awal luncuran supaya rata-rata luncuran (v0/2) menempuh bagian slideShare
-        private float SlideSpeed() => 2f * CycleDistance * slideShare / slideTime;
-
         private void Update()
         {
-            if (rb.bodyType != RigidbodyType2D.Dynamic) return;
+            bool dynamic = rb.bodyType == RigidbodyType2D.Dynamic;
+            if (!dynamic) { Breathe(); return; }   // potongan yang ditinggal: diam, tetap bernapas
             t += Time.deltaTime;
             switch (phase)
             {
@@ -112,66 +133,90 @@ namespace GooNapped
                     if (HasInput) { hopDir = MoveInput.normalized; Enter(HopPhase.Windup); }
                     break;
                 case HopPhase.Windup:
-                    if (HasInput) hopDir = MoveInput.normalized;   // masih bisa ganti arah sebelum lepas landas
-                    if (t >= Windup) Enter(HopPhase.Air);
+                    if (!HasInput) { Enter(HopPhase.Slide); break; }   // batal sebelum lepas landas (presisi stealth)
+                    hopDir = MoveInput.normalized;                     // di tanah: arah bebas
+                    if (t >= Crouch) Enter(HopPhase.Air);
                     break;
                 case HopPhase.Air:
                     if (HasInput)
                     {
                         float cur = Mathf.Atan2(hopDir.y, hopDir.x) * Mathf.Rad2Deg;
                         float want = Mathf.Atan2(MoveInput.y, MoveInput.x) * Mathf.Rad2Deg;
-                        float a = Mathf.MoveTowardsAngle(cur, want, airSteer * Time.deltaTime) * Mathf.Deg2Rad;
+                        float a = Mathf.MoveTowardsAngle(cur, want, steerInAir * Time.deltaTime) * Mathf.Deg2Rad;
                         hopDir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
                     }
-                    if (t >= airTime) Enter(HopPhase.Land);
+                    if (t >= hopTime) Enter(HopPhase.Land);
                     break;
                 case HopPhase.Land:
-                    if (t >= Land) Enter(HopPhase.Slide);
+                    if (t >= Settle) Enter(HasInput ? HopPhase.Windup : HopPhase.Slide);
                     break;
                 case HopPhase.Slide:
-                    if (t >= slideTime)
-                    {
-                        if (HasInput) { hopDir = MoveInput.normalized; Enter(HopPhase.Windup); }
-                        else Enter(HopPhase.Idle);
-                    }
+                    if (HasInput) { hopDir = MoveInput.normalized; Enter(HopPhase.Windup); }
+                    else if (t >= stopTime) Enter(HopPhase.Idle);
                     break;
             }
             UpdateVisual();
         }
 
+        private void Breathe()
+        {
+            if (jelly == null) return;
+            jelly.Lift = 0f;
+            jelly.Target = breathe * Mathf.Sin((Time.time + breatheOffset) * breatheRate * Mathf.PI * 2f);
+        }
+
         private void UpdateVisual()
         {
-            float w = Windup, a = airTime, l = Land, s = slideTime, total = CycleTime;
+            float c = Crouch, h = hopTime, s = Settle, total = Cycle;
             float k;
             switch (phase)
             {
-                case HopPhase.Windup: k = Mathf.Clamp01(t / w); CyclePhase = k * w / total; break;
-                case HopPhase.Air: k = Mathf.Clamp01(t / a); CyclePhase = (w + k * a) / total; break;
-                case HopPhase.Land: k = Mathf.Clamp01(t / l); CyclePhase = (w + a + k * l) / total; break;
-                case HopPhase.Slide: k = Mathf.Clamp01(t / s); CyclePhase = (w + a + l + k * s) / total; break;
+                case HopPhase.Windup: k = Mathf.Clamp01(t / c); CyclePhase = k * c / total; break;
+                case HopPhase.Air: k = Mathf.Clamp01(t / h); CyclePhase = (c + k * h) / total; break;
+                case HopPhase.Land: k = Mathf.Clamp01(t / s); CyclePhase = (c + h + k * s) / total; break;
                 default: k = 0f; CyclePhase = 0f; break;
             }
             if (jelly == null) return;
             switch (phase)
             {
-                case HopPhase.Windup: jelly.Target = windupSquash; jelly.Lift = 0f; break;
-                case HopPhase.Air: jelly.Target = airStretch * (1f - k); jelly.Lift = hopHeight * Mathf.Sin(k * Mathf.PI); break;
-                case HopPhase.Land: jelly.Target = windupSquash * 0.5f; jelly.Lift = 0f; break;
-                default: jelly.Target = 0f; jelly.Lift = 0f; break;
+                case HopPhase.Windup:
+                    jelly.Target = crouchSquash * (1f - (1f - k) * (1f - k));   // memipih cepat lalu tertahan
+                    jelly.Lift = 0f;
+                    break;
+                case HopPhase.Air:
+                    // busur parabola rendah; memanjang saat naik, bulat di puncak, sedikit memanjang lagi saat turun
+                    jelly.Lift = hopArc * Mathf.Sqrt(Mult) * 4f * k * (1f - k);
+                    jelly.Target = k < 0.5f ? Mathf.Lerp(takeoffStretch, 0f, k * 2f) : Mathf.Lerp(0f, fallStretch, (k - 0.5f) * 2f);
+                    break;
+                case HopPhase.Land:
+                    jelly.Target = crouchSquash * 0.6f;
+                    jelly.Lift = 0f;
+                    break;
+                case HopPhase.Slide:
+                    jelly.Target = 0f;
+                    jelly.Lift = 0f;
+                    break;
+                default:
+                    Breathe();
+                    break;
             }
         }
 
         private void FixedUpdate()
         {
             if (rb.bodyType != RigidbodyType2D.Dynamic) return;
-            float v;
+            float target;
             switch (phase)
             {
-                case HopPhase.Air: v = AirSpeed(); break;
-                case HopPhase.Slide: v = Mathf.Lerp(slideStart, 0f, Mathf.Clamp01(t / slideTime)); break;
-                default: v = 0f; break;
+                case HopPhase.Air: target = AirSpeed; break;
+                case HopPhase.Windup:
+                case HopPhase.Land: target = GroundSpeed; break;
+                default: target = 0f; break;
             }
-            rb.linearVelocity = hopDir * v;
+            // kecepatan menyusul target secara eksponensial: halus, tanpa sentakan
+            float blend = 1f - Mathf.Exp(-Time.fixedDeltaTime / velocitySmoothing);
+            velocity = Vector2.Lerp(velocity, hopDir * target, blend);
+            rb.linearVelocity = velocity;
         }
     }
 }

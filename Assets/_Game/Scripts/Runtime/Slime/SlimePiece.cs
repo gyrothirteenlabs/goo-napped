@@ -9,6 +9,11 @@ namespace GooNapped
     [DefaultExecutionOrder(10)]   // setelah SlimeMotor: animasi khusus menahan pegas jeli setelah gerak menulisnya
     public class SlimePiece : MonoBehaviour
     {
+        [Header("Sprite")]
+        [Tooltip("Pakai frame sprite 'move' saat melompat. Matikan selama frame sprite masih punya squash sendiri " +
+                 "(dobel dengan squash engine = janky). Nyalakan setelah sprite final dirender sesuai panduan-blender-3d C.1.")]
+        [SerializeField] private bool spriteMoveFrames;
+
         [Header("Makan")]
         [Tooltip("Jarak maksimum ke bahan (dari pusat collider).")]
         [SerializeField] private float eatRadius = 0.7f;
@@ -243,10 +248,17 @@ namespace GooNapped
             string dir = Facing.x != 0 ? "side" : (Facing.y > 0 ? "back" : "front");
             bool left = Facing.x != 0 ? Facing.x < 0 : anim.faceLeft;
             bool moving = IsControlled && !IsEating && Motor.IsHopping;
-            // frame sprite "move" mengikuti fase lompatan (bukan jam), jadi squash di sprite sinkron dengan lompatan
-            anim.forcedPhase = moving ? Motor.CyclePhase : -1f;
             anim.speedScale = 1f;
             string a = animating ? "move" : disguiseT > 0f ? "idle" : IsEating ? "eat" : moving ? "move" : "idle";
+            if (a == "move" && !spriteMoveFrames)
+            {
+                // frame "move" lama punya squash sendiri (dobel dengan squash engine): pakai frame diam pertama,
+                // semua bentuk lompatan dari SlimeJelly
+                a = "idle";
+                anim.forcedPhase = 0f;
+            }
+            // frame sprite "move" mengikuti fase lompatan (bukan jam), jadi squash di sprite sinkron dengan lompatan
+            else anim.forcedPhase = a == "move" && moving ? Motor.CyclePhase : -1f;
             anim.Play(a, dir, left);
         }
 
