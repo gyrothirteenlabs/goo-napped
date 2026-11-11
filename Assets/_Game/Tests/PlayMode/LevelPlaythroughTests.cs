@@ -147,32 +147,23 @@ namespace GooNapped.Tests
                     yield return WaitGame(1f);
                 }
 
-                // belah, Shift ke potongan baru, potongan baru masuk toples, potongan lama menelan teman
+                // v2: Space di depan toples = membelah langsung ke dalam toples, lalu F mengajak teman ikut
                 var carrier = brain.Active;
                 yield return WalkToJar(brain, jar);
                 if (failure != null) Assert.Fail(failure);
-                yield return Split(brain);
-                if (failure != null) Assert.Fail(failure);
-                brain.SwitchNext();
-                var decoy = brain.Active;
-                Assert.AreNotSame(carrier, decoy, "Shift tidak pindah ke potongan baru.");
-                yield return WalkToJar(brain, jar);
-                if (failure != null) Assert.Fail(failure);
-                Assert.IsTrue(brain.Interact(), "E di depan toples tidak menukar. Pesan: " + brain.Message);
-                Assert.IsFalse(jar.HasFriend, "Toples masih berisi teman setelah tukar. Pesan: " + brain.Message);
+                Assert.IsTrue(brain.SplitOrMerge(), "Space di depan toples tidak memasukkan tiruan. Pesan: " + brain.Message);
+                yield return WaitGame(1.2f);
+                Assert.IsFalse(jar.HasFriend, "Toples masih berisi teman setelah tiruan masuk. Pesan: " + brain.Message);
                 Assert.AreEqual(0, jar.DecoyMismatch, "Tiruan tidak sempurna (solver dan game beda hitung).");
-                Assert.AreSame(carrier, brain.Active, "Setelah tukar, kendali tidak kembali ke potongan pembawa.");
-                route.Add("tukar " + jar.name);
-                yield return WaitGame(0.6f);
+                Assert.AreSame(carrier, brain.Active, "Kendali pindah setelah tiruan masuk toples.");
+                route.Add("tiruan " + jar.name);
 
                 var friend = Object.FindObjectsByType<FriendSlime>(FindObjectsSortMode.None)
                     .OrderBy(f => Vector2.Distance(f.transform.position, jar.transform.position)).FirstOrDefault();
-                Assert.IsNotNull(friend, "Teman tidak muncul setelah tukar.");
-                yield return WalkUntil(brain, LevelMap.CellOfObject(friend), () => InRange(brain.Active, friend, Interact), "ke teman");
-                if (failure != null) Assert.Fail(failure);
-                Assert.IsTrue(brain.Interact(), "E di depan teman tidak menelan. Pesan: " + brain.Message);
-                Assert.AreEqual(k + 1, brain.Active.Carried.Count, "Teman tidak terbawa.");
-                route.Add("telan");
+                Assert.IsNotNull(friend, "Teman tidak muncul setelah tiruan masuk.");
+                Assert.IsTrue(brain.Command(), "F tidak mengajak teman. Pesan: " + brain.Message);
+                Assert.AreEqual(FriendSlime.Mode.Following, friend.State, "Teman tidak mengikuti setelah F.");
+                route.Add("ajak " + friend.Name);
             }
 
             var exit = Map().exits.OrderBy(e => Vector2.Distance(e.transform.position, brain.Active.Center)).First();

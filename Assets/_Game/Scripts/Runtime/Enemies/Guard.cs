@@ -197,7 +197,8 @@ namespace GooNapped
 
         private float RangeFor(SlimePiece p)
         {
-            float r = viewRange * (p.Body.State.EmitsLight ? glowRangeMultiplier : 1f);
+            // tubuh besar terlihat lebih jauh, tubuh kecil/gelap (Esens Bayang) lebih dekat (desain-v2 bagian 5)
+            float r = viewRange * (p.Body.State.EmitsLight ? glowRangeMultiplier : 1f) * p.Body.State.SightMultiplier;
             if (heatSightRange > 0f && IsHot(p)) r = Mathf.Max(r, heatSightRange);
             return r;
         }

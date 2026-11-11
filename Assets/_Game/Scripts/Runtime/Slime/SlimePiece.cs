@@ -58,8 +58,8 @@ namespace GooNapped
         // Umpan: barang samaran yang menyala/berbau menarik perhatian penjaga (tanpa menaikkan curiga).
         public bool IsBait => IsDisguised && (Body.State.EmitsLight || Body.State.SmellRadius > 0f);
         public bool IsEating => eatTimer > 0f;
-        // Teman yang sudah ditelan potongan ini (dibawa ke exit).
-        public System.Collections.Generic.List<RecipeData> Carried { get; } = new System.Collections.Generic.List<RecipeData>();
+        // Massa tubuh (desain-v2 bagian 5): 1 = kecil, maks 4.
+        public int Mass => Body.State.Mass;
         public Vector2 Center => col != null ? (Vector2)col.bounds.center : (Vector2)transform.position;
         public float Radius => col != null ? col.bounds.extents.x : 0.28f;
         public Collider2D Collider => col;
@@ -93,7 +93,27 @@ namespace GooNapped
             else AudioDirector.Play(AudioDirector.Sfx.SlimeStep, Center, 0.45f, 0.12f);
         }
 
-        private void OnBodyChanged(SlimeBody b) => Motor.SpeedMultiplier = b.State.SpeedMultiplier;
+        // Massa dan esens menentukan kecepatan dan ukuran badan (desain-v2 bagian 5). Ukuran berubah halus.
+        private float targetScale = -1f;
+
+        private void OnBodyChanged(SlimeBody b)
+        {
+            Motor.SpeedMultiplier = b.State.SpeedMultiplier;
+            targetScale = SlimeBodyState.MassScale(b.State.Mass);
+        }
+
+        private void Start()
+        {
+            if (targetScale < 0f) OnBodyChanged(Body);
+            transform.localScale = new Vector3(targetScale, targetScale, 1f);
+        }
+
+        private void UpdateScale()
+        {
+            if (targetScale <= 0f) return;
+            float s = Mathf.MoveTowards(transform.localScale.x, targetScale, Time.deltaTime * 1.6f);
+            if (!Mathf.Approximately(s, transform.localScale.x)) transform.localScale = new Vector3(s, s, 1f);
+        }
 
         public void SetControlled(bool on)
         {
@@ -154,9 +174,10 @@ namespace GooNapped
             return best;
         }
 
+        // Makan esens terdekat. false kalau tidak ada esens dalam jangkauan atau perut penuh (massa maksimum).
         public bool TryEat()
         {
-            if (IsEating) return false;
+            if (IsEating || !Body.State.CanEat) return false;
             var p = FindPickup();
             if (p == null) return false;
             Body.Eat(p.Consume());
@@ -182,10 +203,10 @@ namespace GooNapped
             scentTimer = 1.2f;
         }
 
-        // Muntahkan bahan terakhir ke lantai di depan: koreksi resep yang salah, atau jadikan bahan umpan di tempat lain.
+        // Muntahkan esens terakhir ke lantai di depan (koreksi urutan makan). Massa -1, minimal tersisa 1.
         public bool TryVomit()
         {
-            if (IsEating || IsTransforming || Body.State.Eaten.Count == 0) return false;
+            if (IsEating || IsTransforming || !Body.State.CanVomit) return false;
             var ing = Body.Vomit();
             if (ing == null) return false;
             eatTimer = vomitDuration;
@@ -245,6 +266,7 @@ namespace GooNapped
             UpdateDisguise();
             ApplyDisguiseVisual();
             DropScent();
+            UpdateScale();
             string dir = Facing.x != 0 ? "side" : (Facing.y > 0 ? "back" : "front");
             bool left = Facing.x != 0 ? Facing.x < 0 : anim.faceLeft;
             bool moving = IsControlled && !IsEating && Motor.IsHopping;

@@ -11,7 +11,8 @@ namespace GooNapped.EditorTools
     // Desainer: ubah peta di bawah lalu jalankan menu GooNapped > Blockout, atau gambar ulang langsung di Tilemap.
     //
     // Legenda:  # batu (tembok)   . lantai   S spawn pemain   E exit   J toples
-    //           b Serbuk Batu   l Lumut Pendar   w Air Embun   r Ramuan Api   y Minyak Belerang   i Garam Beku   L lentera
+    //           esens: b Batu (abu, berat)  l Pendar (hijau, menyala)  w Embun (biru, dingin)  r Bara (merah, panas, menyala)
+//                  y Belerang (kuning, bau)  i Beku (putih, dingin, memadamkan)  u Bayang (ungu, sulit terlihat)   L lentera
     //           J atau 1 = toples resep pertama (recipe), 2 = toples resep kedua (recipe2)
     //           g/G, h/H, k/K  titik awal / akhir patroli Golem 1, 2, 3 (garis lurus; huruf kecil = posisi awal)
     //           f/F, v/V       titik awal / akhir patroli Familiar Api 1, 2
@@ -265,6 +266,41 @@ namespace GooNapped.EditorTools
             },
         };
 
+        // Ruang uji alur inti v2 (BUKAN level, tidak masuk build): makan esens -> belah ke toples -> ajak teman (F) -> exit.
+        static readonly Config SandboxV2 = new Config
+        {
+            scene = "Assets/_Game/Scenes/Sandbox/ProtoV2.unity",
+            recipe = "Friend_Pip",
+            recipe2 = "Friend_Bolu",
+            next = "",
+            note = "SANDBOX ProtoV2: alur inti desain v2. Bukan desain level.\n" +
+                   "Toples 1 (Pip, kecil, aura Embun/biru): makan 1 Esens Embun (w) -> massa 2 -> Space di depan toples.\n" +
+                   "Toples 2 (Bolu, besar, aura Batu/abu): massa 3, esens TERAKHIR = Batu (b). Contoh: Pendar (l) lalu Batu.\n" +
+                   "Teman keluar dan menunggu: F = ajak ikut / suruh tunggu. Kawal ke exit (E). Golem berpatroli di lorong bawah.\n" +
+                   "Dibangun oleh GooNapped > Blockout > Sandbox ProtoV2.",
+            map = new[]
+            {
+                "######################",
+                "#S.....#.............#",
+                "#......#..w.....1....#",
+                "#..............l..b..#",
+                "#......#.............#",
+                "####.######.####...2.#",
+                "#g.................G.#",
+                "#.##.###.####.####.###",
+                "#E...................#",
+                "######################",
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/Sandbox ProtoV2")]
+        public static void BuildSandboxV2()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(SandboxV2.scene) == null)
+                AssetDatabase.CopyAsset("Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity", SandboxV2.scene);
+            Build(SandboxV2);
+        }
+
         [MenuItem("GooNapped/Blockout/Sandbox ProtoProps")]
         public static void BuildSandboxProps()
         {
@@ -434,9 +470,10 @@ namespace GooNapped.EditorTools
             const string golemKeys = "ghkfvd";   // g h k = Golem Batu, f v = Familiar Api, d = Anjing Lendir
             var golemStart = new Dictionary<char, Vector2>();
             var golemEnd = new Dictionary<char, Vector2>();
+            // esens (aset Data/Ingredients/Essence_<nama>): b batu, l pendar, w embun, r bara, y belerang, i beku, u bayang
             var ingredients = new Dictionary<char, string>
             {
-                { 'b', "SerbukBatu" }, { 'l', "LumutPendar" }, { 'w', "AirEmbun" }, { 'r', "RamuanApi" }, { 'y', "MinyakBelerang" }, { 'i', "GaramBeku" },
+                { 'b', "Batu" }, { 'l', "Pendar" }, { 'w', "Embun" }, { 'r', "Bara" }, { 'y', "Belerang" }, { 'i', "Beku" }, { 'u', "Bayang" },
             };
             for (int row = 0; row < h; row++)
             {
@@ -517,8 +554,8 @@ namespace GooNapped.EditorTools
                             else if (golemKeys.IndexOf(char.ToLowerInvariant(ch)) >= 0) golemEnd[char.ToLowerInvariant(ch)] = pos;
                             else if (ingredients.TryGetValue(ch, out var id))
                             {
-                                var data = Load<IngredientData>(D + "Ingredients/Ingredient_" + id + ".asset");
-                                var p = Spawn(P + "Props/IngredientPickup.prefab", ingRoot, pos, "Pickup_" + id);
+                                var data = Load<IngredientData>(D + "Ingredients/Essence_" + id + ".asset");
+                                var p = Spawn(P + "Props/IngredientPickup.prefab", ingRoot, pos, "Essence_" + id);
                                 Set(p.GetComponent<IngredientPickup>(), "ingredient", q => q.objectReferenceValue = data);
                                 p.GetComponent<SpriteRenderer>().color = data.PlaceholderTint;
                             }

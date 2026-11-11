@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d888777b70d839a4bbf9782db94ee0a8, type: 3}
-  m_Name: Ingredient_LumutPendar
+  m_Name: Essence_Pendar
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.IngredientData
-  id: lumutpendar
-  displayName: Lumut Pendar
+  id: pendar
+  displayName: Glow Essence
   traits:
   - kind: 3
     value: berkilau
@@ -22,5 +22,8 @@ MonoBehaviour:
   speedMultiplier: 1
   emitsLight: 1
   smellRadius: 0
-  bodyMaterial: {fileID: 2100000, guid: c33d432288615b44dadf01fb62511105, type: 2}
+  extinguishes: 0
+  stepNoiseRadius: 0
+  sightMultiplier: 1
+  bodyMaterial: {fileID: 2100000, guid: 483730f32c813ae499b350d57a015805, type: 2}
   placeholderTint: {r: 0.45, g: 0.95, b: 0.6, a: 1}

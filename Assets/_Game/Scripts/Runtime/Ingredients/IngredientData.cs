@@ -25,6 +25,8 @@ namespace GooNapped
         [SerializeField] private bool extinguishes;
         [Tooltip("Radius suara tiap mendarat (unit). 0 = langkah senyap seperti biasa. Bahan berat = berisik, terdengar penjaga tembus tembok.")]
         [SerializeField, Min(0f)] private float stepNoiseRadius;
+        [Tooltip("Pengali jarak pandang penjaga terhadap tubuh ini. 1 = normal, 0.7 = gelap/lebih sulit terlihat (Esens Bayang).")]
+        [SerializeField, Range(0.3f, 2f)] private float sightMultiplier = 1f;
 
         [Header("Tampilan")]
         [Tooltip("Material palet body (Slime_*) saat bahan ini menentukan warna tubuh. Kosong = tidak mengubah.")]
@@ -40,13 +42,14 @@ namespace GooNapped
         public float SmellRadius => smellRadius;
         public bool Extinguishes => extinguishes;
         public float StepNoiseRadius => stepNoiseRadius;
+        public float SightMultiplier => sightMultiplier;
         public Material BodyMaterial => bodyMaterial;
         public Color PlaceholderTint => placeholderTint;
 
         // Untuk test dan tool editor (aset biasa dibuat lewat menu Create).
         public static IngredientData Create(string id, IEnumerable<Trait> traits, float speedMultiplier = 1f,
             bool emitsLight = false, float smellRadius = 0f, Material bodyMaterial = null, Color? tint = null,
-            bool extinguishes = false, float stepNoiseRadius = 0f)
+            bool extinguishes = false, float stepNoiseRadius = 0f, float sightMultiplier = 1f)
         {
             var d = CreateInstance<IngredientData>();
             d.name = id;
@@ -60,6 +63,7 @@ namespace GooNapped
             d.placeholderTint = tint ?? Color.white;
             d.extinguishes = extinguishes;
             d.stepNoiseRadius = stepNoiseRadius;
+            d.sightMultiplier = sightMultiplier;
             return d;
         }
     }

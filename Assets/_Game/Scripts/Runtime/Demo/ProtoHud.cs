@@ -39,7 +39,7 @@ namespace GooNapped
             }
             var a = brain.Active;
             sb.Length = 0;
-            sb.AppendLine("WASD gerak | E makan/tukar/telan | Space belah-gabung | Shift pindah | tahan C nyamar | Q muntah | F lempar gumpalan | R ulang | Esc jeda");
+            sb.AppendLine("WASD move | E eat/use | Space split/merge | Shift switch | C hide | F call friend | Q spit | R retry | Esc pause");
             if (a != null)
             {
                 sb.Append("Tubuh: ").Append(TraitsText(a.Body.State.Traits));
@@ -49,9 +49,8 @@ namespace GooNapped
                 if (a.Body.State.SmellRadius > 0f) sb.Append("  <color=#e6d36a>[berbau: meninggalkan jejak]</color>");
                 if (a.IsDisguised) sb.Append("  [nyamar]");
                 sb.AppendLine();
-                sb.Append("Potongan: ").Append(brain.Pieces.Count).Append("   Gumpalan: ")
-                  .Append(brain.ThrowCooldownLeft > 0f ? Mathf.CeilToInt(brain.ThrowCooldownLeft) + " dtk" : "siap")
-                  .Append("   Teman dibawa: ").Append(a.Carried.Count);
+                sb.Append("Pieces: ").Append(brain.Pieces.Count).Append("   Size: ").Append(a.Mass)
+                  .Append("   Friends safe: ").Append(goal != null ? goal.Saved : 0);
                 if (goal != null) sb.Append("/").Append(goal.Required);
                 sb.AppendLine();
                 var jar = brain.NearbyJar;

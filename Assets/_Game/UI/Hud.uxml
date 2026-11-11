@@ -4,7 +4,7 @@
     <ui:VisualElement name="root" class="hud-root" picking-mode="Ignore">
         <ui:VisualElement class="top-row" picking-mode="Ignore">
             <ui:VisualElement name="body-panel" class="panel body-panel" picking-mode="Ignore">
-                <ui:Label text="TUBUH" class="panel-title" />
+                <ui:Label text="BODY" class="panel-title" />
                 <ui:VisualElement name="traits" class="chip-row" />
                 <ui:VisualElement name="tags" class="chip-row" />
             </ui:VisualElement>

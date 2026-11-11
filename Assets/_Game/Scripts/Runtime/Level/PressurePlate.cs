@@ -5,7 +5,7 @@ namespace GooNapped
 {
     // Pelat tekan: pintu tersambung terbuka SELAMA ada potongan slime di atasnya (termasuk potongan nyamar).
     // Inti tema SHIFT: belah, tinggalkan satu potongan menahan pelat, Shift ke potongan lain dan lewat pintunya.
-    // requireHeavy = hanya tubuh berat (Serbuk Batu) yang cukup menekan.
+    // requireHeavy = hanya tubuh berat (ciri berat dari Esens Batu, atau massa >= 3) yang cukup menekan.
     public class PressurePlate : MonoBehaviour
     {
         [SerializeField] private List<Door> doors = new List<Door>();
@@ -52,12 +52,12 @@ namespace GooNapped
                 foreach (var p in brain.Pieces)
                 {
                     if (p == null || Vector2.Distance(p.Center, Center) > radius + p.Radius * 0.5f) continue;
-                    if (requireHeavy && p.Body.State.Get(TraitKind.Weight) != "berat") { lightOnPlate = p.IsControlled; continue; }
+                    if (requireHeavy && !p.Body.State.IsHeavy) { lightOnPlate = p.IsControlled; continue; }
                     now = true;
                 }
             if (lightOnPlate && !now && hintCooldown <= 0f)
             {
-                brain.Notify("Pelat tidak bergerak. Tubuh kurang berat.");
+                brain.Notify("The plate won't budge. You need to be heavier (big body or Stone essence).");
                 hintCooldown = 4f;
             }
             if (now == pressed) return;

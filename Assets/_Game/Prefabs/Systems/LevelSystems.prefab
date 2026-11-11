@@ -71,9 +71,8 @@ MonoBehaviour:
   brain: {fileID: 0}
   goal: {fileID: 0}
   refreshInterval: 0.1
-  controlsText: "WASD gerak \xB7 E makan/tukar/telan/tuas \xB7 Space belah/gabung
-    \xB7 Shift pindah \xB7 C nyamar \xB7 Q muntah \xB7 F gumpalan \xB7 R ulang \xB7
-    Esc jeda"
+  controlsText: "WASD move \xB7 E eat/use \xB7 Space split/merge \xB7 Shift switch
+    \xB7 C hide \xB7 F call friend \xB7 Q spit \xB7 R retry \xB7 Esc pause"
 --- !u!1 &8371740734739752879
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,17 +130,14 @@ MonoBehaviour:
   switchAction: Sprint
   hideAction: Crouch
   vomitAction: Vomit
-  throwAction: Throw
+  commandAction: Command
   blobSprite: {fileID: -949913054, guid: a02ff90963565754e8a01231793f6669, type: 3}
-  throwDistance: 3.2
-  throwNoiseRadius: 4.5
-  throwCooldown: 5
   pieces: []
-  maxPieces: 3
+  maxPieces: 2
   splitDistance: 0.8
   mergeGap: 0.15
   interactRadius: 0.85
-  peekRadius: 1.3
+  peekRadius: 1.6
   switchCooldown: 0.7
   switchLock: 0.3
   splitWindup: 0.3

@@ -5,10 +5,11 @@ using UnityEngine.UIElements;
 namespace GooNapped
 {
     // HUD level (UI Toolkit). Layout: Assets/_Game/UI/Hud.uxml, gaya: Hud.uss (desainer bebas mengubah gaya).
-    //   kiri atas : ciri tubuh potongan aktif + status (kena cahaya, menyala, berbau, lambat, nyamar)
-    //   kanan atas: kartu resep tiap toples yang sudah diintip, dengan tanda cocok/belum per ciri
-    //   bawah     : jumlah potongan, teman dibawa, gumpalan siap/cooldown, petunjuk tombol
-    //   tengah    : pesan singkat, banner selesai/ketahuan
+    // Semua teks bahasa Inggris (desain-v2 jawaban 66).
+    //   kiri atas : ukuran (massa) + aura + ciri lain potongan aktif, status (lit, glowing, smelly, slow, noisy, hidden)
+    //   kanan atas: kartu tiap toples yang sudah didekati: nama teman, aura, ukuran, apakah tiruanmu pas; alarm
+    //   bawah     : potongan, teman selamat, status teman, petunjuk tombol
+    //   tengah    : pesan singkat, banner selesai/tertangkap
     [RequireComponent(typeof(UIDocument))]
     public class GameHud : MonoBehaviour
     {
@@ -16,7 +17,7 @@ namespace GooNapped
         [SerializeField] private LevelGoal goal;
         [SerializeField, Range(0.02f, 0.5f)] private float refreshInterval = 0.1f;
         [SerializeField, TextArea] private string controlsText =
-            "WASD gerak · E makan/tukar/telan/tuas · Space belah/gabung · Shift pindah · C nyamar · Q muntah · F gumpalan · R ulang · Esc jeda";
+            "WASD move · E eat/use · Space split/merge · Shift switch · C hide · F call friend · Q spit · R retry · Esc pause";
 
         private VisualElement traits, tags, recipes;
         private Label pieces, carried, blob, toast, banner, controls;
@@ -60,29 +61,26 @@ namespace GooNapped
             tags.Clear();
             if (a != null)
             {
-                int n = 0;
-                foreach (var t in a.Body.State.Traits) { traits.Add(Chip(t)); n++; }
-                if (n == 0) traits.Add(TextChip("netral"));
                 var st = a.Body.State;
-                if (!a.IsDisguised && LightExposure.At(a.Center) >= 0.35f) tags.Add(Tag("KENA CAHAYA", "tag--light"));
-                if (st.EmitsLight) tags.Add(Tag("MENYALA", "tag--glow"));
-                if (st.SmellRadius > 0f) tags.Add(Tag("BERBAU", "tag--smell"));
-                if (st.SpeedMultiplier < 1f) tags.Add(Tag("LAMBAT", "tag--slow"));
-                if (st.StepNoiseRadius > 0f) tags.Add(Tag("BERISIK", "tag--slow"));
-                if (a.IsDisguised) tags.Add(Tag("NYAMAR", "tag--hidden"));
+                traits.Add(TextChip("Size " + st.Mass + "/" + SlimeBodyState.MaxMass));
+                traits.Add(AuraChip(st.Aura));
+                foreach (var t in st.Traits) if (t.kind != TraitKind.Color) traits.Add(TextChip(TraitNames.Of(t)));
+                if (!a.IsDisguised && LightExposure.At(a.Center) >= 0.35f) tags.Add(Tag("LIT", "tag--light"));
+                if (st.EmitsLight) tags.Add(Tag("GLOWING", "tag--glow"));
+                if (st.SmellRadius > 0f) tags.Add(Tag("SMELLY", "tag--smell"));
+                if (st.SpeedMultiplier < 0.85f) tags.Add(Tag("SLOW", "tag--slow"));
+                if (st.StepNoiseRadius > 0f) tags.Add(Tag("NOISY", "tag--slow"));
+                if (a.IsDisguised) tags.Add(Tag("HIDDEN", "tag--hidden"));
             }
 
             recipes.Clear();
             foreach (var j in jars)
-                if (j != null && j.IsPeeked && j.Recipe != null) recipes.Add(RecipeCard(j, a));
+                if (j != null && j.IsPeeked && j.Recipe != null) recipes.Add(JarCard(j, a));
 
             int req = goal != null ? goal.Required : 0;
-            pieces.text = "Potongan " + brain.Pieces.Count;
-            // total teman yang dibawa semua potongan (setelah Shift ke potongan lain, angka tidak "hilang")
-            int total = 0;
-            foreach (var p in brain.Pieces) if (p != null) total += p.Carried.Count;
-            carried.text = "Teman " + total + "/" + req;
-            blob.text = brain.ThrowCooldownLeft > 0f ? "Gumpalan " + Mathf.CeilToInt(brain.ThrowCooldownLeft) + " dtk" : "Gumpalan siap";
+            pieces.text = "Pieces " + brain.Pieces.Count + "/" + brain.MaxPieces;
+            carried.text = req > 0 ? "Friends safe " + (goal != null ? goal.Saved : 0) + "/" + req : "Reach the vent";
+            blob.text = FriendStatus();
 
             bool hasMsg = !string.IsNullOrEmpty(brain.Message);
             toast.text = brain.Message;
@@ -92,64 +90,94 @@ namespace GooNapped
             banner.EnableInClassList("banner--hidden", !win && !fail);
             banner.EnableInClassList("banner--win", win);
             banner.EnableInClassList("banner--fail", fail);
-            banner.text = win ? "TEMAN SELAMAT!" : fail ? goal.FailReason.ToUpperInvariant() : "";
+            banner.text = win ? (req > 0 ? "FRIENDS SAFE!" : "MADE IT!") : fail ? goal.FailReason.ToUpperInvariant() : "";
         }
 
-        private VisualElement RecipeCard(Jar jar, SlimePiece a)
+        // Teman yang sedang di luar toples: mengikuti / menunggu / sembunyi.
+        private static string FriendStatus()
         {
+            var parts = new List<string>();
+            foreach (var f in FriendSlime.All)
+            {
+                if (f == null || f.State == FriendSlime.Mode.Saved) continue;
+                string s = f.State == FriendSlime.Mode.Following ? "following" : f.State == FriendSlime.Mode.Hidden ? "hiding" : "waiting";
+                parts.Add(f.Name + ": " + s);
+            }
+            return parts.Count > 0 ? string.Join(" · ", parts) : "";
+        }
+
+        private VisualElement JarCard(Jar jar, SlimePiece a)
+        {
+            var r = jar.Recipe;
             var card = new VisualElement();
             card.AddToClassList("panel");
             card.AddToClassList("recipe-card");
-            var title = new Label("Toples: " + jar.Recipe.FriendName);
+            var title = new Label(r.FriendName + (r.Size > 1 ? " (big)" : ""));
             title.AddToClassList("recipe-title");
             card.Add(title);
             if (!jar.HasFriend) card.AddToClassList("recipe-card--done");
-            foreach (var t in jar.Recipe.Traits)
+
+            if (jar.HasFriend)
             {
-                // sudah ditukar: bandingkan dengan tiruan di toples; belum: dengan tubuh potongan aktif
-                var body = jar.HasFriend ? (a != null ? a.Body.State : null) : jar.DecoyState;
-                bool ok = body != null && body.Get(t.kind) == Trait.Normalize(t.value);
-                var row = new VisualElement();
-                row.AddToClassList("recipe-row");
-                var dot = new VisualElement();
-                dot.AddToClassList("recipe-dot");
-                dot.AddToClassList(ok ? "recipe-dot--ok" : "recipe-dot--miss");
-                var lbl = new Label(KindName(t.kind) + ": " + TraitText(t));
-                lbl.AddToClassList("recipe-text");
-                lbl.AddToClassList(ok ? "recipe-text--ok" : "recipe-text--miss");
-                row.Add(dot);
-                row.Add(lbl);
-                card.Add(row);
+                // pratinjau tiruan dari tubuh potongan aktif: potongan baru mengambil `Size` unit terakhir
+                SlimeBodyState copy = null;
+                if (a != null) copy = a.Body.State.Clone().Split(jar.Size);
+                bool sizeOk = copy != null;
+                bool auraOk = copy != null && jar.MismatchOf(copy) == 0;
+                card.Add(Row(sizeOk, "Size " + jar.Size + (sizeOk ? "" : " (you need size " + (jar.Size + 1) + ")")));
+                foreach (var t in r.Traits)
+                {
+                    bool ok = copy != null ? copy.Get(t.kind) == Trait.Normalize(t.value)
+                                           : a != null && a.Body.State.Get(t.kind) == Trait.Normalize(t.value);
+                    card.Add(Row(ok, TraitNames.Kind(t.kind) + ": " + (t.kind == TraitKind.Color ? TraitNames.Aura(t.value) : TraitNames.Of(t))));
+                }
+                if (sizeOk && auraOk) card.Add(Note("Split here (Space)"));
             }
-            if (!jar.HasFriend)
+            else
             {
-                var note = new Label(jar.DecoyMismatch == 0 ? "Tiruan sempurna" : "Tiruan: " + jar.DecoyMismatch + " ciri salah (penjaga cepat curiga)");
-                note.AddToClassList("recipe-note");
-                card.Add(note);
+                string note = jar.DecoyMismatch == 0 ? "Copy holds" : "Wrong aura: guards get suspicious faster";
+                if (jar.AlarmRaised) note = "ALARM! The machine noticed";
+                else if (jar.AlarmTimeLeft > 0f) note += " · alarm in " + Mathf.CeilToInt(jar.AlarmTimeLeft) + "s";
+                card.Add(Note(note));
             }
             return card;
         }
 
-        private static VisualElement Chip(Trait t)
+        private static VisualElement Row(bool ok, string text)
+        {
+            var row = new VisualElement();
+            row.AddToClassList("recipe-row");
+            var dot = new VisualElement();
+            dot.AddToClassList("recipe-dot");
+            dot.AddToClassList(ok ? "recipe-dot--ok" : "recipe-dot--miss");
+            var lbl = new Label(text);
+            lbl.AddToClassList("recipe-text");
+            lbl.AddToClassList(ok ? "recipe-text--ok" : "recipe-text--miss");
+            row.Add(dot);
+            row.Add(lbl);
+            return row;
+        }
+
+        private static Label Note(string text)
+        {
+            var note = new Label(text);
+            note.AddToClassList("recipe-note");
+            return note;
+        }
+
+        private static VisualElement AuraChip(string aura)
         {
             var chip = new VisualElement();
             chip.AddToClassList("chip");
-            if (t.kind == TraitKind.Color)
-            {
-                var sw = new VisualElement();
-                sw.AddToClassList("chip-swatch");
-                sw.style.backgroundColor = ColorOf(t.value);
-                chip.Add(sw);
-            }
-            var l = new Label(TraitText(t));
+            var sw = new VisualElement();
+            sw.AddToClassList("chip-swatch");
+            sw.style.backgroundColor = TraitNames.AuraColor(aura);
+            chip.Add(sw);
+            var l = new Label(TraitNames.Aura(aura) + " aura");
             l.AddToClassList("chip-label");
             chip.Add(l);
             return chip;
         }
-
-        // Teks ringkas ciri: nilai saja ("kuning", "panas", "berat"), kecuali bau ("bau belerang").
-        public static string TraitText(Trait t) =>
-            t.kind == TraitKind.Smell ? "bau " + t.value : t.value;
 
         private static VisualElement TextChip(string text)
         {
@@ -168,29 +196,5 @@ namespace GooNapped
             l.AddToClassList(cls);
             return l;
         }
-
-        public static string KindName(TraitKind k)
-        {
-            switch (k)
-            {
-                case TraitKind.Color: return "Warna";
-                case TraitKind.Temperature: return "Suhu";
-                case TraitKind.Weight: return "Berat";
-                case TraitKind.Shine: return "Kilau";
-                case TraitKind.Smell: return "Bau";
-            }
-            return k.ToString();
-        }
-
-        private static readonly Dictionary<string, Color> colors = new Dictionary<string, Color>
-        {
-            { "merah", new Color(0.9f, 0.25f, 0.25f) }, { "abu", new Color(0.6f, 0.62f, 0.68f) },
-            { "hijau", new Color(0.4f, 0.85f, 0.45f) }, { "biru", new Color(0.4f, 0.6f, 1f) },
-            { "kuning", new Color(0.95f, 0.85f, 0.3f) }, { "putih", new Color(0.95f, 0.95f, 0.95f) },
-            { "ungu", new Color(0.6f, 0.4f, 0.85f) }, { "hitam", new Color(0.15f, 0.15f, 0.2f) },
-        };
-
-        public static Color ColorOf(string value) =>
-            colors.TryGetValue(Trait.Normalize(value), out var c) ? c : Color.gray;
     }
 }

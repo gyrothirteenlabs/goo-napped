@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d888777b70d839a4bbf9782db94ee0a8, type: 3}
-  m_Name: Ingredient_SerbukBatu
+  m_Name: Essence_Batu
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.IngredientData
-  id: serbukbatu
-  displayName: Serbuk Batu
+  id: batu
+  displayName: Stone Essence
   traits:
   - kind: 2
     value: berat
@@ -24,5 +24,6 @@ MonoBehaviour:
   smellRadius: 0
   extinguishes: 0
   stepNoiseRadius: 2.2
+  sightMultiplier: 1
   bodyMaterial: {fileID: 2100000, guid: 20e0135d637aa194fb127897d46d01b7, type: 2}
   placeholderTint: {r: 0.6, g: 0.63, b: 0.68, a: 1}

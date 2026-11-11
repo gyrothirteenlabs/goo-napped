@@ -10,17 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d888777b70d839a4bbf9782db94ee0a8, type: 3}
-  m_Name: Ingredient_RamuanApi
+  m_Name: Essence_Bayang
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.IngredientData
-  id: ramuanapi
-  displayName: Ramuan Api
+  id: bayang
+  displayName: Shade Essence
   traits:
   - kind: 0
-    value: merah
-  - kind: 1
-    value: panas
+    value: ungu
+  - kind: 3
+    value: redup
   speedMultiplier: 1
-  emitsLight: 1
+  emitsLight: 0
   smellRadius: 0
-  bodyMaterial: {fileID: 2100000, guid: 8520ea3f27702a249a0fdb94e03432d9, type: 2}
-  placeholderTint: {r: 0.9, g: 0.25, b: 0.2, a: 1}
+  extinguishes: 0
+  stepNoiseRadius: 0
+  sightMultiplier: 0.7
+  bodyMaterial: {fileID: 2100000, guid: 8f2e9a90e70675e4c8b0f7a025c12db1, type: 2}
+  placeholderTint: {r: 0.55, g: 0.4, b: 0.85, a: 1}

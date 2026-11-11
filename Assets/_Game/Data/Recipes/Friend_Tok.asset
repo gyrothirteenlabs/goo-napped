@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 665f528f47b4b814cafa1a214301981c, type: 3}
+  m_Name: Friend_Tok
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.RecipeData
+  friendName: Tok
+  traits:
+  - kind: 0
+    value: ungu
+  size: 1
+  power: 2
+  jarLine: Still alive, little one? Then get this old bell-keeper out.
+  bodyMaterial: {fileID: 2100000, guid: 8f2e9a90e70675e4c8b0f7a025c12db1, type: 2}
