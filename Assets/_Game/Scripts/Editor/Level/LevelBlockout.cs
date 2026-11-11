@@ -19,6 +19,8 @@ namespace GooNapped.EditorTools
     //           d/D            titik awal / akhir patroli Anjing Lendir
     //           |  pintu (tertutup)   /  tuas   o  pelat tekan   O  pelat tekan berat   ~  celah (lorong tikus, slime saja)
     //           T  tong (tempat sembunyi, muat 1)   P  peti (tempat sembunyi, muat 2)
+    //           V  lubang ventilasi (aman, checkpoint, jaringan "A")   X  lubang ventilasi EXIT (level selesai)
+    //           m  lumpur (jejak bau beberapa detik)   =  genangan air (mencuci lumpur)
     //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
     //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
     public static class LevelBlockout
@@ -274,24 +276,27 @@ namespace GooNapped.EditorTools
             recipe = "Friend_Pip",
             recipe2 = "Friend_Bolu",
             next = "",
-            note = "SANDBOX ProtoV2: alur inti desain v2. Bukan desain level.\n" +
-                   "Toples 1 (Pip, kecil, aura Embun/biru): makan 1 Esens Embun (w) -> massa 2 -> Space di depan toples.\n" +
+            note = "SANDBOX ProtoV2: semua sistem desain v2 di satu ruang uji. Bukan desain level.\n" +
+                   "Ventilasi (V): C = masuk (aman, checkpoint), A/D = pindah lubang, C = keluar. Lubang X = exit level.\n" +
+                   "Toples 1 (Pip, kecil, aura Embun/biru): makan 1 Esens Embun (w) lalu Space di depan toples.\n" +
                    "Toples 2 (Bolu, besar, aura Batu/abu): massa 3, esens TERAKHIR = Batu (b). Contoh: Pendar (l) lalu Batu.\n" +
-                   "Teman keluar dan menunggu: F = ajak ikut / suruh tunggu. Kawal ke exit (E). Golem berpatroli di lorong bawah.\n" +
-                   "Tempat sembunyi (C): tong (T, muat 1) di ruang atas, peti (P, muat 2: pemain + teman) di lorong exit.\n" +
+                   "Teman keluar dan menunggu: F = ajak ikut / suruh tunggu. Bawa ke ventilasi mana pun = selamat.\n" +
+                   "Golem di lorong tengah, Anjing di lorong bawah. Lumpur (m) meninggalkan jejak bau, genangan (=) mencucinya.\n" +
+                   "Tong (T) muat 1, peti (P) muat 2. Pintu (|) dibuka tuas (/) di ruang kanan.\n" +
                    "Dibangun oleh GooNapped > Blockout > Sandbox ProtoV2.",
             map = new[]
             {
-                "######################",
-                "#S.....#.............#",
-                "#......#..w.....1....#",
-                "#..............l..b..#",
-                "#......#....T........#",
-                "####.######.####...2.#",
-                "#g.................G.#",
-                "#.##.###.####.####.###",
-                "#E........P..........#",
-                "######################",
+                "##########################",
+                "#S.....#...........#.....#",
+                "#......#..w.....1..#..T..#",
+                "#..V...........l..b#.....#",
+                "#......#...........|.../.#",
+                "####.######.####...2.#####",
+                "#g.................G.....#",
+                "#.##.###.####.####.###.V.#",
+                "#..mmmm....P.......=.....#",
+                "#X....d..........D.......#",
+                "##########################",
             },
         };
 
@@ -465,7 +470,8 @@ namespace GooNapped.EditorTools
             {
                 if (propRoot == null) propRoot = new GameObject("LevelProps").transform;
                 if (AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Door.prefab") == null ||
-                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/HidingSpot_Barrel.prefab") == null) LevelPropBuilder.BuildAll();
+                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/HidingSpot_Barrel.prefab") == null ||
+                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Vent.prefab") == null) LevelPropBuilder.BuildAll();
                 return propRoot;
             }
 
@@ -536,6 +542,31 @@ namespace GooNapped.EditorTools
                         case '~':
                             Spawn(P + "Level/Crawlspace.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "Crawlspace");
                             break;
+                        case 'V':
+                        case 'X':
+                        {
+                            var root = PropRoot();
+                            string pf = ch == 'X' ? "Vent_Exit" : "Vent";
+                            Spawn(P + "Level/" + pf + ".prefab", root, new Vector3(x + 0.5f, y, 0f), pf);
+                            break;
+                        }
+                        case 'm':
+                        case '=':
+                        {
+                            var z = new GameObject(ch == 'm' ? "Mud" : "Puddle");
+                            z.transform.SetParent(PropRoot(), false);
+                            z.transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);   // sprite tile pivot tengah
+                            var sr = z.AddComponent<SpriteRenderer>();
+                            sr.sprite = floorTile.sprite;
+                            sr.sharedMaterial = envMat;
+                            sr.color = ch == 'm' ? new Color(0.45f, 0.32f, 0.2f) : new Color(0.35f, 0.55f, 0.9f);
+                            sr.sortingOrder = -95;
+                            var bc = z.AddComponent<BoxCollider2D>();
+                            bc.isTrigger = true;
+                            bc.size = new Vector2(0.9f, 0.9f);
+                            if (ch == 'm') z.AddComponent<MudZone>(); else z.AddComponent<WashZone>();
+                            break;
+                        }
                         case 'T':
                         case 'P':
                         {

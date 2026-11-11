@@ -33,6 +33,8 @@ namespace GooNapped
         private bool moved;
 
         public RecipeData Recipe => recipe;
+        // Toples asal (untuk checkpoint).
+        public Jar SourceJar { get; private set; }
         public Mode State { get; private set; } = Mode.Waiting;
         public SlimePiece Leader { get; private set; }
         public string Name => recipe != null ? recipe.FriendName : "Friend";
@@ -64,9 +66,10 @@ namespace GooNapped
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => All.Clear();
 
-        public void Init(RecipeData data)
+        public void Init(RecipeData data, Jar source = null)
         {
             recipe = data;
+            SourceJar = source;
             if (bodyRenderer != null && data != null && data.BodyMaterial != null)
                 bodyRenderer.sharedMaterial = data.BodyMaterial;
             // ukuran teman = ukuran slime bermassa sama (prefab = ukuran massa 1), sama dengan skala toplesnya
@@ -150,9 +153,28 @@ namespace GooNapped
             if (goal != null) goal.NotifySaved(this);
         }
 
+        // Lumpur: teman yang lewat lumpur juga meninggalkan jejak bau (desain-v2 jawaban 56).
+        public float MuddyTime { get; private set; }
+        public void MakeMuddy(float seconds) => MuddyTime = Mathf.Max(MuddyTime, seconds);
+        public void Wash() => MuddyTime = 0f;
+        private Vector2 lastScent;
+
+        private void UpdateMud()
+        {
+            if (MuddyTime <= 0f) { if (bodyRenderer != null) bodyRenderer.color = Color.white; return; }
+            MuddyTime = Mathf.Max(0f, MuddyTime - Time.deltaTime);
+            if (bodyRenderer != null) bodyRenderer.color = new Color(0.62f, 0.48f, 0.34f);
+            if (IsExposed && Vector2.Distance(Center, lastScent) >= 0.4f)
+            {
+                ScentTrail.Drop(Center, SlimePiece.MudSmellRadius);
+                lastScent = Center;
+            }
+        }
+
         private void Update()
         {
             moved = false;
+            if (State != Mode.Saved) UpdateMud();
             if (State == Mode.Saved)
             {
                 // tersedot masuk ventilasi

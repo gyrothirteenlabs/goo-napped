@@ -184,6 +184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.HidingSpot
   capacity: 2
+  safe: 0
   stareFillTime: 3.5
   crowdMultiplier: 1.6
   decayPerSecond: 0.12

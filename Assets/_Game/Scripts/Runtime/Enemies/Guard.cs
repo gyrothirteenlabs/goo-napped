@@ -374,7 +374,7 @@ namespace GooNapped
         {
             if (state == State.Caught || (goal != null && (goal.IsComplete || goal.IsFailed))) return;
             if (!SeesPoint(pos)) return;
-            if (spot != null && entering)
+            if (spot != null && entering && !spot.IsSafe)
             {
                 BeginInspect(spot, true);   // terlihat masuk: penjaga tahu persis di mana
                 return;
@@ -534,7 +534,7 @@ namespace GooNapped
             if (exposed && Vector2.Distance(Body, tp) <= catchDistance + tr + 0.28f) { Catch(chase); return; }
 
             // target bersembunyi tepat di depan mata (tidak sempat lolos): periksa tempat itu
-            if (!exposed && chase.piece != null && chase.piece.HidingIn != null && loseTimer < 0.6f)
+            if (!exposed && chase.piece != null && chase.piece.HidingIn != null && !chase.piece.HidingIn.IsSafe && loseTimer < 0.6f)
             {
                 BeginInspect(chase.piece.HidingIn, true);
                 return;
@@ -570,7 +570,7 @@ namespace GooNapped
             if (state == State.Inspect || state == State.Chase) return;
             foreach (var spot in HidingSpot.All)
             {
-                if (spot == null || !spot.Occupied) continue;
+                if (spot == null || !spot.Occupied || spot.IsSafe) continue;
                 Vector2 c = spot.Center;
                 bool staring = VisionMath.InCone(Eye, forward, c, stareRange, viewAngle) && LineOfSight(Eye, c, spot.Collider);
                 if (!staring && Vector2.Distance(Body, c) <= awarenessRadius) staring = LineOfSight(Body, c, spot.Collider);
@@ -586,7 +586,7 @@ namespace GooNapped
         {
             foreach (var spot in HidingSpot.All)
             {
-                if (spot == null || Vector2.Distance(Body, spot.Center) > inspectRadius) continue;
+                if (spot == null || spot.IsSafe || Vector2.Distance(Body, spot.Center) > inspectRadius) continue;
                 if (inspectedAt.TryGetValue(spot, out var t) && Time.time - t < reinspectDelay) continue;
                 BeginInspect(spot, false);
                 return true;

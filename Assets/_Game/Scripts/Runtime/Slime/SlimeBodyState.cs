@@ -226,5 +226,13 @@ namespace GooNapped
 
         // Kembali ke tubuh awal (1 unit bening).
         public void Clear() => Rebuild(1, new List<IngredientData>());
+
+        // Tubuh dari susunan unit (checkpoint).
+        public static SlimeBodyState From(int clearUnits, IEnumerable<IngredientData> eaten)
+        {
+            var s = new SlimeBodyState();
+            s.Rebuild(clearUnits, eaten != null ? new List<IngredientData>(eaten) : new List<IngredientData>());
+            return s;
+        }
     }
 }

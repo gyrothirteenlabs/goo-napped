@@ -35,6 +35,7 @@ namespace GooNapped
         public static void Load(string scene)
         {
             Time.timeScale = 1f;
+            Checkpoint.Clear();   // checkpoint hanya berlaku untuk level yang sedang dimainkan
             if (Application.CanStreamedLevelBeLoaded(scene)) SceneManager.LoadScene(scene);
             else Debug.LogWarning($"GameFlow: scene '{scene}' tidak ada di Build Settings.");
         }

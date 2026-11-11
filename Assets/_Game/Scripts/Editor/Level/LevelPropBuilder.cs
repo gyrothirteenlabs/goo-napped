@@ -13,6 +13,7 @@ namespace GooNapped.EditorTools
     //   crawlspace_placeholder.png  frame 0
     //   barrel_placeholder.png      frame 0 (tempat sembunyi muat 1)
     //   crate_placeholder.png       frame 0 (tempat sembunyi muat 2)
+    //   vent_placeholder.png        frame 0 lubang ventilasi, frame 1 lubang exit (ke area berikutnya)
     // Menu: GooNapped > Placeholder > Props level (pintu, tuas, pelat, celah, tempat sembunyi)
     public static class LevelPropBuilder
     {
@@ -128,6 +129,17 @@ namespace GooNapped.EditorTools
             for (int k = 0; k < 26; k++) { Rect(7 + k * 34 / 26, 4 + k, 3, 1, WoodDark); Rect(38 - k * 34 / 26, 4 + k, 3, 1, WoodDark); }
             Rect(5, 30, 38, 4, WoodDark);
             Save("crate_placeholder");
+
+            // ventilasi: kisi besi gelap di lantai; frame 1 (exit) dengan bingkai hijau pucat
+            Begin(2);
+            for (int f = 0; f < 2; f++)
+            {
+                int ox = f * C;
+                Rect(ox + 8, 8, 32, 32, f == 0 ? Iron : new Color32(70, 120, 80, 255));
+                Rect(ox + 10, 10, 28, 28, Hole);
+                for (int k = 0; k < 4; k++) Rect(ox + 12 + k * 7, 10, 3, 28, IronLight);
+            }
+            Save("vent_placeholder");
         }
 
         // ---------- prefab ----------
@@ -205,6 +217,27 @@ namespace GooNapped.EditorTools
                 box.size = Vector2.one;
                 go.AddComponent<Crawlspace>();
                 SavePrefab(go, "Crawlspace");
+            }
+            // ventilasi: trigger (bisa diinjak), HidingSpot aman (tidak pernah dicurigai), muat banyak
+            foreach (bool exit in new[] { false, true })
+            {
+                string name = exit ? "Vent_Exit" : "Vent";
+                var go = new GameObject(name);
+                var vis = NewProp("Visual", Frame("vent_placeholder", exit ? 1 : 0), -88);
+                vis.transform.SetParent(go.transform, false);
+                var box = go.AddComponent<BoxCollider2D>();
+                box.isTrigger = true;
+                box.offset = new Vector2(0f, 0.5f);
+                box.size = new Vector2(0.7f, 0.7f);
+                var hs = go.AddComponent<HidingSpot>();
+                Set(hs, "capacity", p => p.intValue = 8);
+                Set(hs, "safe", p => p.boolValue = true);
+                Set(hs, "visual", p => p.objectReferenceValue = vis.transform);
+                var v = go.AddComponent<Vent>();
+                Set(v, "exitsLevel", p => p.boolValue = exit);
+                // lubang exit punya jaringan sendiri: tidak bisa dicapai lewat jalan pintas dari lubang lain
+                if (exit) Set(v, "network", p => p.stringValue = "Exit");
+                SavePrefab(go, name);
             }
             // tempat sembunyi: root = collider padat + HidingSpot, anak "Visual" = sprite yang bergoyang saat dicurigai
             foreach (bool crate in new[] { false, true })

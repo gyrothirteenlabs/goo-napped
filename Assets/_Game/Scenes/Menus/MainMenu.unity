@@ -180,7 +180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.MainMenuController
   gameTitle: GOO-NAPPED
-  subtitle: '(nama kerja) - Game Off 2026: SHIFT'
+  subtitle: '(working title) - Game Off 2026: SHIFT'
 --- !u!4 &319438591
 Transform:
   m_ObjectHideFlags: 0

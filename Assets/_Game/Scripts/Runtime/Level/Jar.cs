@@ -121,15 +121,31 @@ namespace GooNapped
                     : recipe != null && recipe.BodyMaterial != null ? recipe.BodyMaterial : contentRenderer.sharedMaterial;
             float delay = DecoyMismatch == 0 ? alarmDelay : wrongAlarmDelay;
             alarmLeft = delay > 0f ? delay : -1f;
-
-            FriendSlime friend = null;
-            if (friendPrefab != null)
-            {
-                friend = Instantiate(friendPrefab, exitPosition, Quaternion.identity, transform.parent);
-                friend.Init(recipe);
-            }
+            var friend = SpawnFriend(exitPosition);
             Changed?.Invoke(this);
             return friend;
+        }
+
+        // Teman dari toples ini muncul di `position` dan menunggu diajak (juga dipakai checkpoint).
+        public FriendSlime SpawnFriend(Vector3 position)
+        {
+            if (friendPrefab == null) return null;
+            var friend = Instantiate(friendPrefab, position, Quaternion.identity, transform.parent);
+            friend.Init(recipe, this);
+            return friend;
+        }
+
+        // Dipulihkan dari checkpoint: toples sudah berisi tiruan, teman tidak dimunculkan di sini.
+        public void RestoreDecoy(SlimeBodyState decoy, float alarmTimeLeft, bool alarmRaised)
+        {
+            if (decoy == null) return;
+            HasFriend = false;
+            IsPeeked = true;
+            DecoyState = decoy.Clone();
+            if (contentRenderer != null && DecoyState.BodyMaterial != null) contentRenderer.sharedMaterial = DecoyState.BodyMaterial;
+            AlarmRaised = alarmRaised;
+            alarmLeft = alarmRaised ? 0f : alarmTimeLeft;
+            Changed?.Invoke(this);
         }
 
         // Mesin sadar tiruan disadap (atau Mata Penyihir membongkar tiruan salah): semua penjaga waspada.

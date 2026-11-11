@@ -12,8 +12,10 @@ namespace GooNapped
     [RequireComponent(typeof(Collider2D))]
     public class HidingSpot : MonoBehaviour
     {
-        [Tooltip("Muat berapa slime sekaligus (2 = pemain + teman).")]
-        [SerializeField, Range(1, 2)] private int capacity = 1;
+        [Tooltip("Muat berapa slime sekaligus (2 = pemain + teman). Ventilasi: banyak.")]
+        [SerializeField, Range(1, 8)] private int capacity = 1;
+        [Tooltip("Aman total (ventilasi): tidak pernah dicurigai, tidak diperiksa penjaga.")]
+        [SerializeField] private bool safe;
         [Tooltip("Detik ditatap penjaga dari dekat sampai penjaga memeriksa.")]
         [SerializeField] private float stareFillTime = 3.5f;
         [Tooltip("Pengali laju curiga kalau berdua (barang lebih goyang).")]
@@ -31,6 +33,7 @@ namespace GooNapped
         private float lastStare = -99f;
 
         public int Capacity => capacity;
+        public bool IsSafe => safe;
         public int Count => pieces.Count + friends.Count;
         public bool Occupied => Count > 0;
         public bool HasRoom(int n = 1) => Count + n <= capacity;
@@ -57,19 +60,21 @@ namespace GooNapped
 
         // Barang padat: selnya diblok di peta jalan A* supaya penjaga memutar, bukan menabraknya.
         private Vector2Int cell;
+        private bool blocks;
 
         private void OnEnable()
         {
             if (!All.Contains(this)) All.Add(this);
             if (col == null) col = GetComponent<Collider2D>();
             cell = NavGrid.CellOf(col != null ? (Vector2)col.bounds.center : (Vector2)transform.position);
-            NavGrid.SetBlocked(cell, true);
+            blocks = col != null && !col.isTrigger;
+            if (blocks) NavGrid.SetBlocked(cell, true);
         }
 
         private void OnDisable()
         {
             All.Remove(this);
-            NavGrid.SetBlocked(cell, false);
+            if (blocks) NavGrid.SetBlocked(cell, false);
         }
 
         public void Enter(SlimePiece p) { if (p != null && !pieces.Contains(p)) pieces.Add(p); }
@@ -80,7 +85,7 @@ namespace GooNapped
         // Dipanggil penjaga tiap frame selama ia menatap barang ini dari dekat.
         public void Stare(float dt, float multiplier = 1f)
         {
-            if (!Occupied) return;
+            if (!Occupied || safe) return;
             float rate = (Count > 1 ? crowdMultiplier : 1f) * multiplier / Mathf.Max(0.1f, stareFillTime);
             Suspicion = Mathf.Min(1f, Suspicion + dt * rate);
             lastStare = Time.time;

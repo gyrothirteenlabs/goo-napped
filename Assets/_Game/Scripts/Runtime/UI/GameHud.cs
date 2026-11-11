@@ -68,6 +68,7 @@ namespace GooNapped
                 if (!a.IsHidden && LightExposure.At(a.Center) >= 0.35f) tags.Add(Tag("LIT", "tag--light"));
                 if (st.EmitsLight) tags.Add(Tag("GLOWING", "tag--glow"));
                 if (st.SmellRadius > 0f) tags.Add(Tag("SMELLY", "tag--smell"));
+                if (a.IsMuddy) tags.Add(Tag("MUDDY", "tag--smell"));
                 if (st.SpeedMultiplier < 0.85f) tags.Add(Tag("SLOW", "tag--slow"));
                 if (st.StepNoiseRadius > 0f) tags.Add(Tag("NOISY", "tag--slow"));
                 if (a.IsHidden) tags.Add(Tag("HIDDEN", "tag--hidden"));

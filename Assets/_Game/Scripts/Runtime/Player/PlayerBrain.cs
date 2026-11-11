@@ -60,6 +60,7 @@ namespace GooNapped
         [SerializeField] private float mergeLock = 0.35f;
 
         private float lockTimer, nextSwitch, nextSplit;
+        private bool ventStick;
         private InputAction move, eat, split, switchPiece, hide, vomit, command;
         private int activeIndex;
         private float messageTimer;
@@ -123,9 +124,14 @@ namespace GooNapped
             if (hide.WasPressedThisFrame() && !a.IsEating) { ToggleHide(a); a.Move(Vector2.zero); return; }
             if (a.HidingIn != null)
             {
-                // di dalam tempat sembunyi: diam, hanya C (keluar), Shift, dan F
+                // di dalam tempat sembunyi: diam, hanya C (keluar), Shift, dan F. Di ventilasi: A/D pindah lubang.
+                var vent = Vent.Of(a.HidingIn);
+                float x = move.ReadValue<Vector2>().x;
+                if (vent != null && Mathf.Abs(x) > 0.5f && !ventStick) { ventStick = true; TravelVent(a, vent, x < 0f ? -1 : 1); }
+                if (Mathf.Abs(x) <= 0.5f) ventStick = false;
                 if (command != null && command.WasPressedThisFrame()) Command();
-                else if (split.WasPressedThisFrame() || eat.WasPressedThisFrame()) Say("You're hiding. Press C to come out.");
+                else if (split.WasPressedThisFrame() || eat.WasPressedThisFrame())
+                    Say(vent != null ? "You're in the vent. A/D: other openings. C: come out." : "You're hiding. Press C to come out.");
                 a.Move(Vector2.zero);
                 return;
             }
@@ -351,13 +357,69 @@ namespace GooNapped
             if (!target.HasRoom()) { Say("No room in there."); return false; }
             if (!a.EnterHiding(target)) return false;
             Transformed?.Invoke(a.Center, target, true);
-            foreach (var f in FriendSlime.All)
+            var vent = Vent.Of(target);
+            int evacuated = 0;
+            foreach (var f in new List<FriendSlime>(FriendSlime.All))
             {
                 if (f == null || f.State != FriendSlime.Mode.Following || f.Leader != a) continue;
-                if (target.HasRoom()) { target.Enter(f); f.Hide(target.transform.position); }
+                if (vent != null) { f.Save(); evacuated++; }   // ventilasi: teman dievakuasi ke markas = selamat
+                else if (target.HasRoom()) { target.Enter(f); f.Hide(target.transform.position); }
                 else { f.Wait(); Say(f.Name + ": \"No room for me! I'll stay low here.\""); }
             }
+            if (vent != null) EnteredVent(a, vent, evacuated);
             return true;
+        }
+
+        // Masuk ventilasi: checkpoint, pesan, dan exit level kalau ini lubang exit.
+        private void EnteredVent(SlimePiece a, Vent vent, int evacuated)
+        {
+            if (vent.SavesCheckpoint) Checkpoint.Save(this);
+            if (vent.ExitsLevel && goal != null)
+            {
+                if (goal.TryComplete(a)) return;
+                int left = goal.Required - goal.Saved;
+                Say(left == 1 ? "Someone is still trapped. Bring them here first." : left + " friends are still trapped.");
+                return;
+            }
+            Say(evacuated > 0 ? "Safe in the vent. Your friend will wait here for you." : "Safe in the vent. A/D: other openings. C: come out.", 4f);
+        }
+
+        // A/D di dalam ventilasi: pindah ke lubang lain di jaringan yang sama (kamera ikut).
+        private void TravelVent(SlimePiece a, Vent from, int dir)
+        {
+            var to = from.Neighbor(dir);
+            if (to == null) { Say("This vent doesn't lead anywhere else."); return; }
+            if (!a.MoveHiddenTo(to.Spot)) return;
+            AudioDirector.Play(AudioDirector.Sfx.SlimeStep, a.Center, 0.4f, 0.1f);
+            if (to.ExitsLevel && goal != null) goal.TryComplete(a);
+        }
+
+        // Dipanggil Checkpoint: susun ulang potongan sesuai keadaan saat checkpoint.
+        // Potongan pertama di scene dipakai ulang, potongan lain dibuat dari salinannya.
+        public void RestorePieces(List<Checkpoint.PieceState> states, List<HidingSpot> spots)
+        {
+            if (states == null || states.Count == 0) return;
+            pieces.RemoveAll(p => p == null);
+            if (pieces.Count == 0) return;
+            var template = pieces[0];
+            for (int i = pieces.Count - 1; i >= 1; i--) { Destroy(pieces[i].gameObject); pieces.RemoveAt(i); }
+            int active = 0;
+            for (int i = 0; i < states.Count; i++)
+            {
+                var s = states[i];
+                SlimePiece p = i == 0 ? template
+                    : Instantiate(template.gameObject, s.position, Quaternion.identity, template.transform.parent).GetComponent<SlimePiece>();
+                if (i > 0) { p.name = "Slime_Potongan_" + i; pieces.Add(p); }
+                p.Body.SetState(SlimeBodyState.From(s.clearUnits, s.eaten));
+                var rb = p.GetComponent<Rigidbody2D>();
+                p.transform.position = s.position;
+                if (rb != null) rb.position = s.position;
+                if (s.active) active = i;
+                var spot = i < spots.Count ? spots[i] : null;
+                if (spot != null) p.EnterHidingInstant(spot);
+            }
+            SetActive(active);
+            Say("Back in the vent. Press C to come out.", 4f);
         }
 
         // Potongan lain yang sedang bersentuhan dengan potongan aktif (paling dekat), atau null.

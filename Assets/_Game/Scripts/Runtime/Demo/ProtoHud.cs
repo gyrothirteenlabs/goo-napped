@@ -73,7 +73,7 @@ namespace GooNapped
             }
             if (!string.IsNullOrEmpty(brain.Message)) sb.Append("<color=#ffc861>").Append(brain.Message).AppendLine("</color>");
             if (goal != null && goal.IsComplete) sb.AppendLine("<color=#6fd27e><b>LEVEL SELESAI</b></color>");
-            if (goal != null && goal.IsFailed) sb.Append("<color=#ff5a5f><b>").Append(goal.FailReason).AppendLine(" - ulang...</b></color>");
+            if (goal != null && goal.IsFailed) sb.Append("<color=#ff5a5f><b>").Append(goal.FailReason).AppendLine(" - retrying...</b></color>");
             GUI.Label(new Rect(10, 8, Screen.width - 20, 200), sb.ToString(), style);
         }
     }

@@ -25,10 +25,11 @@ namespace GooNapped
         [SerializeField] private float nextDelay = 2f;
 
         private readonly List<FriendSlime> saved = new List<FriendSlime>();
+        private int restoredSaved;   // teman yang sudah selamat sebelum checkpoint (objeknya tidak ada lagi)
 
         public IReadOnlyList<Jar> Jars => jars;
         public int Required => requiredFriends > 0 ? requiredFriends : jars.Count;
-        public int Saved => saved.Count;
+        public int Saved => saved.Count + restoredSaved;
         public bool AllSaved => Saved >= Required;
         public bool IsComplete { get; private set; }
         public bool IsFailed { get; private set; }
@@ -44,6 +45,16 @@ namespace GooNapped
             if (jars.Count == 0) jars.AddRange(FindObjectsByType<Jar>(FindObjectsSortMode.None));
         }
 
+        // Checkpoint dipulihkan setelah semua objek menjalankan Start (satu frame).
+        private IEnumerator Start()
+        {
+            yield return null;
+            var brain = FindFirstObjectByType<PlayerBrain>();
+            if (Checkpoint.TryRestore(brain, this)) Debug.Log("Checkpoint dipulihkan.");
+        }
+
+        public void RestoreSaved(int count) => restoredSaved = Mathf.Max(0, count - saved.Count);
+
         // Dipanggil FriendSlime saat masuk ventilasi/exit.
         public void NotifySaved(FriendSlime friend)
         {
@@ -58,6 +69,7 @@ namespace GooNapped
             if (IsComplete || IsFailed || piece == null || !piece.IsControlled) return false;
             if (!AllSaved) return false;
             IsComplete = true;
+            Checkpoint.Clear();
             Debug.Log($"Level selesai: {Saved} teman selamat.");
             Completed?.Invoke(this);
             if (!string.IsNullOrEmpty(nextScene)) GameFlow.Unlock(nextScene);

@@ -25,6 +25,14 @@ namespace GooNapped
         private readonly Collider2D[] overlap = new Collider2D[8];
 
         public bool IsOpen => isOpen;
+        // Keadaan tuas (dibalik Toggle). Untuk checkpoint.
+        public bool Toggled => toggled;
+        // Dipulihkan dari checkpoint: tanpa suara (tidak memancing penjaga).
+        public void SetToggled(bool on)
+        {
+            toggled = on;
+            if (Wanted != isOpen) Apply(Wanted, silent: true);
+        }
         public bool StartsOpen => startsOpen;
         // Sel tile yang ditempati (dari pusat collider; bounds collider nonaktif tidak bisa dipakai).
         public Vector2Int Cell => NavGrid.CellOf(Center);

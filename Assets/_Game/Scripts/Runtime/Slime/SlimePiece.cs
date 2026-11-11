@@ -174,9 +174,27 @@ namespace GooNapped
         private Vector2 lastScent;
         private float scentTimer;
 
+        // Lumpur (desain-v2 jawaban 56): beberapa detik meninggalkan jejak bau, hilang dicuci di genangan.
+        public const float MudSmellRadius = 2.5f;
+        public float MuddyTime { get; private set; }
+        public bool IsMuddy => MuddyTime > 0f;
+        public void MakeMuddy(float seconds) => MuddyTime = Mathf.Max(MuddyTime, seconds);
+        public void Wash()
+        {
+            if (MuddyTime > 0f) AudioDirector.Play(AudioDirector.Sfx.SlimeStep, Center, 0.8f, 0.2f);
+            MuddyTime = 0f;
+        }
+
+        private void UpdateMud()
+        {
+            if (MuddyTime > 0f) MuddyTime = Mathf.Max(0f, MuddyTime - Time.deltaTime);
+            if (anim != null && anim.bodyRenderer != null)
+                anim.bodyRenderer.color = Color.Lerp(Color.white, new Color(0.62f, 0.48f, 0.34f), IsMuddy ? Mathf.Min(1f, 0.5f + MuddyTime * 0.1f) : 0f);
+        }
+
         private void DropScent()
         {
-            float r = Body.State.SmellRadius;
+            float r = Mathf.Max(Body.State.SmellRadius, IsMuddy ? MudSmellRadius : 0f);
             if (r <= 0f || animating) return;
             scentTimer -= Time.deltaTime;
             if (Vector2.Distance(Center, lastScent) < 0.4f && scentTimer > 0f) return;
@@ -241,6 +259,38 @@ namespace GooNapped
 
         private Vector3 enteredFrom;
 
+        // Langsung berada di dalam tempat sembunyi/ventilasi tanpa animasi (dipulihkan dari checkpoint).
+        public void EnterHidingInstant(HidingSpot spot)
+        {
+            if (spot == null) return;
+            if (HidingIn != null) HidingIn.Leave(this);
+            StopAllCoroutines();
+            animating = false;
+            hideTransition = false;
+            HidingIn = spot;
+            spot.Enter(this);
+            enteredFrom = spot.transform.position + Vector3.down;
+            transform.position = spot.transform.position;
+            if (col != null) col.enabled = false;
+            if (rb != null) { rb.linearVelocity = Vector2.zero; rb.position = spot.transform.position; rb.simulated = false; }
+            Motor.Stop();
+            if (Jelly != null) { Jelly.ResetPose(); Jelly.Size = 0.3f; }
+            SetVisible(false);
+        }
+
+        // Pindah ke tempat sembunyi lain tanpa keluar (jaringan ventilasi). Keluar nanti di sisi bawah lubang baru.
+        public bool MoveHiddenTo(HidingSpot spot)
+        {
+            if (spot == null || HidingIn == null || hideTransition || spot == HidingIn || !spot.HasRoom()) return false;
+            HidingIn.Leave(this);
+            HidingIn = spot;
+            spot.Enter(this);
+            enteredFrom = spot.transform.position + Vector3.down;
+            transform.position = spot.transform.position;
+            if (rb != null) rb.position = spot.transform.position;
+            return true;
+        }
+
         // Keluar dari tempat sembunyi ke sisi tempat masuk (atau sisi lain yang kosong).
         public bool ExitHiding()
         {
@@ -291,6 +341,7 @@ namespace GooNapped
                 if (Jelly != null) Jelly.Hold(eatTimer > 0f ? 0.12f * Mathf.Sin((1f - eatTimer / eatDuration) * Mathf.PI * 4f) : 0f);
                 if (eatTimer <= 0f && Jelly != null) Jelly.Release();
             }
+            UpdateMud();
             DropScent();
             UpdateScale();
             if (HidingIn != null && !hideTransition) return;

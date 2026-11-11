@@ -58,10 +58,10 @@ namespace GooNapped
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
             GUI.color = Color.white;
             float w = 260, h = 44, x = (Screen.width - w) / 2f, y = Screen.height * 0.3f;
-            GUI.Label(new Rect(0, y - 70, Screen.width, 50), "JEDA", title);
-            if (GUI.Button(new Rect(x, y, w, h), "Lanjut (Esc)", button)) SetPaused(false);
-            if (GUI.Button(new Rect(x, y + 56, w, h), "Ulang level (R)", button)) GameFlow.ReloadCurrent();
-            if (GUI.Button(new Rect(x, y + 112, w, h), "Menu utama", button)) GameFlow.LoadMainMenu();
+            GUI.Label(new Rect(0, y - 70, Screen.width, 50), "PAUSED", title);
+            if (GUI.Button(new Rect(x, y, w, h), "Resume (Esc)", button)) SetPaused(false);
+            if (GUI.Button(new Rect(x, y + 56, w, h), "Retry (R)", button)) GameFlow.ReloadCurrent();
+            if (GUI.Button(new Rect(x, y + 112, w, h), "Main menu", button)) GameFlow.LoadMainMenu();
         }
     }
 }
