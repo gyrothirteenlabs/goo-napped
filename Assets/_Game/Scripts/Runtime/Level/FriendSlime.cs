@@ -212,7 +212,10 @@ namespace GooNapped
 
             float speed = Mathf.Max(1.2f, Leader.Motor.MaxSpeed * speedShare);
             float budget = speed * Time.deltaTime;
-            float gap = Time.time < closeInUntil ? 0.02f : followGap * (1f + 0.95f * QueueIndex());
+            // pemimpin sudah di dalam ventilasi: susul sampai lubangnya lalu ikut masuk (selamat)
+            bool leaderInVent = Leader.HidingIn != null && Leader.HidingIn.IsSafe;
+            if (leaderInVent && Vector2.Distance(transform.position, Leader.HidingIn.transform.position) < 0.55f) { Save(); return; }
+            float gap = Time.time < closeInUntil || leaderInVent ? 0.02f : followGap * (1f + 0.95f * QueueIndex());
             Vector2 pos = transform.position;
             // jalan di jejak selama jarak (sepanjang jejak) ke pemain masih lebih dari gap
             while (budget > 0f && trail.Count > 0 && PathLength(pos) > gap)

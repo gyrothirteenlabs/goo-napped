@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.StoryScene
   sequence: {fileID: 11400000, guid: 705d07d13fd73d240ba88a1e41e65508, type: 2}
-  nextScene: C1_L01
+  nextScene: ProtoV2
 --- !u!4 &324228036
 Transform:
   m_ObjectHideFlags: 0

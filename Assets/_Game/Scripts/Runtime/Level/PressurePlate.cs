@@ -55,6 +55,13 @@ namespace GooNapped
                     if (requireHeavy && !p.Body.State.IsHeavy) { lightOnPlate = p.IsControlled; continue; }
                     now = true;
                 }
+            // teman yang disuruh menunggu di pelat ikut menekan; pelat berat hanya oleh teman besar (desain-v2 bagian 6)
+            foreach (var f in FriendSlime.All)
+            {
+                if (f == null || !f.IsExposed || Vector2.Distance(f.Center, Center) > radius + 0.15f) continue;
+                if (requireHeavy && (f.Recipe == null || f.Recipe.Size < 2)) continue;
+                now = true;
+            }
             if (lightOnPlate && !now && hintCooldown <= 0f)
             {
                 brain.Notify("The plate won't budge. You need to be heavier (big body or Stone essence).");

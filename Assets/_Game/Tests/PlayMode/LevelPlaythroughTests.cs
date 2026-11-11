@@ -11,9 +11,9 @@ using Object = UnityEngine.Object;
 namespace GooNapped.Tests
 {
     // Playtest otomatis (Play mode, scene asli, gerak & collision asli):
-    //   Bot_MenyelesaikanLevel : penjaga dimatikan, bot memainkan alur lengkap (makan sesuai resep -> belah -> Shift ->
-    //                            tukar -> telan -> exit) lewat API yang sama dengan tombol pemain. Membuktikan level
-    //                            bisa diselesaikan dan tidak ada lorong yang menyangkut badan slime.
+    //   Bot_MenyelesaikanLevel : penjaga dimatikan, bot memainkan alur v2 lengkap (makan esens sesuai solver -> belah ke
+    //                            toples -> F ajak teman -> bawa ke ventilasi exit) lewat API yang sama dengan tombol
+    //                            pemain. Membuktikan level bisa diselesaikan dan tidak ada lorong yang menyangkut badan.
     //   Penjaga_PatroliJalan   : pemain diam di spawn 40 detik game: tidak ketahuan, dan tiap penjaga sampai ke semua
     //                            titik patrolinya (pathfinding tidak macet).
     //   Alur scene cerita/menu : Boot -> MainMenu, Intro -> level pertama, Ending -> MainMenu.
@@ -62,7 +62,7 @@ namespace GooNapped.Tests
 
         static IEnumerator Load(string scene)
         {
-            SceneManager.LoadScene(scene);
+            GameFlow.Load(scene);   // di editor juga memuat scene di luar Build Settings (sandbox, level v2 baru)
             float t = 0f;
             while (SceneManager.GetActiveScene().name != scene && t < 15f) { t += Time.unscaledDeltaTime; yield return null; }
             Assert.AreEqual(scene, SceneManager.GetActiveScene().name, "Scene tidak termuat: " + scene);
@@ -78,7 +78,8 @@ namespace GooNapped.Tests
 
         static LevelMap Map() => LevelMap.From(SceneManager.GetActiveScene().GetRootGameObjects());
 
-        static bool Heavy(SlimePiece p) => p.Body.State.Get(TraitKind.Weight) == "berat";
+        // Tidak muat celah: tubuh lebih dari massa 1, atau berat (desain-v2 bagian 5).
+        static bool Heavy(SlimePiece p) => p.Body.State.Mass > 1 || p.Body.State.Get(TraitKind.Weight) == "berat";
 
         static bool InRange(SlimePiece a, Component target, float r)
         {
@@ -166,11 +167,29 @@ namespace GooNapped.Tests
                 route.Add("ajak " + friend.Name);
             }
 
-            var exit = Map().exits.OrderBy(e => Vector2.Distance(e.transform.position, brain.Active.Center)).First();
-            yield return WalkUntil(brain, LevelMap.CellOfObject(exit), () => goal.IsComplete, "ke exit");
-            if (failure != null) Assert.Fail(failure);
-            yield return WaitGame(0.5f);
-            Assert.IsTrue(goal.IsComplete, "Sampai exit tapi level tidak selesai.");
+            var endMap = Map();
+            var exitVent = endMap.vents.FirstOrDefault(v => v.ExitsLevel);
+            if (exitVent != null)
+            {
+                // v2: berdiri di lubang exit, tunggu teman merapat, lalu C (masuk). Teman ikut masuk = selamat.
+                yield return WalkUntil(brain, LevelMap.CellOfObject(exitVent), () => InRange(brain.Active, exitVent, 0.5f), "ke ventilasi exit");
+                if (failure != null) Assert.Fail(failure);
+                float until = Time.time + 6f;
+                while (Time.time < until && FriendSlime.All.Any(f => f != null && f.State == FriendSlime.Mode.Following &&
+                       Vector2.Distance(f.transform.position, brain.Active.transform.position) > 1.4f)) yield return null;
+                Assert.IsTrue(brain.ToggleHide(brain.Active), "C di lubang exit tidak masuk ventilasi. Pesan: " + brain.Message);
+                yield return WaitGame(1.5f);
+                Assert.IsTrue(goal.IsComplete, $"Masuk ventilasi exit tapi level tidak selesai (teman selamat {goal.Saved}/{goal.Required}). Pesan: {brain.Message}");
+                route.Add("ventilasi exit");
+            }
+            else
+            {
+                var exit = endMap.exits.OrderBy(e => Vector2.Distance(e.transform.position, brain.Active.Center)).First();
+                yield return WalkUntil(brain, LevelMap.CellOfObject(exit), () => goal.IsComplete, "ke exit");
+                if (failure != null) Assert.Fail(failure);
+                yield return WaitGame(0.5f);
+                Assert.IsTrue(goal.IsComplete, "Sampai exit tapi level tidak selesai.");
+            }
             Debug.Log($"[QA] {level}: bot selesai dalam {Time.time - t0:F0} detik game (tanpa penjaga). Rute: {string.Join(" > ", route)}");
         }
 
@@ -387,7 +406,7 @@ namespace GooNapped.Tests
                 var jc = LevelMap.CellOfObject(jars[k]);
                 stops.Add(map.Neighbors4(jc).First(c => map.SlimeWalkable(c, false, true)));
             }
-            stops.Add(LevelMap.CellOfObject(map.exits[0]));
+            stops.Add(LevelMap.CellOfObject(map.ExitPoints().First()));
             var route = new List<Vector2Int>();
             var cur = LevelMap.CellOfObject(map.pieces[0]);
             route.Add(cur);

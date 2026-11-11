@@ -46,6 +46,8 @@ namespace GooNapped
         [SerializeField] private float peekRadius = 1.6f;
         [Tooltip("Jarak ke tempat sembunyi supaya bisa masuk (C).")]
         [SerializeField] private float hideRadius = 0.9f;
+        [Tooltip("Teman yang mengikuti dalam jarak ini ikut masuk tempat sembunyi/ventilasi bersama pemain.")]
+        [SerializeField] private float friendJoinRadius = 1.6f;
 
         [Header("Jeda aksi (anti spam)")]
         [Tooltip("Jeda minimum antar Shift (detik).")]
@@ -362,7 +364,10 @@ namespace GooNapped
             foreach (var f in new List<FriendSlime>(FriendSlime.All))
             {
                 if (f == null || f.State != FriendSlime.Mode.Following || f.Leader != a) continue;
-                if (vent != null) { f.Save(); evacuated++; }   // ventilasi: teman dievakuasi ke markas = selamat
+                // hanya teman yang tepat di belakang yang ikut masuk sekarang; yang jauh menyusul lewat jejak
+                bool close = Vector2.Distance(f.transform.position, a.transform.position) <= friendJoinRadius;
+                if (vent != null) { if (close) { f.Save(); evacuated++; } }   // ventilasi: teman dievakuasi = selamat
+                else if (!close) f.Wait();
                 else if (target.HasRoom()) { target.Enter(f); f.Hide(target.transform.position); }
                 else { f.Wait(); Say(f.Name + ": \"No room for me! I'll stay low here.\""); }
             }

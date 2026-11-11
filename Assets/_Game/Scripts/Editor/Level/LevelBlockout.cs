@@ -246,14 +246,14 @@ namespace GooNapped.EditorTools
         static readonly Config SandboxProps = new Config
         {
             scene = "Assets/_Game/Scenes/Sandbox/ProtoProps.unity",
-            recipe = "Recipe_Ibu",
+            recipe = "Friend_Sis",
             next = "",
             note = "SANDBOX ProtoProps: ruang uji pintu, tuas, pelat tekan, celah. Bukan desain level.\n" +
                    "Ruang A: tarik tuas (E) untuk membuka pintu ke ruang B (bunyinya memancing Golem).\n" +
                    "Ruang B -> C lewat celah (~): slime bisa menyelinap, Golem tidak; tubuh berat (Serbuk Batu) tidak muat.\n" +
-                   "Ruang C: makan Minyak Belerang + Ramuan Api (resep Ibu), tukar dengan toples. Pintu ke exit dibuka pelat tekan:\n" +
-                   "belah, tinggalkan satu potongan di pelat, Shift ke potongan pembawa teman, lewat pintu.\n" +
-                   "Pelat berat (ruang A, bawah) hanya tertekan tubuh berat: makan Serbuk Batu dulu.\n" +
+                   "Ruang C: makan Esens Belerang (y) lalu Space di depan toples Sis (kuning, kecil). Pintu ke exit dibuka pelat tekan:\n" +
+                   "suruh teman menunggu di pelat (F) atau tinggalkan potongan di sana, lalu lewat pintu.\n" +
+                   "Pelat berat (ruang A, bawah) hanya tertekan tubuh berat: Esens Batu atau massa >= 3.\n" +
                    "Dibangun oleh GooNapped > Blockout > Sandbox ProtoProps.",
             map = new[]
             {
@@ -275,7 +275,7 @@ namespace GooNapped.EditorTools
             scene = "Assets/_Game/Scenes/Sandbox/ProtoV2.unity",
             recipe = "Friend_Pip",
             recipe2 = "Friend_Bolu",
-            next = "",
+            next = "Ending",   // sementara jadi satu-satunya level di alur game (GameFlow.Levels)
             note = "SANDBOX ProtoV2: semua sistem desain v2 di satu ruang uji. Bukan desain level.\n" +
                    "Ventilasi (V): C = masuk (aman, checkpoint), A/D = pindah lubang, C = keluar. Lubang X = exit level.\n" +
                    "Toples 1 (Pip, kecil, aura Embun/biru): makan 1 Esens Embun (w) lalu Space di depan toples.\n" +
