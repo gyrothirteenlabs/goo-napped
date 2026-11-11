@@ -17,6 +17,8 @@ namespace GooNapped.EditorTools
     //   vase_placeholder.png        frame 0 utuh, frame 1 pecah (barang rapuh)
     //   creaky_placeholder.png      frame 0 (lantai papan berderit)
     //   pushcrate_placeholder.png   frame 0 (peti dorong)
+    //   valve_placeholder.png       frame 0 katup aura tertutup, frame 1 terbalik (adegan final)
+    //   kingjar_placeholder.png     frame 0 (toples raja, adegan final)
     // Menu: GooNapped > Placeholder > Props level (pintu, tuas, pelat, celah, tempat sembunyi)
     public static class LevelPropBuilder
     {
@@ -163,6 +165,25 @@ namespace GooNapped.EditorTools
             Rect(9, 17, 30, 3, WoodDark); Rect(22, 5, 3, 28, WoodDark);
             Rect(18, 34, 12, 3, IronLight);
             Save("pushcrate_placeholder");
+
+            // katup aura: roda besi di pipa; merah (menyedot) / hijau (terbalik)
+            Begin(2);
+            for (int f = 0; f < 2; f++)
+            {
+                int ox = f * C;
+                var glow = f == 0 ? new Color32(200, 60, 70, 255) : new Color32(80, 200, 110, 255);
+                Rect(ox + 22, 2, 4, 30, Iron);
+                Rect(ox + 12, 16, 24, 4, IronLight); Rect(ox + 22, 6, 4, 24, IronLight);
+                Rect(ox + 14, 8, 20, 20, Iron); Rect(ox + 18, 12, 12, 12, glow);
+            }
+            Save("valve_placeholder");
+
+            // toples raja: toples kaca besar bertutup emas
+            Begin(1);
+            var Glass = new Color32(150, 190, 210, 255); var Gold = new Color32(210, 170, 70, 255);
+            Rect(8, 2, 32, 34, Glass); Rect(11, 5, 26, 28, new Color32(90, 120, 150, 255));
+            Rect(6, 36, 36, 6, Gold); Rect(18, 14, 12, 12, new Color32(240, 220, 120, 255));
+            Save("kingjar_placeholder");
         }
 
         // ---------- prefab ----------
@@ -240,6 +261,35 @@ namespace GooNapped.EditorTools
                 box.size = Vector2.one;
                 go.AddComponent<Crawlspace>();
                 SavePrefab(go, "Crawlspace");
+            }
+            // katup aura (adegan final): trigger kecil, sprite di anak "Visual"
+            {
+                var go = new GameObject("AuraValve");
+                var vis = NewProp("Visual", Frame("valve_placeholder", 0), 0);
+                vis.transform.SetParent(go.transform, false);
+                var cc = go.AddComponent<CircleCollider2D>();
+                cc.isTrigger = true;
+                cc.offset = new Vector2(0f, 0.4f);
+                cc.radius = 0.4f;
+                var av = go.AddComponent<AuraValve>();
+                Set(av, "spriteRenderer", p => p.objectReferenceValue = vis.GetComponent<SpriteRenderer>());
+                Set(av, "closedSprite", p => p.objectReferenceValue = Frame("valve_placeholder", 0));
+                Set(av, "reversedSprite", p => p.objectReferenceValue = Frame("valve_placeholder", 1));
+                SavePrefab(go, "AuraValve");
+            }
+            // toples raja: zona trigger besar (bukan penghalang), sprite besar
+            {
+                var go = new GameObject("KingJar");
+                var vis = NewProp("Visual", Frame("kingjar_placeholder", 0), 0);
+                vis.transform.SetParent(go.transform, false);
+                vis.transform.localScale = Vector3.one * 2f;
+                var cc = go.AddComponent<CircleCollider2D>();
+                cc.isTrigger = true;
+                cc.offset = new Vector2(0f, 0.6f);
+                cc.radius = 1f;
+                var kj = go.AddComponent<KingJar>();
+                Set(kj, "spriteRenderer", p => p.objectReferenceValue = vis.GetComponent<SpriteRenderer>());
+                SavePrefab(go, "KingJar");
             }
             // barang rapuh: trigger di sekitar vas, anak "Visual" yang miring/berganti sprite saat pecah
             {

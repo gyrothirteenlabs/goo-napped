@@ -83,10 +83,19 @@ namespace GooNapped.Tests
             yield return null;   // Start() semua objek sudah jalan
         }
 
+        // Dialog menghentikan waktu game: bot memajukannya supaya loop berbasis jam game tidak macet.
+        static void StoryNext() { if (StoryPlayer.IsPlaying) StoryPlayer.Next(); }
+
+        // Tunggu dalam jam game. Dialog yang muncul (menghentikan waktu game) dimajukan supaya tidak menunggu selamanya.
         static IEnumerator WaitGame(float seconds)
         {
             float end = Time.time + seconds;
-            while (Time.time < end) yield return null;
+            float guard = Time.realtimeSinceStartup + seconds / Mathf.Max(0.1f, Time.timeScale) + 30f;
+            while (Time.time < end && Time.realtimeSinceStartup < guard)
+            {
+                if (StoryPlayer.IsPlaying) StoryPlayer.Next();
+                yield return null;
+            }
         }
 
         static LevelMap Map() => LevelMap.From(SceneManager.GetActiveScene().GetRootGameObjects());
@@ -182,7 +191,30 @@ namespace GooNapped.Tests
 
             var endMap = Map();
             var exitVent = endMap.vents.FirstOrDefault(v => v.ExitsLevel);
-            if (exitVent != null)
+            if (endMap.kingJars.Count > 0)
+            {
+                // adegan final: putar semua katup, toples raja terbuka, lalu Alkemis (dimatikan di test ini) disegel
+                foreach (var valve in endMap.valves.OrderBy(v => Vector2.Distance(v.transform.position, brain.Active.Center)))
+                {
+                    while (StoryPlayer.IsPlaying) { StoryPlayer.Next(); yield return null; }
+                    yield return WalkUntil(brain, LevelMap.CellOfObject(valve), () => InRange(brain.Active, valve, 1.0f), "ke " + valve.name);
+                    if (failure != null) Assert.Fail(failure);
+                    Assert.IsTrue(brain.Interact(), "E di katup tidak memutarnya. Pesan: " + brain.Message);
+                    yield return WaitGame(valve.TurnTime + 0.3f);
+                    Assert.IsTrue(valve.IsReversed, valve.name + " tidak terbalik.");
+                    route.Add("katup");
+                }
+                yield return WaitGame(0.3f);
+                Assert.IsTrue(KingJar.Instance != null && KingJar.Instance.IsOpen, "Semua katup terbalik tapi toples raja tidak terbuka.");
+                var boss = Object.FindObjectsByType<Guard>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault(g => g.IsBoss);
+                Assert.IsNotNull(boss, "Tidak ada Guard boss (Alkemis) di level final.");
+                KingJar.Instance.Seal(boss);
+                float until = Time.time + 20f;
+                while (!goal.IsComplete && Time.time < until) { if (StoryPlayer.IsPlaying) StoryPlayer.Next(); yield return null; }
+                Assert.IsTrue(goal.IsComplete, "Alkemis tersegel tapi level final tidak selesai.");
+                route.Add("segel");
+            }
+            else if (exitVent != null)
             {
                 // v2: berdiri di lubang exit, tunggu teman merapat, lalu C (masuk). Teman ikut masuk = selamat.
                 yield return WalkUntil(brain, LevelMap.CellOfObject(exitVent), () => InRange(brain.Active, exitVent, 0.5f), "ke ventilasi exit");
@@ -257,7 +289,7 @@ namespace GooNapped.Tests
         {
             var a = brain.Active;
             float wake = Time.time + 2f;
-            while ((a.IsTransforming || a.IsEating) && Time.time < wake) yield return null;
+            while ((a.IsTransforming || a.IsEating) && Time.time < wake) { StoryNext(); yield return null; }
             var history = new List<string>();
             for (int attempt = 0; attempt < 3; attempt++)
             {
@@ -283,7 +315,7 @@ namespace GooNapped.Tests
                     {
                         if (done != null && done()) { a.Move(Vector2.zero); yield break; }
                         a.Move((wp - a.Center).normalized);
-                        yield return null;
+                        StoryNext(); yield return null;
                         float d = Vector2.Distance(a.Center, wp);
                         if (d < best - 0.03f) { best = d; since = 0f; } else since += Time.deltaTime;
                         if (since > 3f) { stuck = true; break; }
@@ -292,14 +324,14 @@ namespace GooNapped.Tests
                 }
                 a.Move(Vector2.zero);
                 float settle = Time.time + 1f;
-                while (a.Motor.IsHopping && Time.time < settle) { a.Move(Vector2.zero); yield return null; }
+                while (a.Motor.IsHopping && Time.time < settle) { a.Move(Vector2.zero); StoryNext(); yield return null; }
                 if (!stuck && (done == null || done())) yield break;
                 if (!stuck && done != null)
                 {
                     // sampai sel tujuan tapi belum dalam jangkauan: dekati pusat objek sedikit
                     float until = Time.time + 1.5f;
                     var center = LevelMap.CenterOf(goal);
-                    while (!done() && Time.time < until) { a.Move((center - a.Center).normalized * 0.6f); yield return null; }
+                    while (!done() && Time.time < until) { a.Move((center - a.Center).normalized * 0.6f); StoryNext(); yield return null; }
                     a.Move(Vector2.zero);
                     if (done()) yield break;
                     history.Add($"sampai {a.Center:F2} tapi belum dalam jangkauan");
@@ -325,6 +357,7 @@ namespace GooNapped.Tests
             float end = Time.time + 40f;
             while (Time.time < end && !goal.IsFailed)
             {
+                if (StoryPlayer.IsPlaying) StoryPlayer.Next();   // dialog menghentikan waktu game
                 foreach (var g in guards)
                     for (int i = 0; i < g.PatrolPoints.Count; i++)
                         if (Vector2.Distance(g.transform.position, g.PatrolPoints[i]) < 0.35f) reached[g][i] = true;

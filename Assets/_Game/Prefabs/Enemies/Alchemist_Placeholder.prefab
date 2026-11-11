@@ -262,6 +262,7 @@ MonoBehaviour:
   inspectsJars: 0
   huntInterval: 9
   huntError: 2.5
+  isBoss: 1
   coneMaterial: {fileID: 2100000, guid: 9e729fbbf04433041b2cfa5b24069e88, type: 2}
   coneSortingOrder: -50
 --- !u!114 &6098362550087340986

@@ -29,6 +29,7 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `z` | tempat istirahat penjaga terdekat (memasang `GuardShift`: tugas 12 dtk, istirahat 8 dtk; ubah di Inspector) |
    | `p` / `@` | Lukisan Bermata / Monster Gerbang (diam; arah pandang dasar = `Facing` di Inspector) |
    | `3`/`4` `5`/`6` `7`/`8` `9`/`0` | titik awal/akhir Zirah Hampa, Mata Penyihir, Pelayan Tudung, Alkemis |
+   | `Y` / `R` | katup aura / toples raja (adegan final; objek `FinalSequence` dipasang otomatis). Guard dengan `Is Boss` yang menangkap di dalam toples raja yang terbuka = tersegel |
    | `n` | kursi teman di markas (diisi berurutan dari `friends` di config; tampil kalau sudah diselamatkan) |
    | `L` | lentera |
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |

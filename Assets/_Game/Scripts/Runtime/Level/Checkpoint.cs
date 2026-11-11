@@ -35,6 +35,7 @@ namespace GooNapped
             public int saved;
             public readonly List<(string path, bool toggled)> doors = new List<(string, bool)>();
             public readonly List<string> lampsOut = new List<string>();
+            public readonly List<string> valves = new List<string>();
         }
 
         private static Data current;
@@ -92,6 +93,8 @@ namespace GooNapped
             foreach (var door in Object.FindObjectsByType<Door>(FindObjectsSortMode.None)) d.doors.Add((PathOf(door.transform), door.Toggled));
             foreach (var lamp in Object.FindObjectsByType<Extinguishable>(FindObjectsSortMode.None))
                 if (!lamp.IsLit) d.lampsOut.Add(PathOf(lamp.transform));
+            foreach (var v in Object.FindObjectsByType<AuraValve>(FindObjectsSortMode.None))
+                if (v.IsReversed) d.valves.Add(PathOf(v.transform));
             current = d;
         }
 
@@ -139,6 +142,12 @@ namespace GooNapped
             {
                 var lamp = Find<Extinguishable>(path);
                 if (lamp != null) lamp.Extinguish(true);
+            }
+
+            foreach (var path in d.valves)
+            {
+                var v = Find<AuraValve>(path);
+                if (v != null) v.SetReversed();
             }
 
             var states = new List<PieceState>(d.pieces);

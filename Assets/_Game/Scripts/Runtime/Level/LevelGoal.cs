@@ -77,6 +77,17 @@ namespace GooNapped
             return true;
         }
 
+        // Adegan final: Alkemis tersegel di toples raja (FinalSequence). Level selesai tanpa exit.
+        public void CompleteFinal()
+        {
+            if (IsComplete || IsFailed) return;
+            IsComplete = true;
+            Checkpoint.Clear();
+            Debug.Log("Final selesai: Alkemis tersegel.");
+            Completed?.Invoke(this);
+            StartCoroutine(LoadNext());
+        }
+
         // Level berikutnya, atau menu utama kalau ini level terakhir yang ada.
         private IEnumerator LoadNext()
         {

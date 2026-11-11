@@ -27,6 +27,7 @@ namespace GooNapped.EditorTools
     //           musuh unik (desain-v2 bagian 9), titik awal/akhir patroli:
     //           3/4 Zirah Hampa   5/6 Mata Penyihir   7/8 Pelayan Tudung   9/0 Alkemis
     //           p  Lukisan Bermata (diam, menyapu, alarm)   @  Monster Gerbang (diam, sorot = tertangkap)
+    //           Y  katup aura   R  toples raja (adegan final; FinalSequence dipasang otomatis)
     //           Tuas dan pelat tersambung ke PINTU TERDEKAT (atur peta supaya jelas, atau ubah sambungan di Inspector).
     //           Prefab props: GooNapped > Placeholder > Props level (dibuat otomatis kalau belum ada).
     public static class LevelBlockout
@@ -610,19 +611,19 @@ namespace GooNapped.EditorTools
             recipe = null,
             recipe2 = null,
             next = "Ending",
-            note = "L11 PUNCAK (final, menyusup). Alkemis memburu (tiap beberapa detik mendatangi perkiraan posisimu) dan memeriksa\n" +
-                   "tempat sembunyi. Lukisan mengawasi. X = ruang raja (adegan final menyusul: katup aura, Segel Raja). Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
+            note = "L11 PUNCAK (final). Putar balik 3 katup aura (Y, E) sambil diburu Alkemis yang memeriksa\n" +
+                   "tempat sembunyi. Toples raja (R) terbuka: makan esens (w), belah, tinggalkan potongan di toples. Alkemis menerkam di dalamnya = tersegel. Dibangun oleh GooNapped > Blockout > Semua level v2. Layout final: tim desainer.",
             map = new[]
             {
                 "##########################",
-                "#S...#.......p...........#",
-                "#....#..T.........P......#",
+                "#S...#.......p......Y....#",
+                "#....#..T...........P....#",
                 "#....#...................#",
                 "#..A.###.####.#####.######",
                 "#........................#",
-                "#...9..................0.#",
-                "#........................#",
-                "#.T...........T.......X..#",
+                "#.Y.9........R.........0.#",
+                "#............w...........#",
+                "#.T...........T......Y...#",
                 "##########################",
             },
         };
@@ -858,12 +859,14 @@ namespace GooNapped.EditorTools
                 if (AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Door.prefab") == null ||
                     AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/HidingSpot_Barrel.prefab") == null ||
                     AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/Vent.prefab") == null ||
-                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/PushCrate.prefab") == null) LevelPropBuilder.BuildAll();
+                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/PushCrate.prefab") == null ||
+                    AssetDatabase.LoadAssetAtPath<GameObject>(P + "Level/KingJar.prefab") == null) LevelPropBuilder.BuildAll();
                 return propRoot;
             }
 
             int h = c.map.Length, w = c.map[0].Length;
             int hubSlot = 0;
+            bool hasFinal = false;
             var breakPoints = new List<Vector2>();
             const string golemKeys = "ghkfvd";   // g h k = Golem Batu, f v = Familiar Api, d = Anjing Lendir
             var uniqueStart = new Dictionary<char, string> { { '3', "HollowArmor" }, { '5', "WitchEye" }, { '7', "ClocheButler" }, { '9', "Alchemist" } };
@@ -979,6 +982,14 @@ namespace GooNapped.EditorTools
                         case 'q':
                             Spawn(P + "Level/FragileVase.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "FragileVase");
                             break;
+                        case 'Y':
+                            Spawn(P + "Level/AuraValve.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "AuraValve");
+                            hasFinal = true;
+                            break;
+                        case 'R':
+                            Spawn(P + "Level/KingJar.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "KingJar");
+                            hasFinal = true;
+                            break;
                         case 'c':
                             Spawn(P + "Level/CreakyFloor.prefab", PropRoot(), new Vector3(x + 0.5f, y, 0f), "CreakyFloor");
                             break;
@@ -1061,6 +1072,13 @@ namespace GooNapped.EditorTools
             {
                 var g = Spawn(P + "Enemies/" + kind + "_Placeholder.prefab", guardRoot, sp, kind + "_" + (++gi));
                 Set(g.GetComponent<Guard>(), "patrolPoints", q => { q.arraySize = 1; q.GetArrayElementAtIndex(0).vector2Value = sp; });
+            }
+
+            if (hasFinal)
+            {
+                var fin = new GameObject("FinalSequence");
+                fin.transform.SetParent(PropRoot(), false);
+                fin.AddComponent<FinalSequence>();
             }
 
             // shift jaga: tiap titik istirahat dipasang ke penjaga terdekat

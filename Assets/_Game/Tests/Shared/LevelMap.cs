@@ -30,7 +30,10 @@ namespace GooNapped.Tests
         {
             foreach (var e in exits) yield return e;
             foreach (var v in vents) if (v.ExitsLevel) yield return v;
+            foreach (var k in kingJars) yield return k;   // adegan final: toples raja menggantikan exit
         }
+        public readonly List<KingJar> kingJars = new List<KingJar>();
+        public readonly List<AuraValve> valves = new List<AuraValve>();
 
         // Sel yang ditutup prop padat (toples, lentera, ...): badan slime (r 0.34) tidak muat lewat.
         public readonly HashSet<Vector2Int> propBlocked = new HashSet<Vector2Int>();
@@ -66,6 +69,8 @@ namespace GooNapped.Tests
                 m.brains.AddRange(r.GetComponentsInChildren<PlayerBrain>(true));
                 m.lamps.AddRange(r.GetComponentsInChildren<Extinguishable>(true));
                 m.vents.AddRange(r.GetComponentsInChildren<Vent>(true));
+                m.kingJars.AddRange(r.GetComponentsInChildren<KingJar>(true));
+                m.valves.AddRange(r.GetComponentsInChildren<AuraValve>(true));
                 m.spots.AddRange(r.GetComponentsInChildren<HidingSpot>(true));
                 foreach (var c in r.GetComponentsInChildren<Collider2D>(true))
                 {

@@ -168,6 +168,13 @@ namespace GooNapped.Tests
                 bool toSafety = m.vents.Any(v => escort.Contains(LevelMap.CellOfObject(v))) || m.exits.Any(e => escort.Contains(LevelMap.CellOfObject(e)));
                 if (!toSafety) p.Add(jarOrder[k].name + ": teman tidak bisa dikawal ke ventilasi/exit tanpa lewat celah.");
             }
+            // adegan final: tiap katup aura harus terjangkau
+            foreach (var v in m.valves)
+            {
+                var reachV = m.Reachable(here, c => m.SlimeWalkable(c, !Fits(), true));
+                var vc = LevelMap.CellOfObject(v);
+                if (!reachV.Contains(vc) && !m.Neighbors4(vc).Any(reachV.Contains)) p.Add(v.name + " " + vc + ": katup aura tidak terjangkau.");
+            }
             bool fitsEnd = Fits();
             var reachExit = m.Reachable(here, c => m.SlimeWalkable(c, !fitsEnd, true));
             if (!m.ExitPoints().Any(e => reachExit.Contains(LevelMap.CellOfObject(e))))

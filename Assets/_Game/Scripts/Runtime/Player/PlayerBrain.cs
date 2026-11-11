@@ -209,6 +209,17 @@ namespace GooNapped
             var jar = FindNear<Jar>(a, interactRadius);
             if (jar != null && jar.HasFriend) return InsertIntoJar(a, jar);
 
+            // adegan final: putar balik katup aura (diam sebentar, berisik)
+            var valve = FindNear<AuraValve>(a, interactRadius + 0.2f);
+            if (valve != null && !valve.IsReversed)
+            {
+                float t = valve.BeginTurn(a);
+                lockTimer = t;
+                a.Motor.Stop();
+                Say("Turning the valve... it's loud!", t + 0.5f);
+                return true;
+            }
+
             // markas: bicara dengan teman
             var hubFriend = FindNear<HubFriend>(a, interactRadius + 0.3f);
             if (hubFriend != null) { hubFriend.Talk(); return true; }

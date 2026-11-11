@@ -131,6 +131,8 @@ namespace GooNapped
         [SerializeField] private float huntInterval;
         [Tooltip("Ketidaktepatan perkiraan posisi pemburu (unit).")]
         [SerializeField] private float huntError = 2.5f;
+        [Tooltip("Boss (Alkemis): menangkap di dalam toples raja yang terbuka = tersegel (adegan final).")]
+        [SerializeField] private bool isBoss;
 
         [Header("Tampilan")]
         [SerializeField] private Material coneMaterial;
@@ -204,6 +206,15 @@ namespace GooNapped
         public bool IsSearching => state == State.Search || state == State.LookAround || state == State.Inspect;
         public bool IsAlerted => state == State.Alert || state == State.Chase || state == State.Caught;
         public bool IsChasing => state == State.Chase;
+        public bool IsBoss => isBoss;
+
+        // Adegan final: semua katup terbalik, boss mengamuk (berburu lebih sering, lebih cepat).
+        public void Enrage(float interval, float speedMultiplier)
+        {
+            huntInterval = interval;
+            huntTimer = Mathf.Min(huntTimer, interval);
+            speed *= speedMultiplier;
+        }
         public float HeadHeight => eyeHeight + 0.55f;
         private float trackedTime = -999f, sniffTimer;
         private bool alertedSound;
@@ -649,6 +660,14 @@ namespace GooNapped
 
         private void Catch(Sight s)
         {
+            // adegan final: boss menerkam di dalam toples raja yang terbuka = tersegel (peran tertukar)
+            var king = KingJar.Instance;
+            if (isBoss && king != null && king.IsOpen && !king.IsSealed && (king.Contains(s.pos) || king.Contains(Body)))
+            {
+                state = State.Caught;
+                king.Seal(this);
+                return;
+            }
             if (s.decoy != null)
             {
                 // umpan kristal pecah: penjaga bingung, menyapu pandangan, lalu kembali patroli
