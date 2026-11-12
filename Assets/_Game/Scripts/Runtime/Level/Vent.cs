@@ -8,6 +8,7 @@ namespace GooNapped
     //   - C di lubang = masuk. Checkpoint tersimpan (tertangkap = mulai lagi dari ventilasi terakhir).
     //   - Teman yang mengikuti ikut masuk = selamat (dievakuasi ke markas).
     //   - Di dalam: A/D pilih lubang lain di jaringan yang sama (jalan pintas), C = keluar di lubang terpilih.
+    //     Hanya lubang yang SUDAH PERNAH dimasuki (Visited), supaya ventilasi di tengah/akhir peta tidak jadi jalan pintas ke depan.
     //   - Lubang exit (exitsLevel): masuk = level selesai, kalau semua teman sudah selamat.
     [RequireComponent(typeof(HidingSpot))]
     public class Vent : MonoBehaviour
@@ -25,6 +26,8 @@ namespace GooNapped
         public string Network => network;
         public bool ExitsLevel => exitsLevel;
         public bool SavesCheckpoint => savesCheckpoint;
+        public bool Visited { get; private set; }
+        public void MarkVisited() => Visited = true;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => All.Clear();
@@ -37,7 +40,7 @@ namespace GooNapped
         public Vent Neighbor(int dir)
         {
             var list = new List<Vent>();
-            foreach (var v in All) if (v != null && v.network == network) list.Add(v);
+            foreach (var v in All) if (v != null && v.network == network && (v == this || v.Visited)) list.Add(v);
             if (list.Count < 2) return null;
             list.Sort((a, b) =>
             {

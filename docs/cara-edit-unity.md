@@ -18,7 +18,7 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `.` | lantai |
    | `S` | spawn pemain |
    | `X` | lubang ventilasi **exit** (level selesai setelah semua teman selamat) |
-   | `A` | lubang ventilasi (aman, checkpoint, jaringan "A": A/D pindah lubang) |
+   | `A` | lubang ventilasi (aman, checkpoint, jaringan "A": A/D pindah ke lubang yang sudah pernah dimasuki) |
    | `E` | exit lama (trigger `LevelExit`, level v1) |
    | `J` atau `1` | toples teman pertama (`recipe` di config, aset `Friend_*`) |
    | `2` | toples teman kedua (`recipe2`) |

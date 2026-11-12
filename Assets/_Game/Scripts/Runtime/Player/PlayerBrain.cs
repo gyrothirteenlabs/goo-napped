@@ -404,6 +404,7 @@ namespace GooNapped
         // Masuk ventilasi: checkpoint, pesan, dan exit level kalau ini lubang exit.
         private void EnteredVent(SlimePiece a, Vent vent, int evacuated)
         {
+            vent.MarkVisited();
             if (vent.SavesCheckpoint) { Checkpoint.Save(this); FriendPowers.Refill(); }
             if (vent.ExitsLevel && goal != null)
             {
@@ -419,7 +420,7 @@ namespace GooNapped
         private void TravelVent(SlimePiece a, Vent from, int dir)
         {
             var to = from.Neighbor(dir);
-            if (to == null) { Say("This vent doesn't lead anywhere else."); return; }
+            if (to == null) { Say("You don't know any other openings yet."); return; }
             if (!a.MoveHiddenTo(to.Spot)) return;
             AudioDirector.Play(AudioDirector.Sfx.SlimeStep, a.Center, 0.4f, 0.1f);
             if (to.ExitsLevel && goal != null) goal.TryComplete(a);

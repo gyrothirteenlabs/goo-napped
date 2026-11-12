@@ -16,7 +16,7 @@ Menu → Intro → L01 … L11 (Markas di antaranya) → Ending.
 | ✅ | Teman: keluar lalu menunggu, F ikut/tunggu, menyusuri jejak, sedikit lebih lambat, berbaris, menahan pelat | `FriendSlime`. Data 8 teman: `Data/Recipes/Friend_*` |
 | ✅ | Penjaga: curiga penuh = mengejar, tangkap, teriak memanggil penjaga lain, alarm toples, transformasi terlihat = curiga melonjak | `Guard` |
 | ✅ | Tempat sembunyi (C): tong muat 1, peti muat 2; ditatap = goyang lalu diperiksa; terlihat masuk = langsung diperiksa | `HidingSpot` |
-| ✅ | Ventilasi: aman total, checkpoint, A/D pindah lubang, teman ikut masuk = selamat, lubang exit | `Vent`, `Checkpoint` |
+| ✅ | Ventilasi: aman total, checkpoint, A/D pindah lubang (hanya ke lubang yang sudah pernah dimasuki, supaya tidak jadi jalan pintas ke depan; tersimpan di checkpoint), teman ikut masuk = selamat, lubang exit | `Vent`, `Checkpoint` |
 | ✅ | Lumpur (jejak bau beberapa detik) + genangan (mencuci) | `MudZone`, `WashZone` |
 | ✅ | Teks game bahasa Inggris (HUD, pesan, menu, pause, cerita) | |
 | ✅ | QA otomatis v2: solver tiruan, validator level v2 (+ rute kawal tanpa celah), bot lewat ventilasi exit | EditMode 37 + PlayMode 5 lulus |
@@ -29,7 +29,7 @@ Menu → Intro → L01 … L11 (Markas di antaranya) → Ending.
 | ✅ | Pergantian shift jaga: penjaga bertugas N dtk lalu istirahat di titik tertentu, pos kosong sebentar (menunggu tenang dulu kalau sedang curiga) | `GuardShift`, legenda `z` |
 | ✅ | Barang rapuh (tersenggol = pecah + bunyi), lantai berderit (tubuh besar/berat/teman besar = bunyi), peti dorong (massa >= 2, per tile, menekan pelat, menutup pandangan) | `FragileItem`, `CreakyFloor`, `PushCrate`, legenda `q c B`. Uji: `Sandbox/ProtoInteract` |
 | ✅ | Musuh unik (perilaku + prefab placeholder): Lukisan Bermata (diam, menyapu, alarm), Monster Gerbang (diam, sorot = tertangkap), Zirah Hampa (buta, pendengaran x1.8), Mata Penyihir (periksa tempat sembunyi + bongkar toples aura salah), Pelayan Tudung (periksa tempat sembunyi), Alkemis (pemburu tiap 9 dtk) | `Guard` (Perilaku khusus), `Prefabs/Enemies/*_Placeholder`, legenda `p @ 3-4 5-6 7-8 9-0`, uji `Sandbox/ProtoEnemies`. **Sprite final: tim** |
-| ✅ | Blockout 11 level v2 (L01_Gate s/d L11_Summit, sesuai daftar usulan desain-v2 bagian 3), alur Intro > L01 > Markas > ... > L11 > Ending. Lolos validator + bot tamat semua | `Scenes/Levels/V2`, menu GooNapped > Blockout > Semua level v2. **Peta masih kecil**: bot tanpa penjaga 11–29 dtk/level, target manusia 2–4 menit; layout final dan ukuran: tim desainer. |
+| ✅ | Blockout 11 level v2 (L01_Gate s/d L11_Summit, sesuai daftar usulan desain-v2 bagian 3), alur Intro > L01 > Markas > ... > L11 > Ending. Lolos validator + bot tamat semua | `Scenes/Levels/V2`, menu GooNapped > Blockout > Semua level v2. Peta diperbesar (12 Nov) jadi 44 kolom x 14–18 baris, luas lantai sekitar 2x: konsep tiap level sama, ruang dan rute lebih panjang, tempat sembunyi lebih banyak. Golem shift jaga L07 sekarang menjaga pos pendek dekat exit. Layout final dan ukuran: tim desainer. |
 | ✅ | Adegan final L11: putar balik 3 katup aura (E, diam 1,2 dtk, berisik), toples raja terbuka, Alkemis mengamuk (berburu tiap 3 dtk, 1,25x cepat). Tinggalkan potongan di toples raja: Alkemis menerkamnya di dalam = tersegel, dialog raja, lalu Ending. Katup tersimpan di checkpoint | `AuraValve`, `KingJar`, `FinalSequence`, `Guard.isBoss`, legenda `Y R`. Teks dialog placeholder: tim |
 | ⬜ | Isi cerita (strip, dialog, catatan) | tim |
 | ⬜ | Build Settings ke daftar level v2 | ProjectSettings = keputusan tim |

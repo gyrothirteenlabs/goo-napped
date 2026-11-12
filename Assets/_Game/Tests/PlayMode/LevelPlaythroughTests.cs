@@ -162,7 +162,8 @@ namespace GooNapped.Tests
                     Assert.IsNotNull(target, "Bahan " + step.ingredient.DisplayName + " tidak ada di level.");
                     yield return Walk(brain, LevelMap.CellOfObject(target), 0.3f, "ke " + target.name);
                     if (failure != null) Assert.Fail(failure);
-                    Assert.AreSame(target, a.FindPickup(), $"Berdiri di {target.name}, tapi bahan terdekat yang termakan berbeda (bahan terlalu berdempetan?).");
+                    yield return new WaitForFixedUpdate();   // posisi collider ikut langkah fisika sebelum OverlapCircle
+                    Assert.AreSame(target, a.FindPickup(), $"Berdiri di {target.name}, tapi bahan terdekat yang termakan berbeda (bahan terlalu berdempetan?). Jarak pusat slime ke bahan {Vector2.Distance(a.Center, target.transform.position):F2}, slime {a.Center}, bahan {(Vector2)target.transform.position}, lompat {a.Motor.IsHopping}.");
                     int before = a.Body.State.Eaten.Count;
                     Assert.IsTrue(brain.Interact(), "E di depan " + target.name + " tidak melakukan apa-apa. Pesan: " + brain.Message);
                     Assert.AreEqual(before + 1, a.Body.State.Eaten.Count, "Bahan tidak termakan. Pesan: " + brain.Message);
@@ -349,23 +350,25 @@ namespace GooNapped.Tests
             var goal = Object.FindFirstObjectByType<LevelGoal>();
             var guards = Object.FindObjectsByType<Guard>(FindObjectsSortMode.None);
             if (guards.Length == 0) Assert.Pass("Tanpa penjaga.");
-            var reached = guards.ToDictionary(g => g, g => new bool[g.PatrolPoints.Count]);
+            // titik patroli awal disalin: GuardShift mengganti rute saat istirahat
+            var points = guards.ToDictionary(g => g, g => new List<Vector2>(g.PatrolPoints));
+            var reached = guards.ToDictionary(g => g, g => new bool[points[g].Count]);
             // pemburu (Alkemis) memang mendatangi pemain yang diam: perburuan dimatikan, test ini hanya cek patroli + spawn
             var huntField = typeof(Guard).GetField("huntInterval", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             foreach (var g in guards) huntField.SetValue(g, 0f);
             Time.timeScale = 4f;
-            float end = Time.time + 40f;
+            float end = Time.time + 100f;   // peta besar: rute golem terpanjang ~35 dtk sekali jalan
             while (Time.time < end && !goal.IsFailed)
             {
                 if (StoryPlayer.IsPlaying) StoryPlayer.Next();   // dialog menghentikan waktu game
                 foreach (var g in guards)
-                    for (int i = 0; i < g.PatrolPoints.Count; i++)
-                        if (Vector2.Distance(g.transform.position, g.PatrolPoints[i]) < 0.35f) reached[g][i] = true;
+                    for (int i = 0; i < points[g].Count; i++)
+                        if (Vector2.Distance(g.transform.position, points[g][i]) < 0.35f) reached[g][i] = true;
                 yield return null;
             }
             Assert.IsFalse(goal.IsFailed, level + ": pemain yang diam di spawn ketahuan (" + goal.FailReason + ").");
             var stuck = guards.Where(g => reached[g].Any(r => !r))
-                .Select(g => g.name + " tidak pernah sampai titik " + string.Join(",", Enumerable.Range(0, reached[g].Length).Where(i => !reached[g][i]).Select(i => g.PatrolPoints[i].ToString())))
+                .Select(g => g.name + " tidak pernah sampai titik " + string.Join(",", Enumerable.Range(0, reached[g].Length).Where(i => !reached[g][i]).Select(i => points[g][i].ToString())))
                 .ToList();
             Assert.IsEmpty(stuck, level + ": " + string.Join("; ", stuck));
         }
