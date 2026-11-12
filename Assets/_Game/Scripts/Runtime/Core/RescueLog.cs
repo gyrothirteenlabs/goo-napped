@@ -17,6 +17,18 @@ namespace GooNapped
             PlayerPrefs.Save();
         }
 
+        // Jumlah teman yang sudah selamat (untuk main menu).
+        public static int Count
+        {
+            get
+            {
+                string s = PlayerPrefs.GetString(Key, "");
+                int n = 0;
+                foreach (char c in s) if (c == '[') n++;
+                return n;
+            }
+        }
+
         public static void Reset()
         {
             PlayerPrefs.DeleteKey(Key);

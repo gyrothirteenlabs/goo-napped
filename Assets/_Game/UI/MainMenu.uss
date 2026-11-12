@@ -1,0 +1,94 @@
+/* Main menu (PLACEHOLDER, 12 Nov). Warna dari art/palette.hex (USULAN). Tampilan final: tim desainer.
+   Nama kelas dipakai MainMenuController.cs, jangan diganti tanpa mengubah kode.
+   Resolusi acuan 960x540 (MainMenuPanelSettings). */
+
+.mm-root { flex-grow: 1; color: rgb(185, 192, 204); }
+
+/* bayangan supaya teks terbaca di atas adegan */
+.mm-shade-left { position: absolute; left: 0; top: 0; bottom: 0; width: 46%; background-color: rgba(11, 15, 26, 0.72); }
+.mm-shade-top { position: absolute; left: 0; right: 0; top: 0; height: 18%; background-color: rgba(11, 15, 26, 0.45); }
+.mm-shade-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 12%; background-color: rgba(11, 15, 26, 0.55); }
+
+.mm-title-block { position: absolute; left: 48px; top: 40px; }
+.mm-title {
+    font-size: 64px;
+    -unity-font-style: bold;
+    color: rgb(191, 240, 226);
+    text-shadow: 3px 3px 0 rgb(31, 111, 122);
+    letter-spacing: 3px;
+    margin: 0; padding: 0;
+}
+.mm-subtitle { font-size: 14px; color: rgb(138, 146, 160); margin: 2px 0 0 4px; padding: 0; }
+
+.mm-main { position: absolute; left: 48px; bottom: 96px; }
+.mm-items { flex-direction: column; }
+.mm-progress { font-size: 12px; color: rgb(93, 100, 114); margin: 14px 0 0 26px; }
+
+/* item menu */
+.mm-item { flex-direction: row; align-items: center; height: 40px; }
+.mm-caret { width: 22px; font-size: 18px; color: rgb(255, 200, 97); opacity: 0; transition-property: opacity, translate; transition-duration: 0.15s; }
+.mm-item-label {
+    font-size: 24px;
+    color: rgb(138, 146, 160);
+    transition-property: color, translate, scale;
+    transition-duration: 0.15s;
+    padding: 0; margin: 0;
+}
+.mm-item--selected .mm-caret { opacity: 1; translate: 2px 0; }
+.mm-item--selected .mm-item-label { color: rgb(255, 240, 176); translate: 6px 0; }
+.mm-item--disabled .mm-item-label { color: rgb(58, 63, 74); }
+
+/* pilih level */
+.mm-levels {
+    position: absolute; left: 48px; right: 48px; top: 120px;
+    background-color: rgba(11, 15, 26, 0.94);
+    border-width: 1px; border-color: rgba(77, 106, 140, 0.6); border-radius: 4px;
+    padding: 18px 22px;
+}
+.mm-panel-title { font-size: 14px; -unity-font-style: bold; color: rgb(77, 106, 140); letter-spacing: 2px; margin-bottom: 10px; }
+.mm-level-grid { flex-direction: row; flex-wrap: wrap; }
+.mm-level-actions { flex-direction: row; margin-top: 6px; }
+.mm-level-actions .mm-item { margin-right: 30px; height: 32px; }
+.mm-level-actions .mm-item-label { font-size: 18px; }
+
+.mm-card {
+    width: 24%; height: 60px; margin: 0 1% 6px 0;
+    background-color: rgba(27, 39, 64, 0.85);
+    border-width: 1px; border-color: rgba(52, 73, 111, 0.9); border-radius: 3px;
+    padding: 4px 10px;
+    transition-property: border-color, background-color, translate;
+    transition-duration: 0.12s;
+}
+.mm-card-num { font-size: 12px; color: rgb(93, 100, 114); margin: 0; padding: 0; }
+.mm-card-name { font-size: 16px; color: rgb(185, 192, 204); margin: 2px 0 0 0; padding: 0; }
+.mm-card-area { font-size: 10px; color: rgb(93, 100, 114); margin: 1px 0 0 0; padding: 0; }
+.mm-card--selected { border-width: 2px; border-color: rgb(255, 200, 97); background-color: rgba(51, 33, 26, 0.9); translate: 0 -2px; }
+.mm-card--selected .mm-card-name { color: rgb(255, 240, 176); }
+.mm-card--locked { background-color: rgba(18, 26, 43, 0.85); border-color: rgba(38, 54, 90, 0.7); }
+.mm-card--locked .mm-card-name { color: rgb(58, 63, 74); }
+.mm-card--locked.mm-card--selected { border-color: rgb(110, 21, 34); background-color: rgba(18, 26, 43, 0.9); }
+
+/* konfirmasi */
+.mm-confirm {
+    position: absolute; left: 30%; right: 30%; top: 38%;
+    background-color: rgba(11, 15, 26, 0.95);
+    border-width: 1px; border-color: rgb(194, 37, 58); border-radius: 4px;
+    padding: 18px 22px; align-items: center;
+}
+.mm-confirm-text { font-size: 18px; color: rgb(255, 240, 176); white-space: normal; -unity-text-align: middle-center; margin-bottom: 10px; }
+.mm-confirm-actions { flex-direction: row; }
+.mm-confirm-actions .mm-item { margin: 0 16px; height: 32px; }
+.mm-confirm-actions .mm-item-label { font-size: 20px; }
+
+.mm-hint { position: absolute; right: 24px; bottom: 16px; font-size: 12px; color: rgb(93, 100, 114); }
+
+.mm-hidden { display: none; }
+
+.mm-fade {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    background-color: rgb(5, 7, 12);
+    opacity: 1;
+    transition-property: opacity;
+    transition-duration: 0.6s;
+}
+.mm-fade--clear { opacity: 0; }

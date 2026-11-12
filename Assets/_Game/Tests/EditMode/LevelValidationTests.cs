@@ -38,8 +38,9 @@ namespace GooNapped.Tests
             foreach (var n in GameFlow.Levels.Concat(new[] { GameFlow.MainMenu, GameFlow.Intro, GameFlow.Ending, "Boot" }))
                 if (!build.Contains(n)) missing.Add(n);
             // Build Settings ada di ProjectSettings = keputusan tim (desain-v2 bagian 18). Di editor, GameFlow memuat
-            // scene lewat path, jadi ini belum menghalangi playtest; baru wajib sebelum build Windows.
-            if (missing.Count > 0) Assert.Ignore("Belum di Build Settings (perlu diputuskan tim sebelum build): " + string.Join(", ", missing));
+            // scene lewat path, jadi ini belum menghalangi playtest. Build lewat GooNapped > Build menambahkan scene alur
+            // sendiri ke daftar build (tanpa mengubah Build Settings), jadi build tetap lengkap.
+            if (missing.Count > 0) Assert.Ignore("Belum di Build Settings (keputusan tim). Build lewat GooNapped > Build supaya scene ini ikut: " + string.Join(", ", missing));
         }
 
         [TestCaseSource(nameof(LevelPaths))]

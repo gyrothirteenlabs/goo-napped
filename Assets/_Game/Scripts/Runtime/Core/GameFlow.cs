@@ -62,7 +62,9 @@ namespace GooNapped
                 return;
             }
 #endif
-            Debug.LogWarning($"GameFlow: scene '{scene}' tidak ada di Build Settings.");
+            // build: scene tidak ikut di-build = dulu layar hitam tanpa jalan keluar. Sekarang dicatat lalu kembali ke menu.
+            Debug.LogError($"GameFlow: scene '{scene}' tidak ada di build. Build lewat GooNapped > Build supaya semua scene alur ikut.");
+            if (scene != MainMenu && Application.CanStreamedLevelBeLoaded(MainMenu)) SceneManager.LoadScene(MainMenu);
         }
 
 #if UNITY_EDITOR
