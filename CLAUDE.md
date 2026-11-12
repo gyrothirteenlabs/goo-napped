@@ -3,7 +3,7 @@
 Game jam itch.io, 1 bulan, mulai 3 Nov 2026, dikerjakan bareng tim. Engine: Unity 6 (6000.3.28f1), URP 2D.
 Nama sementara: **Goo-napped** (nama final diputuskan setelah game jadi).
 
-**Redesign v2 (11 Nov 2026):** lore dan mekanik baru dari jawaban tim. Sumber utama: `docs/desain-v2.md` (branch `feat/redesign-lore`). Bagian Lore, Objektif, Mekanik, dan Musuh di bawah sudah versi 2. Versi 1 (resep 2–3 ciri, telan teman, nyamar bebas, chapter 1–2) ada di `main` lewat PR #5 dan disimpan sebagai sandbox.
+**Redesign v2 (11 Nov 2026):** lore dan mekanik baru dari jawaban tim. Sumber utama: `docs/desain-v2.md`. Sudah di `main` lewat PR #6 (12 Nov). Bagian Lore, Objektif, Mekanik, dan Musuh di bawah sudah versi 2. Versi 1 (resep 2–3 ciri, telan teman, nyamar bebas, chapter 1–2) ada di `main` lewat PR #5 dan disimpan sebagai sandbox.
 
 ## Pembagian kerja (keputusan 9 Nov 2026)
 - **Tim desainer:** semua desain visual (karakter, style, palet, UI look, level look), desain level/puzzle, cerita, audio.
@@ -12,9 +12,10 @@ Nama sementara: **Goo-napped** (nama final diputuskan setelah game jadi).
 - AI **tidak mengubah desain art** atas inisiatif sendiri. Kalau diminta "bikin lebih bagus" tanpa arahan, minta arahan konkret (sketsa, referensi, ukuran, warna).
 - Detail: `docs/ai-vs-tim.md`. Panduan art desainer: `docs/panduan-art-desainer.md`. Desainer 3D: `docs/panduan-blender-3d.md` (template `art/blender/sprite_template.blend`). Pipeline art/Blender: `art/CLAUDE.md` (baca dulu sebelum kerja di Blender atau sprite).
 
-## Status (11 Nov 2026, minggu 2)
+## Status (12 Nov 2026, minggu 2)
 - **v1 lengkap dan lolos QA otomatis, sudah di `main`** (PR #2–#5): gerak, makan bahan, belah/gabung/Shift, toples + resep, Golem/Familiar/Anjing, pathfinding A*, HUD UI Toolkit, sistem cerita (strip + dialog), menu/pause/progres, props (pintu, tuas, pelat, celah), 8 level blockout, validator level + bot QA.
-- **v2 (11 Nov)** di `feat/redesign-lore`: semua sistem v2 + 6 musuh unik + kekuatan teman + markas + benda interaksi + blockout 11 level (`Scenes/Levels/V2`). Lolos validator dan bot. Progres: `docs/backlog.md`.
+- **v2 sudah di `main`** (PR #6, 12 Nov): semua sistem v2 + 6 musuh unik + kekuatan teman + markas + benda interaksi + blockout 11 level (`Scenes/Levels/V2`, sudah diperbesar jadi 44 kolom) + adegan final L11 (katup aura, toples raja, Alkemis tersegel). Lolos validator dan bot. Progres: `docs/backlog.md`.
+- Level v2 belum masuk Build Settings (keputusan tim, `ProjectSettings` belum di-commit).
 - Belum (tim desainer): desain slime final + teman, sprite musuh baru, tileset 3 area + puncak, props tempat sembunyi, toples 2 ukuran, isi cerita, audio final. Belum ada playtest manusia.
 - Mood: **gelap**, palet beda per area (`art/CLAUDE.md`). `art/palette.hex` masih USULAN.
 - `docs/rundown-level.md` adalah rundown v1 dan sudah usang. Daftar level v2 ada di `docs/desain-v2.md` bagian 3.
