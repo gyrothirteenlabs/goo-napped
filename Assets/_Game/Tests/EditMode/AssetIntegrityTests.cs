@@ -19,7 +19,7 @@ namespace GooNapped.Tests
             { typeof(PauseMenu), new[] { "actions" } },
             { typeof(StoryPlayer), new[] { "actions" } },
             { typeof(Jar), new[] { "recipe", "friendPrefab" } },
-            { typeof(SlimePiece), new[] { "pickupPrefab", "disguiseRenderer", "disguiseSprite" } },
+            { typeof(SlimePiece), new[] { "pickupPrefab" } },
             { typeof(SlimeTraitFx), new[] { "particleMaterial" } },
             { typeof(Guard), new[] { "coneMaterial" } },
             { typeof(IngredientPickup), new[] { "ingredient" } },
@@ -116,7 +116,14 @@ namespace GooNapped.Tests
             foreach (var g in AssetDatabase.FindAssets("t:RecipeData", new[] { "Assets/_Game/Data" }))
             {
                 var r = AssetDatabase.LoadAssetAtPath<RecipeData>(AssetDatabase.GUIDToAssetPath(g));
-                if (r.Traits.Count < 2 || r.Traits.Count > 3) problems.Add(r.name + ": " + r.Traits.Count + " ciri (aturan 2–3).");
+                if (r.name.StartsWith("Friend_"))
+                {
+                    // v2: tepat 1 ciri warna (= aura) dan ukuran 1..MaxMass-1 (tiruan + sisa pemain minimal 1 unit)
+                    if (r.Traits.Count != 1 || r.Traits[0].kind != TraitKind.Color) problems.Add(r.name + ": teman v2 harus punya tepat 1 ciri Warna (aura).");
+                    if (r.Size < 1 || r.Size > SlimeBodyState.MaxMass - 1) problems.Add(r.name + ": ukuran " + r.Size + " tidak bisa dibuat (maks " + (SlimeBodyState.MaxMass - 1) + ").");
+                    if (string.IsNullOrWhiteSpace(r.FriendName)) problems.Add(r.name + ": nama kosong.");
+                }
+                else if (r.Traits.Count < 2 || r.Traits.Count > 3) problems.Add(r.name + ": " + r.Traits.Count + " ciri (aturan v1 2–3).");
                 if (r.Traits.GroupBy(t => t.kind).Any(x => x.Count() > 1)) problems.Add(r.name + ": jenis ciri dobel (tidak mungkin dibuat).");
             }
             Assert.IsEmpty(problems, string.Join("\n", problems));

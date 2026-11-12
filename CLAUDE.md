@@ -1,7 +1,9 @@
 # Game Off 2026: tema "SHIFT"
 
 Game jam itch.io, 1 bulan, mulai 3 Nov 2026, dikerjakan bareng tim. Engine: Unity 6 (6000.3.28f1), URP 2D.
-Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double, Shiftling.
+Nama sementara: **Goo-napped** (nama final diputuskan setelah game jadi).
+
+**Redesign v2 (11 Nov 2026):** lore dan mekanik baru dari jawaban tim. Sumber utama: `docs/desain-v2.md` (branch `feat/redesign-lore`). Bagian Lore, Objektif, Mekanik, dan Musuh di bawah sudah versi 2. Versi 1 (resep 2–3 ciri, telan teman, nyamar bebas, chapter 1–2) ada di `main` lewat PR #5 dan disimpan sebagai sandbox.
 
 ## Pembagian kerja (keputusan 9 Nov 2026)
 - **Tim desainer:** semua desain visual (karakter, style, palet, UI look, level look), desain level/puzzle, cerita, audio.
@@ -10,24 +12,29 @@ Nama game belum dipilih. Kandidat: Jarbreak, Slime Swap, Goo-napped, Body Double
 - AI **tidak mengubah desain art** atas inisiatif sendiri. Kalau diminta "bikin lebih bagus" tanpa arahan, minta arahan konkret (sketsa, referensi, ukuran, warna).
 - Detail: `docs/ai-vs-tim.md`. Panduan art desainer: `docs/panduan-art-desainer.md`. Desainer 3D: `docs/panduan-blender-3d.md` (template `art/blender/sprite_template.blend`). Pipeline art/Blender: `art/CLAUDE.md` (baca dulu sebelum kerja di Blender atau sprite).
 
-## Status (10 Nov 2026, minggu 2)
-- Sudah: konsep gameplay, lore, objektif. Pipeline sprite Blender → Unity (template + add-on v1.1). Lighting real-time (normal map + toon band). Struktur project + 18 scene placeholder. Placeholder 4 musuh (bukan desain final).
-- Prototipe mekanik (branch `feat/prototipe-mekanik`, scene `Sandbox/ProtoMekanik`): gerak analog berdenyut, makan bahan + state tubuh, belah/gabung, Shift antar potongan.
-- Toples + resep + exit juga sudah jalan di sandbox (alur intip → makan → belah → tukar → telan → exit).
-- Penjaga Golem Batu (patroli, kerucut lurus, tingkat curiga, ketahuan = ulang level) jalan di sandbox.
-- Nyamar jadi barang (tahan C, potongan yang ditinggal otomatis) + umpan (potongan nyamar yang menyala didatangi penjaga). Golem: datangi + sapu pandangan, radius sadar.
-- Blockout chapter 1 lengkap (C1_L01 tutorial, L02 kenalan Golem, L03 urutan makan + 2 golem, L04 umpan + gerbang), bisa dimainkan berurutan; kamera ikut potongan aktif. Dibangun dari peta teks: menu GooNapped > Blockout (`Scripts/Editor/Level/LevelBlockout.cs`).
-- Musuh ke-2 Familiar Api, musuh ke-3 Anjing Lendir + jejak bau. Chapter 2 blockout lengkap (C2_L01–L04). Garam Beku + lentera bisa dipadamkan. Skill muntah (Q) + lempar gumpalan (F). Menu utama, pilih level, pause, restart, progres.
-- HUD UI Toolkit (kartu resep, chip ciri, meter curiga), sistem cerita (cutscene + dialog, Intro/Ending tersambung, teks placeholder), pathfinding penjaga (A*), langkah berat berisik, VFX ciri tubuh, pintu/tuas/pelat tekan/celah (sandbox `ProtoProps`).
-- QA otomatis (10 Nov): validator level + integritas aset (EditMode), bot yang menamatkan 8 level + patroli + alur scene (PlayMode). Hasil & temuan: `docs/backlog.md` bagian QA. Jalankan Test Runner sebelum PR.
-- Belum: desain slime final (tim desainer), Mata Penyihir, tileset level final, art bahan/toples/props, tampilan UI final, isi cerita, playtest manusia (rasa & kesulitan stealth).
-- Mood: **gelap** (disetujui 10 Nov, lihat `art/CLAUDE.md`). `art/palette.hex` masih USULAN.
-- Usulan urutan chapter/level: `docs/rundown-level.md` (belum disepakati tim).
+## Status (11 Nov 2026, minggu 2)
+- **v1 lengkap dan lolos QA otomatis, sudah di `main`** (PR #2–#5): gerak, makan bahan, belah/gabung/Shift, toples + resep, Golem/Familiar/Anjing, pathfinding A*, HUD UI Toolkit, sistem cerita (strip + dialog), menu/pause/progres, props (pintu, tuas, pelat, celah), 8 level blockout, validator level + bot QA.
+- **v2 (11 Nov)** di `feat/redesign-lore`: semua sistem v2 + 6 musuh unik + kekuatan teman + markas + benda interaksi + blockout 11 level (`Scenes/Levels/V2`). Lolos validator dan bot. Progres: `docs/backlog.md`.
+- Belum (tim desainer): desain slime final + teman, sprite musuh baru, tileset 3 area + puncak, props tempat sembunyi, toples 2 ukuran, isi cerita, audio final. Belum ada playtest manusia.
+- Mood: **gelap**, palet beda per area (`art/CLAUDE.md`). `art/palette.hex` masih USULAN.
+- `docs/rundown-level.md` adalah rundown v1 dan sudah usang. Daftar level v2 ada di `docs/desain-v2.md` bagian 3.
 
-## Keputusan desain 10 Nov 2026
-- **Gerak analog (bebas)** untuk slime dan musuh. Gerak per tile ala Pokemon sempat dicoba 10 Nov dan dibatalkan (terlalu kaku). Rasa "lengket dan lamban" datang dari akselerasi + kecepatan yang berdenyut mengikuti animasi jalan, dan dari animasi yang lebih ekspresif (frame boleh ditambah: sprite 48px ringan di engine, biayanya di waktu render/cek).
-- **Bahan = barang alkemi** (ramuan, serbuk, minyak, esens), bukan bahan dapur. Contoh: Ramuan Api, bukan cabai.
-- **Lokasi level bervariasi**, tidak hanya dalam ruangan. Musuh muncul di tempat yang masuk akal (Golem Batu di area bebatuan).
+## Keputusan desain
+- **10 Nov:**
+  - Gerak analog (bebas). Gerak per tile sudah dicoba dan dibatalkan.
+  - Bahan = barang alkemi, di v2 menjadi **esens**.
+  - Lokasi level bervariasi, dan musuh muncul di tempat yang masuk akal.
+- **11 Nov (v2):**
+  - Nada: dunia gelap, slime tetap lucu.
+  - Ketahuan = **dikejar**. Tertangkap = ulang dari **ventilasi terakhir**.
+  - Satu tingkat kesulitan.
+  - Teks game **bahasa Inggris**.
+  - Rilis **build Windows**, kontrol keyboard dulu.
+  - Teman **mengikuti** pemain, tidak lagi ditelan.
+  - Sembunyi **hanya di objek**.
+  - **Maksimal 2 potongan**, tubuh mengecil saat membelah.
+  - Gerak diganti rasa slime Terraria, tapi lompatannya rendah.
+  - Detail: `docs/desain-v2.md`.
 
 ## Struktur project
 ```
@@ -35,18 +42,18 @@ Assets/
   _Game/                      semua aset milik game (pisah dari pihak ketiga)
     Art/
       Sprites/                Characters/Slime, Enemies, Props, Environment, UI, VFX (import otomatis)
-      Materials/              Slime_* (palet state bahan), Slime_Face, Env_Lit
+      Materials/              Slime_* (palet aura/esens), Slime_Face, Env_Lit
       Shaders/                PixelToonLit.shader (semua sprite lit)
       Animations/ Tiles/ Fonts/
     Audio/                    Music, SFX
-    Data/                     ScriptableObject: Ingredients, Recipes, Levels
+    Data/                     ScriptableObject: Ingredients (esens), Recipes (data teman), Story
     Prefabs/                  Characters, Enemies, Props, Level, UI, Systems
     Scenes/
       Boot/Boot.unity         build index 0, init service global
       Menus/                  MainMenu, ChapterSelect, Credits
       Story/                  Intro, Ending
-      Levels/Chapter1..3/     C<ch>_L<nn>.unity (12 level, chapter 3 kandidat dipotong)
-      Sandbox/                DemoSlime, SampleScene (tidak masuk build)
+      Levels/                 level v2 (scene v1 C1/C2 jadi sandbox)
+      Sandbox/                ruang uji (tidak masuk build)
     Scripts/
       Runtime/                asmdef GooNapped.Runtime, namespace GooNapped
         Core/ Player/ Slime/ Ingredients/ Enemies/ Level/ UI/ Audio/ Demo/
@@ -61,12 +68,13 @@ Tiap scene placeholder punya objek `_SceneInfo` (komponen `SceneNote`) berisi tu
 
 ## Konvensi teknis
 - **Kode:** C#, namespace `GooNapped` (sub-namespace per folder kalau perlu). PascalCase untuk tipe/method/properti, camelCase untuk field privat, `[SerializeField] private` daripada field publik untuk kode baru. Satu class MonoBehaviour per file, nama file = nama class.
+- **Bahasa:** teks yang tampil di game = **bahasa Inggris**. Komentar kode dan dokumen tim = bahasa Indonesia.
 - **Script baru** masuk `Assets/_Game/Scripts/Runtime/<Sistem>/`. Editor tool masuk `Scripts/Editor/`. Jangan taruh script di luar asmdef.
 - **Input:** Input System (`Assets/Settings/InputSystem_Actions.inputactions`). `SlimeDemoMover` hanya prototipe.
 - **Rendering:** semua sprite pakai `GooNapped/PixelToonLit`. Light 2D yang perlu efek bentuk: `Normal Map Quality = Accurate`. Pixel Perfect Camera 384×216, PPU 48. Sort sumbu Y (Renderer2D).
 - **Aset:** sprite masuk `Assets/_Game/Art/Sprites/`, normal map `<nama>_normal` dipasang otomatis. Jangan ubah import setting manual.
 - **Scene:** jangan edit scene yang sama bersamaan (konflik YAML). Kerja di prefab kalau bisa. Klaim scene di chat tim sebelum edit.
-- **Test:** smoke test di `Tests/EditMode`. Tambah test untuk logika murni (resep, state slime).
+- **Test:** smoke test di `Tests/EditMode`. Tambah test untuk logika murni (massa, aura, state slime).
 
 ## Git
 - `main` = stabil, hanya lewat PR + review. Jangan push langsung, jangan force-push.
@@ -74,63 +82,98 @@ Tiap scene placeholder punya objek `_SceneInfo` (komponen `SceneNote`) berisi tu
 - Commit pendek, bahasa Indonesia/Inggris boleh, prefix area: `art:`, `unity:`, `feat:`, `fix:`, `docs:`, `level:`.
 - AI: `git add` file spesifik (bukan `-A`), **tanpa atribusi AI** di commit/PR.
 - `.blend`, `.png`, audio lewat Git LFS (`.gitattributes`). `Library/`, `Temp/`, `Assets/Screenshots/` di-ignore.
-- `Packages/` dan `ProjectSettings/` dibahas tim dulu sebelum di-commit.
+- `Packages/` dan `ProjectSettings/` (termasuk daftar Build Settings) dibahas tim dulu sebelum di-commit.
 - Aturan Game Off: repo GitHub publik. Jangan commit aset berbayar yang lisensinya melarang redistribusi.
 
 ## Genre & feel
-Puzzle stealth 2D top-down, level pendek (2–4 menit). Referensi feel: Robbery Bob (aktif, lucu, chaotic), cerita ringan ala Helltaker.
+Puzzle stealth 2D top-down. Level pendek (2–4 menit), total 30–45 menit. Dunianya gelap dan tegang, slime-nya tetap lucu.
+Referensi:
+- Zelda: struktur level top-down.
+- Robbery Bob: stealth lucu-kacau, tempat sembunyi.
+- Helltaker: cerita lewat strip.
+- Clock Tower SNES: dikejar, sembunyi yang bisa gagal.
 
-## Lore
-- Kerajaan slime. Tiap warga punya kekuatan (api, kristal, bayangan, dll).
-- Alkemis jahat menculik hampir semua slime dan menyedot kekuatannya untuk menguasai dunia.
-- Slime yang diculik disimpan di TOPLES SEGEL di markas alkemis.
-- Pemain adalah satu slime yang lolos dan ingin menyelamatkan warga serta keluarganya.
-- Pemain tidak bisa menyerang/membunuh. Murni stealth.
-- Slime yang diselamatkan hanya untuk lore, TIDAK jadi skill.
-- Ending: alkemis disegel di toplesnya sendiri (peran tertukar), kekuatan slime kembali, dan alat alkemis dipakai untuk membangun ulang kerajaan.
+## Lore (ringkas, lengkap di `docs/desain-v2.md` bagian 2)
+- Kerajaan slime hidup tentram. Tiap slime punya **aura**: daya hidup sekaligus kekuatan tersembunyi.
+- **Alkemis** (makhluk lain, bukan slime) ditumpangi **roh jahat kuno** yang butuh aura untuk menaklukkan dunia. Ia merebut kastil, lalu:
+  - warga disadap, sebagian sampai mati;
+  - warga yang auranya tersembunyi dikurung di **toples jahat**;
+  - **raja** dikurung di puncak, dekat mesin penyadap.
+- **Pemain** adalah slime biasa dengan **aura bening** (tidak terbaca). Ia dibuang dan selamat. Tubuh beningnya bisa **meniru aura lewat esens**. Pendiam tapi ekspresif.
+- **Jalur:** gerbang (monster) → taman (golem, anjing, lumpur) → ventilasi → penjara bawah tanah → lab eksperimen → kastil atas (aula, ruang makan, galeri) → puncak.
+- Teman yang diselamatkan **mengikuti** pemain, lalu dievakuasi ke **ventilasi** (markas). Beberapa teman memberi **kekuatan terbatas**.
+- Pemain tidak bisa menyerang. Murni stealth.
+- **Ending:**
+  - alkemis tersegel di toplesnya sendiri (peran tertukar);
+  - kutukan hilang dan alkemis lenyap;
+  - aura kembali, dan yang mati hidup lagi;
+  - alat alkemis dipakai membangun ulang kerajaan.
 
 ## Objektif per level
-1. Intip toples untuk melihat ciri teman yang dikurung.
-2. Kumpulkan bahan sambil menghindari penjaga.
-3. Makan bahan sesuai "resep" supaya tubuh punya ciri yang sama.
-4. Belah diri: potongan masuk toples menyamar jadi teman, lalu teman ditelan untuk dibawa kabur.
-5. Kabur ke exit tanpa ketahuan.
+- **Level menyusup** (gerbang, taman): sampai ke ventilasi tujuan.
+- **Level penyelamatan:**
+  1. Temukan ruang eksperimen lewat petunjuk lingkungan (tanpa penanda). Toples berpendar sesuai aura teman, dan ukuran toples = ukuran teman.
+  2. Makan esens (jumlahnya pas-pasan) sampai massa cukup. **Esens terakhir = aura teman.**
+  3. Belah. Potongan dengan **massa = ukuran teman** masuk toples sebagai tiruan, dan teman keluar.
+  4. Ajak teman mengikuti (F), lalu kawal ke ventilasi tanpa ketahuan. Alarm penyadapan berbunyi setelah beberapa detik.
 
-Alkemis tidak sadar karena toples masih berisi slime (hanya slime yang bisa menggantikan slime).
+## Mekanik (detail di `docs/desain-v2.md` bagian 4–11)
+- **Gerak:** lompatan rendah ala slime Terraria (busur ±5 px, squash/stretch, goyang jeli), akselerasi halus.
+- **Massa:** awal 1, tiap esens +1, maksimal 4.
+  - Besar = lambat, lebih terlihat, berisik.
+  - Kecil = muat lewat celah.
+- **Esens:** memberi **aura** (dari esens terakhir) dan efek samping (menyala, berbau, berat, dingin, gelap). Muntah (Q) mengeluarkan esens terakhir.
+- **Belah dan Shift:**
+  - Belah (Space) maksimal 2 potongan, massa dibagi.
+  - Gabung kalau bersentuhan.
+  - **Shift** = pindah kendali antar potongan, lalu ke teman di ventilasi.
+- **Transformasi yang terlihat penjaga** (belah, gabung, potongan bangun, masuk/keluar sembunyi) = curiga melonjak.
+- **Potongan yang ditinggal** diam dan bisa terlihat atau tertangkap. Dipakai sebagai umpan dan penahan pelat.
+- **Sembunyi (C)** hanya di objek.
+  - Tidak bisa bergerak saat sembunyi.
+  - Barang yang ditatap penjaga = curiga naik.
+  - Pemeriksa membuka tempat sembunyi.
+- **Teman yang dikawal:**
+  - menyusuri jejak pemain, sedikit lebih lambat, dan diam saat pemain diam;
+  - ikut sembunyi, tapi lebih cepat dicurigai;
+  - bisa diperintah tunggu/ikut (F).
+- **Ketahuan:**
+  - Penjaga mengejar dan memanggil penjaga lain.
+  - Putus pandangan lalu sembunyi = lolos.
+  - Tertangkap (pemain, potongan, atau teman) = ulang dari ventilasi terakhir.
+- **Ventilasi:** aman total, checkpoint, exit, jaringan jalan pintas, markas teman.
+- **Lingkungan:**
+  - Cahaya = bahaya (tetap).
+  - Lumpur meninggalkan jejak bau selama beberapa detik dan bisa dicuci di genangan.
+- **Kekuatan teman** (hanya beberapa, jatah per checkpoint): Dentum, Padam, Umpan Kristal, Kabut. Segel Raja dipakai di final.
 
-## Mekanik
-- Gerak analog berupa lompatan kecil yang merayap (ancang, lompat rendah, meluncur) + squash/stretch halus di engine. Bahan berat = lompatan pendek dan lambat. Spek frame sprite: `docs/panduan-blender-3d.md` C.1.
-- Makan bahan alkemi: tubuh berubah sesuai bahan (Ramuan Api = merah + panas + menyala, Serbuk Batu = abu + berat, dll). Daftar final oleh tim.
-- Belah diri: potongan mewarisi sifat tubuh saat itu. Bisa dipakai jadi tiruan di toples ATAU umpan.
-- Nyamar jadi barang untuk ngumpet dari penjaga (butuh waktu berubah; selama berubah masih bisa ketahuan).
-- Aksi punya jeda anti-spam: belah (ancang + cooldown), Shift (cooldown + potongan baru "bangun"), makan (diam ±0.85 detik).
-- Cahaya = bahaya: slime yang berdiri di cahaya lampu (atau menyala sendiri) terlihat penjaga di dekatnya dari segala arah, walau di luar kerucut.
-- Tombol Shift untuk ganti kontrol antar potongan. Potongan yang ditinggal otomatis nyamar.
-- Gabung lagi hanya bisa kalau potongan bersentuhan langsung.
-- Resep tiruan: tiap slime di toples punya 2–3 ciri (warna, suhu, berat, kilau, bau).
-- Sifat bahan memengaruhi stealth: habis minum Ramuan Api jadi menyala dan gampang terlihat, habis makan Serbuk Batu jadi lambat.
-- Bahan dipakai untuk resep ATAU umpan, jadi pemain harus memilih.
-- Salah resep tidak langsung kalah. Penjaga cuma jadi lebih cepat curiga.
-
-## Musuh
-Musuh dibuat dari kekuatan slime curian. Pemain mengakalinya lewat sifat musuh itu sendiri, bukan melawan.
-- Golem Batu: patroli, lambat, melihat lurus ke depan.
-- Familiar Api: melihat benda panas/menyala.
-- Anjing Lendir: mengendus bau bahan yang dimakan.
-- Mata Penyihir: memeriksa toples, bisa membongkar tiruan.
-
-Cara mengakali: nyamar, potongan umpan, urutan makan bahan, umpan pembawa sifat (misal potongan berbau).
+## Musuh (detail di `docs/desain-v2.md` bagian 9)
+Musuh dibuat dari aura curian. Pemain mengakalinya lewat sifat musuh itu sendiri.
+- **Generik:** Golem Batu, Anjing Lendir.
+- **Unik per tempat:**
+  - Monster Gerbang.
+  - Familiar Api.
+  - Mata Penyihir: memeriksa toples dan tempat sembunyi.
+  - Zirah Hampa: buta, memburu suara.
+  - Pelayan Tudung: membuka tempat sembunyi.
+  - Lukisan Bermata: diam, menyapu pandangan.
+  - Alkemis: boss stealth, pemburu.
 
 ## Hubungan ke tema SHIFT
-Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, shift kontrol antar potongan (tombol Shift), dan peran tertukar di ending.
+Urutan penonjolan:
+1. Berubah bentuk: belah, tiruan, sembunyi.
+2. Pindah kendali: tombol Shift, juga ke teman di ventilasi.
+3. Tubuh berubah karena esens.
+4. Peran tertukar di ending.
+5. Pergantian shift jaga.
+6. Dunia berubah.
 
 ## Scope
-- 3 chapter, 10–12 level, 3–4 musuh, 6–8 bahan.
-- Minggu 1: prototipe mekanik dasar (gerak, makan, belah, gabung, 1 penjaga, 1 toples).
-- Minggu 2: sistem resep, musuh, level kasar.
-- Minggu 3: semua level, art, sound, cerita.
+- 3 area + puncak, 11 level (usulan di `docs/desain-v2.md` bagian 3).
+- 9 jenis musuh (2 generik, 7 unik), 7 esens, 4 kekuatan teman.
+- Minggu 2–3: sistem v2 (urutan di desain-v2 bagian 17), level, art, cerita.
 - Minggu 4: playtest, bug fix, halaman itch.io. TIDAK tambah fitur.
-- Kalau molor, potong musuh ke-4 dan chapter 3.
+- Potong fitur: belum diputuskan (keputusan tim: siapkan semua dulu).
 
 ## Cara diskusi
 - Bahasa Indonesia santai, singkat, langsung ke inti. Istilah teknis boleh bahasa Inggris.
@@ -140,6 +183,6 @@ Shapeshift (jadi barang dan jadi teman), tubuh yang terus berubah karena bahan, 
 - Kerjaan teknis (kode, scene, shader, tooling, pipeline render) langsung kerjakan. Kerjaan desain art: bantu eksekusi kalau ada arahan dari tim desainer.
 
 ## Next step
-- Programmer: lihat `docs/backlog.md` (berikutnya: isi cerita oleh tim, poles, playtest). Sudah ada: `GolemGuard` + `VisionCone` (penjaga), `Jar`/`RecipeData`/`LevelGoal` (objektif). Sudah ada: `PlayerBrain` (input), `SlimePiece` + `SlimeMotor` (badan), `SlimeBodyState` (ciri), `IngredientData`.
-- Desainer: desain final slime + palet state bahan, tileset chapter 1 (albedo flat + normal), toples, Golem Batu.
-- Tim: daftar bahan + ciri, slime teman per chapter, daftar level.
+- AI/programmer: kerjakan urutan di `docs/desain-v2.md` bagian 17, catat progres di `docs/backlog.md`.
+- Tim: jawab daftar ❓ di `docs/desain-v2.md` bagian 18.
+- Desainer: slime final + teman, sprite musuh v2, tileset per area, props tempat sembunyi, toples 2 ukuran, strip cerita.

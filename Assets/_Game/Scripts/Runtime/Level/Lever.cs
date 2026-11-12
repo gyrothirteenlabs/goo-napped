@@ -44,7 +44,7 @@ namespace GooNapped
             foreach (var d in doors) if (d != null) d.Toggle();
             AudioDirector.Play(AudioDirector.Sfx.UiClick, transform.position, 1f, 0.05f);
             if (noiseRadius > 0f) NoiseBus.Emit(transform.position, noiseRadius);
-            Message = doors.Count == 0 ? "Tuas ini tidak tersambung ke apa pun." : "Klak! Tuas ditarik. Bunyinya terdengar penjaga di dekat.";
+            Message = doors.Count == 0 ? "This lever isn't connected to anything." : "Clack! The lever moved. Nearby guards heard it.";
             return true;
         }
 

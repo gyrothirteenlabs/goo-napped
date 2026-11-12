@@ -21,6 +21,19 @@ namespace GooNapped.Tests
         public readonly List<LevelGoal> goals = new List<LevelGoal>();
         public readonly List<PlayerBrain> brains = new List<PlayerBrain>();
         public readonly List<Extinguishable> lamps = new List<Extinguishable>();
+        // v2: ventilasi (aman, checkpoint, exit) dan tempat sembunyi
+        public readonly List<Vent> vents = new List<Vent>();
+        public readonly List<HidingSpot> spots = new List<HidingSpot>();
+
+        // Semua titik selesai level: LevelExit (v1) dan lubang ventilasi exit (v2).
+        public IEnumerable<Component> ExitPoints()
+        {
+            foreach (var e in exits) yield return e;
+            foreach (var v in vents) if (v.ExitsLevel) yield return v;
+            foreach (var k in kingJars) yield return k;   // adegan final: toples raja menggantikan exit
+        }
+        public readonly List<KingJar> kingJars = new List<KingJar>();
+        public readonly List<AuraValve> valves = new List<AuraValve>();
 
         // Sel yang ditutup prop padat (toples, lentera, ...): badan slime (r 0.34) tidak muat lewat.
         public readonly HashSet<Vector2Int> propBlocked = new HashSet<Vector2Int>();
@@ -55,6 +68,10 @@ namespace GooNapped.Tests
                 m.goals.AddRange(r.GetComponentsInChildren<LevelGoal>(true));
                 m.brains.AddRange(r.GetComponentsInChildren<PlayerBrain>(true));
                 m.lamps.AddRange(r.GetComponentsInChildren<Extinguishable>(true));
+                m.vents.AddRange(r.GetComponentsInChildren<Vent>(true));
+                m.kingJars.AddRange(r.GetComponentsInChildren<KingJar>(true));
+                m.valves.AddRange(r.GetComponentsInChildren<AuraValve>(true));
+                m.spots.AddRange(r.GetComponentsInChildren<HidingSpot>(true));
                 foreach (var c in r.GetComponentsInChildren<Collider2D>(true))
                 {
                     if (c.isTrigger || c is TilemapCollider2D || c is CompositeCollider2D) continue;

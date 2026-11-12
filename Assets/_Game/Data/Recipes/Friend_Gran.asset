@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 665f528f47b4b814cafa1a214301981c, type: 3}
+  m_Name: Friend_Gran
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.RecipeData
+  friendName: Gran
+  traits:
+  - kind: 0
+    value: putih
+  size: 2
+  power: 0
+  jarLine: So the clear one survived. Just like the old songs said.
+  hubLines:
+  - The old songs said a clear slime would fool the jar spirit. I never believed
+    them.
+  - The Gloam fears its own jar. Remember that at the top.
+  bodyMaterial: {fileID: 2100000, guid: e35c66af44975394aa89369a4b674894, type: 2}

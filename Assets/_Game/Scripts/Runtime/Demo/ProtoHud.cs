@@ -39,19 +39,18 @@ namespace GooNapped
             }
             var a = brain.Active;
             sb.Length = 0;
-            sb.AppendLine("WASD gerak | E makan/tukar/telan | Space belah-gabung | Shift pindah | tahan C nyamar | Q muntah | F lempar gumpalan | R ulang | Esc jeda");
+            sb.AppendLine("WASD move | E eat/use | Space split/merge | Shift switch | C hide | F call friend | Q spit | R retry | Esc pause");
             if (a != null)
             {
                 sb.Append("Tubuh: ").Append(TraitsText(a.Body.State.Traits));
                 if (a.Body.State.EmitsLight) sb.Append("  [menyala]");
                 if (a.Body.State.SpeedMultiplier < 1f) sb.Append("  [lambat]");
-                if (!a.IsDisguised && LightExposure.At(a.Center) >= 0.35f) sb.Append("  <color=#ffc861>[kena cahaya: penjaga di dekat bisa melihat]</color>");
+                if (!a.IsHidden && LightExposure.At(a.Center) >= 0.35f) sb.Append("  <color=#ffc861>[kena cahaya: penjaga di dekat bisa melihat]</color>");
                 if (a.Body.State.SmellRadius > 0f) sb.Append("  <color=#e6d36a>[berbau: meninggalkan jejak]</color>");
-                if (a.IsDisguised) sb.Append("  [nyamar]");
+                if (a.IsHidden) sb.Append("  [nyamar]");
                 sb.AppendLine();
-                sb.Append("Potongan: ").Append(brain.Pieces.Count).Append("   Gumpalan: ")
-                  .Append(brain.ThrowCooldownLeft > 0f ? Mathf.CeilToInt(brain.ThrowCooldownLeft) + " dtk" : "siap")
-                  .Append("   Teman dibawa: ").Append(a.Carried.Count);
+                sb.Append("Pieces: ").Append(brain.Pieces.Count).Append("   Size: ").Append(a.Mass)
+                  .Append("   Friends safe: ").Append(goal != null ? goal.Saved : 0);
                 if (goal != null) sb.Append("/").Append(goal.Required);
                 sb.AppendLine();
                 var jar = brain.NearbyJar;
@@ -74,7 +73,7 @@ namespace GooNapped
             }
             if (!string.IsNullOrEmpty(brain.Message)) sb.Append("<color=#ffc861>").Append(brain.Message).AppendLine("</color>");
             if (goal != null && goal.IsComplete) sb.AppendLine("<color=#6fd27e><b>LEVEL SELESAI</b></color>");
-            if (goal != null && goal.IsFailed) sb.Append("<color=#ff5a5f><b>").Append(goal.FailReason).AppendLine(" - ulang...</b></color>");
+            if (goal != null && goal.IsFailed) sb.Append("<color=#ff5a5f><b>").Append(goal.FailReason).AppendLine(" - retrying...</b></color>");
             GUI.Label(new Rect(10, 8, Screen.width - 20, 200), sb.ToString(), style);
         }
     }

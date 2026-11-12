@@ -9,7 +9,7 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
 ## 1. Bikin / ubah level
 
 ### Cara cepat: peta teks (blockout)
-1. Buka `Assets/_Game/Scripts/Editor/Level/LevelBlockout.cs`, cari `C1L01` dsb.
+1. Buka `Assets/_Game/Scripts/Editor/Level/LevelBlockout.cs`. Contoh lengkap v2: config `SandboxV2` (scene `Sandbox/ProtoV2`).
 2. Ubah peta (satu karakter = satu tile 48 px):
 
    | Huruf | Arti |
@@ -17,93 +17,91 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `#` | batu / tembok (collider + bayangan) |
    | `.` | lantai |
    | `S` | spawn pemain |
-   | `E` | exit |
-   | `J` atau `1` | toples resep pertama (`recipe` di config) |
-   | `2` | toples resep kedua (`recipe2` di config) |
-   | `b` `l` `w` `r` `y` `i` | Serbuk Batu, Lumut Pendar, Air Embun, Ramuan Api, Minyak Belerang, Garam Beku |
+   | `X` | lubang ventilasi **exit** (level selesai setelah semua teman selamat) |
+   | `A` | lubang ventilasi (aman, checkpoint, jaringan "A": A/D pindah ke lubang yang sudah pernah dimasuki) |
+   | `E` | exit lama (trigger `LevelExit`, level v1) |
+   | `J` atau `1` | toples teman pertama (`recipe` di config, aset `Friend_*`) |
+   | `2` | toples teman kedua (`recipe2`) |
+   | `b` `l` `w` `r` `y` `i` `u` | Esens Batu, Pendar, Embun, Bara, Belerang, Beku, Bayang |
+   | `T` / `P` | tempat sembunyi: tong (muat 1) / peti (muat 2) |
+   | `m` / `=` | lumpur (jejak bau) / genangan (mencuci lumpur) |
+   | `q` / `c` / `B` | vas rapuh / lantai berderit / peti dorong |
+   | `z` | tempat istirahat penjaga terdekat (memasang `GuardShift`: tugas 12 dtk, istirahat 8 dtk; ubah di Inspector) |
+   | `p` / `@` | Lukisan Bermata / Monster Gerbang (diam; arah pandang dasar = `Facing` di Inspector) |
+   | `3`/`4` `5`/`6` `7`/`8` `9`/`0` | titik awal/akhir Zirah Hampa, Mata Penyihir, Pelayan Tudung, Alkemis |
+   | `Y` / `R` | katup aura / toples raja (adegan final; objek `FinalSequence` dipasang otomatis). Guard dengan `Is Boss` yang menangkap di dalam toples raja yang terbuka = tersegel |
+   | `n` | kursi teman di markas (diisi berurutan dari `friends` di config; tampil kalau sudah diselamatkan) |
    | `L` | lentera |
    | `g`/`G`, `h`/`H`, `k`/`K` | titik awal/akhir patroli Golem 1, 2, 3 |
    | `f`/`F`, `v`/`V` | titik awal/akhir patroli Familiar Api 1, 2 |
    | `d`/`D` | titik awal/akhir patroli Anjing Lendir |
    | `\|` | pintu (tertutup) |
    | `/` | tuas (E: buka/tutup pintu, berisik) |
-   | `o` / `O` | pelat tekan / pelat tekan berat (butuh tubuh berat) |
-   | `~` | celah / lorong tikus (slime bisa lewat, penjaga tidak, tubuh berat tidak muat) |
+   | `o` / `O` | pelat tekan / pelat berat (tubuh berat: Esens Batu atau massa >= 3, atau teman besar menunggu di atasnya) |
+   | `~` | celah (slime massa 1 lewat, penjaga tidak) |
 
-   Tuas dan pelat otomatis tersambung ke **pintu terdekat**. Atur peta supaya jelas, atau ubah daftar `Doors` di Inspector.
-   Contoh pemakaian semua props: scene `Sandbox/ProtoProps` (menu **GooNapped > Blockout > Sandbox ProtoProps**).
+   Tuas dan pelat otomatis tersambung ke **pintu terdekat**. Jangan taruh celah di rute kawal teman (validator mengeceknya).
 
-3. Unity: menu **GooNapped > Blockout > C1_L0x** (atau **Semua chapter 1**). Scene diisi ulang dan disimpan.
-4. Level baru: salin satu `Config`, ganti `scene`, `recipe`, `next`, `note`, tambah `[MenuItem]`. Lalu **tambahkan nama scene di `GameFlow.Levels`** (urutan pilih level) dan pastikan scene ada di Build Settings.
+3. Unity: menu **GooNapped > Blockout > ...**. Scene diisi ulang dan disimpan.
+4. Level baru: salin satu `Config`, ganti `scene`, `recipe`, `next`, `note`, tambah `[MenuItem]`, lalu tambahkan nama scene di `GameFlow.Levels`. Di editor scene di luar Build Settings tetap bisa dimuat; sebelum build Windows, Build Settings harus diperbarui (keputusan tim).
 
 ### Cara manual (desain final)
-- **Lantai/tembok**: buka Tile Palette (Window > 2D > Tile Palette), gambar di Tilemap `Grid/Floor` dan `Grid/Walls`. `Walls` punya collider + bayangan otomatis. Penjaga mencari jalan dari dua Tilemap ini: sel bisa dilewati = ada tile `Floor` dan tidak ada tile `Walls`. Prop besar yang menghalangi jalan sebaiknya juga diberi tile `Walls` di bawahnya.
-- **Objek**: drag prefab ke scene di bawah `Actors/…`:
-  - `Prefabs/Props/Jar` → isi `Recipe` di Inspector
-  - `Prefabs/Props/IngredientPickup` → isi `Ingredient`
-  - `Prefabs/Enemies/Golem_Placeholder` → isi `Patrol Points` (posisi dunia)
-  - `Prefabs/Level/Lantern` → di `Lights/` (punya `Extinguishable`: bisa dipadamkan slime bertubuh dingin)
-  - `Prefabs/Level/Door` → pivot di tepi bawah tile, taruh di `(x + 0.5, y)`. `Starts Open`, `Noise Radius`. Tertutup = menghalangi slime, penjaga, dan pandangan; jalur penjaga otomatis memutar. Tidak menutup selama ada yang berdiri di ambangnya.
-  - `Prefabs/Level/Lever` → isi `Doors`. E = toggle semua pintu di daftar, bunyinya (`Noise Radius`) memancing penjaga.
-  - `Prefabs/Level/PressurePlate` / `PressurePlate_Heavy` → isi `Doors`. Pintu terbuka selama ada potongan (termasuk yang nyamar) di atas pelat. Pintu terbuka = tuas XOR pelat, jadi pelat juga bisa menutup pintu yang `Starts Open`.
-  - `Prefabs/Level/Crawlspace` → satu tile di celah tembok. Slime lewat, penjaga tidak, tubuh berat tidak muat.
-  - Gambar props masih placeholder (`Art/Sprites/Props/door_|lever_|plate_|plate_heavy_|crawlspace_placeholder.png`, frame 0/1). Ganti PNG dengan nama dan urutan frame sama; prefab ikut. Buat ulang: **GooNapped > Placeholder > Props level**.
-- **Exit**: objek dengan `BoxCollider2D` (Is Trigger) + `LevelExit`.
-- **Sistem**: satu `Prefabs/Systems/LevelSystems` per level. Isi `LevelGoal > Next Scene` (nama scene berikutnya, harus ada di Build Settings).
-- **Kamera**: `Main Camera` punya `CameraFollow`. Isi `Bounds` dengan collider yang menutup seluruh level (`CameraBounds`).
-- **Posisi aktor**: pivot sprite = tengah-bawah cell. Supaya kaki di tengah tile, taruh di `(x + 0.5, y + 0.28)`.
-- **Tile baru**: sprite tile wajib di `Art/Sprites/Tiles/` (pivot otomatis tengah). Jangan geser tile lewat transform/anchor (ikut menggeser collider).
+- **Lantai/tembok**: Tile Palette, gambar di Tilemap `Grid/Floor` dan `Grid/Walls`. Penjaga mencari jalan dari dua Tilemap ini.
+- **Objek** (drag prefab):
+  - `Prefabs/Props/Jar` → isi `Recipe` dengan aset `Friend_*`. `Alarm Delay` / `Wrong Alarm Delay` (detik), `Glow Material` = `Vfx_Particle`.
+  - `Prefabs/Props/IngredientPickup` → isi `Ingredient` dengan aset `Essence_*`.
+  - `Prefabs/Level/Vent` / `Vent_Exit` → `Network` (lubang dengan nama sama tersambung; exit default jaringan "Exit" supaya tidak bisa dicapai lewat jalan pintas), `Exits Level`, `Saves Checkpoint`.
+  - `Prefabs/Level/HidingSpot_Barrel` / `HidingSpot_Crate` → `Capacity`, `Stare Fill Time` (detik ditatap sampai diperiksa), `Crowd Multiplier` (berdua lebih cepat).
+  - Lumpur / genangan: objek trigger + `MudZone` (`Muddy Seconds`) / `WashZone`.
+  - `Prefabs/Enemies/*_Placeholder` → `Patrol Points`.
+  - `Door`, `Lever`, `PressurePlate`, `Crawlspace`, `Lantern`: seperti v1 (pelat juga ditekan teman yang menunggu).
+  - Sprite props masih placeholder (`Art/Sprites/Props/*_placeholder.png`). Buat ulang: **GooNapped > Placeholder > Props level**.
+- **Sistem**: satu `Prefabs/Systems/LevelSystems` per level, isi `LevelGoal > Next Scene`.
+- **Posisi aktor**: `(x + 0.5, y + 0.28)`. Props 1 tile: `(x + 0.5, y)`.
 
 ### Uji
-Play di scene level. HUD kiri atas menampilkan tubuh, potongan, resep toples terdekat, bar curiga penjaga, dan peringatan "kena cahaya".
+Play di scene level. HUD: ukuran (massa), aura, ciri lain, status (LIT, GLOWING, SMELLY, MUDDY, SLOW, NOISY, HIDDEN), kartu toples (ukuran + aura cocok?), status teman, alarm.
 
 ---
 
-## 2. Bahan baru
-1. Project: klik kanan `Assets/_Game/Data/Ingredients/` > **Create > GooNapped > Bahan (Ingredient)**, nama `Ingredient_<Nama>`.
-2. Isi:
-   - **Traits**: jenis + nilai (contoh: `Temperature = panas`, `Color = merah`). Ciri sejenis dari bahan sebelumnya tertimpa.
-   - **Speed Multiplier**: 1 normal, 0.6 lambat.
-   - **Emits Light**: menyala (terlihat lebih jauh, kena aturan cahaya, bisa jadi umpan).
-   - **Smell Radius**: bau (meninggalkan jejak, dicium Anjing Lendir).
-   - **Extinguishes**: memadamkan nyala bahan yang dimakan sebelumnya (Garam Beku).
-   - **Step Noise Radius**: langkah berisik. Tiap mendarat, penjaga dalam radius ini datang memeriksa (tembus tembok). Serbuk Batu = 2.2, lainnya 0.
-   - **Body Material**: palet `Slime_*` saat bahan ini menentukan warna (kosong = warna tidak berubah).
-3. Taruh di level lewat `IngredientPickup`, atau tambah huruf baru di dictionary `ingredients` di `LevelBlockout`.
+## 2. Esens baru
+1. `Assets/_Game/Data/Ingredients/` > **Create > GooNapped > Bahan (Ingredient)**, nama `Essence_<Nama>`, `Display Name` bahasa Inggris.
+2. Isi: **Traits** (Warna = aura, wajib; ciri lain = efek), `Speed Multiplier`, `Emits Light`, `Smell Radius`, `Extinguishes`, `Step Noise Radius`, `Sight Multiplier` (0.7 = sulit terlihat), `Body Material` (palet aura).
+3. Nama aura di layar diambil dari warna (`TraitNames`): abu Stone, hijau Glow, biru Dew, merah Ember, kuning Sulfur, putih Frost, ungu Shade.
 
-## 3. Resep teman
-1. `Assets/_Game/Data/Recipes/` > **Create > GooNapped > Resep teman (Recipe)**, nama `Recipe_<NamaTeman>`.
-2. Isi nama teman, 2–3 Traits, material palet teman.
-3. Pasang di `Jar > Recipe`.
+## 3. Teman (toples)
+1. `Assets/_Game/Data/Recipes/` > **Create > GooNapped > Teman (Friend)**, nama `Friend_<Nama>`.
+2. Isi: nama (Inggris), **tepat 1 Trait Warna** (aura), `Size` 1 (kecil) atau 2 (besar), `Power` (kekuatan setelah selamat), `Jar Line` (kalimat saat didekati), material palet.
+3. Tiruan butuh massa = `Size` (pemain massa `Size + 1`), esens terakhir = aura.
 
-## 4. Palet warna slime per bahan (desainer)
-Material `Art/Materials/Slime_*` memakai shader `GooNapped/PixelToonLit` dengan `Use Gradient` aktif:
-- `Band 1..4` = warna dari sisi gelap ke terang (geser hue: bayangan agak biru, terang agak kuning).
-- `Outline` = garis tepi.
-- `Min Light` = terang minimum di tempat gelap (makin kecil makin tenggelam).
+Kalimat teman di markas: `Hub Lines` (bergantian tiap diajak bicara, bahasa Inggris). Kalimat saat toples didekati: `Jar Line`.
 
-Bahan baru dengan warna baru: duplikat `Slime_Normal.mat`, ubah band, pasang di `Body Material` bahan.
+## 4. Palet warna slime per aura (desainer)
+Material `Art/Materials/Slime_*` (shader `GooNapped/PixelToonLit`): `Band 1..4` gelap ke terang, `Outline`, `Min Light`.
+Slime_Embun, Slime_Belerang, Slime_Beku, Slime_Bayang, Slime_Pendar dibuat AI sebagai placeholder: silakan diganti.
 
 ## 5. Menyetel penjaga
-Inspector `Guard` (Golem dan Familiar memakai komponen yang sama):
+Inspector `Guard`:
 
 | Bagian | Field penting |
 |---|---|
-| Jenis | `Guard Name`, `Needs Light To See` (buta di gelap), `Heat Sight Range` (lihat panas dari jauh), `Hover Height` |
-| Penciuman | `Smell Range` (0 = tidak mencium), `Smell Rate` |
+| Jenis | `Guard Name` (Inggris, untuk pesan "Caught by ..."), `Needs Light To See`, `Heat Sight Range`, `Hover Height` |
+| Penciuman | `Smell Range`, `Smell Rate` (jejak bau dan lumpur) |
 | Patroli | `Patrol Points`, `Speed`, `Wait At Point` |
-| Penglihatan | `View Range`, `View Angle` (lebar kerucut), `Awareness Radius` (radius sadar) |
+| Penglihatan | `View Range`, `View Angle`, `Awareness Radius` |
 | Cahaya | `Light Sight Range`, `Lit Threshold`, `Light Rate` |
-| Curiga | `Fill Time` (detik sampai ketahuan), `Decay Per Second`, `Search Threshold`, `Look Around Time` |
+| Curiga | `Fill Time`, `Decay Per Second`, `Search Threshold`, `Look Around Time`, `Transform Suspicion` (lonjakan saat melihat transformasi), `Alarm Fill Multiplier` |
+| Mengejar | `Chase Speed Multiplier` (Golem 1.8, Familiar 1.5, Anjing 1.45), `Lose Sight Time`, `Catch Distance`, `Call Radius` (teriakan) |
+| Perilaku khusus | `Stationary` + `Stationary Catches` (diam: tangkap atau alarm), `Facing`, `Sweep Angle`/`Sweep Speed`, `Hearing Multiplier`, `Inspects Jars`, `Hunt Interval`/`Hunt Error` |
+| Tempat sembunyi | `Stare Range`, `Inspects Hiding Spots` (pemeriksa), `Inspect Radius`, `Inspect Time`, `Reinspect Delay` |
 
 ## 6. Menyetel rasa gerak slime
 Prefab `Characters/Slime_Player`:
-- **`SlimeMotor`**: `Base Speed`, waktu tiap fase, `Slide Share` (besar = lebih merayap), `Hop Height`, `Air Steer`.
+- **`SlimeMotor`**: `Base Speed` (2.55 = rata-rata ±2.2 unit/dtk), `Ground Speed Share`, `Velocity Smoothing`, waktu fase (`Crouch`, `Hop`, `Settle`, `Stop`), `Hop Arc` (tinggi busur), `Steer In Air`, squash/stretch, `Breathe`.
 - **`SlimeJelly`**: `Stiffness`, `Damping`, `Max Stretch`.
-- **`SlimePiece`**: `Eat Duration`, `Disguise Time`, `Reveal Time`, sprite samaran (`Disguise Sprite`).
-- **`SlimeTraitFx`**: efek ciri di badan (panas = uap naik, dingin = serpih es, bau = garis bau, berkilau = kerlip, berat = debu saat mendarat). Warna dan jumlah partikel per detik bisa diubah di Inspector. Material `Art/Materials/Vfx_Particle` (tanpa cahaya). Placeholder sampai ada VFX dari tim.
-
-Jeda aksi (anti spam) ada di `LevelSystems > PlayerBrain`: `Switch Cooldown`, `Split Windup`, `Split Cooldown`, `Merge Lock`, dan skill gumpalan: `Throw Distance`, `Throw Noise Radius`, `Throw Cooldown`.
+- **`SlimePiece`**: `Sprite Move Frames` (nyalakan setelah sprite final dirender), `Eat Duration`, `Enter Time` / `Exit Time` (tempat sembunyi).
+- Massa mengubah kecepatan/ukuran/jarak terlihat lewat tabel di `SlimeBodyState` (`MassSpeed`, `MassScale`, `MassSight`).
+- `LevelSystems > PlayerBrain`: `Max Pieces` (2), jeda aksi, `Hide Radius`, `Friend Join Radius`.
 
 ## 7. Tampilan UI (desainer)
 - **HUD**: `Assets/_Game/UI/Hud.uss`. Ubah warna, ukuran font, padding, sudut panel di sini (format mirip CSS). Kelas penting: `.panel`, `.chip`, `.tag--light|glow|smell|slow|hidden`, `.recipe-card`, `.recipe-dot--ok|miss`, `.banner--win|fail`.

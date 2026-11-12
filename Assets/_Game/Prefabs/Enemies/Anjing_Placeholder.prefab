@@ -183,7 +183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93dfc8747e8089c40ae8236c1ff2610c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.GolemGuard
-  guardName: Anjing Lendir
+  guardName: Slime Hound
   needsLightToSee: 0
   heatSightRange: 0
   hoverHeight: 0
@@ -212,9 +212,17 @@ MonoBehaviour:
   lookAroundTime: 2.5
   lookAroundAngle: 75
   searchStopDistance: 0.8
-  baitIgnoreTime: 8
-  blockDistance: 0.75
-  blockedStare: 1.5
+  transformSuspicion: 0.5
+  alarmFillMultiplier: 0.6
+  chaseSpeedMultiplier: 1.45
+  loseSightTime: 2.5
+  catchDistance: 0.3
+  callRadius: 7
+  stareRange: 2.6
+  inspectsHidingSpots: 0
+  inspectRadius: 1.3
+  inspectTime: 0.9
+  reinspectDelay: 12
   coneMaterial: {fileID: 2100000, guid: 9e729fbbf04433041b2cfa5b24069e88, type: 2}
   coneSortingOrder: -50
 --- !u!114 &1298737971761557058

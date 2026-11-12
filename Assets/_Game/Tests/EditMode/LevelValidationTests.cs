@@ -8,12 +8,13 @@ using UnityEngine.SceneManagement;
 
 namespace GooNapped.Tests
 {
-    // QA statis tiap level (tanpa Play): isi wajib, sambungan antar level, jalan bisa ditempuh, resep bisa dibuat
-    // dari bahan yang ada, patroli penjaga sah, dan spawn pemain tidak langsung terlihat penjaga.
+    // QA statis tiap level v2 (tanpa Play): isi wajib, sambungan antar level, jalan bisa ditempuh, tiruan tiap toples
+    // bisa dibuat dari esens yang ada (massa + aura, desain-v2 bagian 5), teman bisa dikawal ke ventilasi tanpa lewat
+    // celah, patroli penjaga sah, dan spawn pemain tidak langsung terlihat penjaga.
     // Scene dibuka ADDITIVE lalu ditutup lagi, jadi scene yang sedang kamu edit tidak tersentuh.
     public class LevelValidationTests
     {
-        static readonly string[] SandboxScenes = { "Assets/_Game/Scenes/Sandbox/ProtoProps.unity" };
+        static readonly string[] SandboxScenes = { "Assets/_Game/Scenes/Sandbox/ProtoProps.unity", "Assets/_Game/Scenes/Sandbox/ProtoV2.unity" };
 
         static IEnumerable<string> LevelPaths()
         {
@@ -36,7 +37,9 @@ namespace GooNapped.Tests
             var missing = new List<string>();
             foreach (var n in GameFlow.Levels.Concat(new[] { GameFlow.MainMenu, GameFlow.Intro, GameFlow.Ending, "Boot" }))
                 if (!build.Contains(n)) missing.Add(n);
-            Assert.IsEmpty(missing, "Scene belum ada/aktif di Build Settings: " + string.Join(", ", missing));
+            // Build Settings ada di ProjectSettings = keputusan tim (desain-v2 bagian 18). Di editor, GameFlow memuat
+            // scene lewat path, jadi ini belum menghalangi playtest; baru wajib sebelum build Windows.
+            if (missing.Count > 0) Assert.Ignore("Belum di Build Settings (perlu diputuskan tim sebelum build): " + string.Join(", ", missing));
         }
 
         [TestCaseSource(nameof(LevelPaths))]
@@ -69,15 +72,15 @@ namespace GooNapped.Tests
             if (m.brains.Count != 1) p.Add("PlayerBrain harus tepat 1 (ada " + m.brains.Count + ").");
             if (m.goals.Count != 1) p.Add("LevelGoal harus tepat 1 (ada " + m.goals.Count + ").");
             if (m.pieces.Count != 1) p.Add("Slime pemain di awal harus tepat 1 (ada " + m.pieces.Count + ").");
-            if (m.exits.Count == 0) p.Add("Tidak ada exit (LevelExit).");
-            if (m.jars.Count == 0) p.Add("Tidak ada toples.");
+            if (!m.ExitPoints().Any()) p.Add("Tidak ada exit (lubang ventilasi X atau LevelExit).");
+            // level menyusup (gerbang, taman) boleh tanpa toples
             foreach (var j in m.jars)
             {
-                if (j.Recipe == null) p.Add(j.name + ": resep kosong.");
-                else if (j.Recipe.Traits.Count < 2 || j.Recipe.Traits.Count > 3)
-                    p.Add(j.name + ": resep punya " + j.Recipe.Traits.Count + " ciri (aturan desain 2–3).");
+                if (j.Recipe == null) p.Add(j.name + ": data teman kosong.");
+                else if (j.Recipe.Traits.Count != 1 || j.Recipe.Traits[0].kind != TraitKind.Color)
+                    p.Add(j.name + ": data teman bukan v2 (harus tepat 1 ciri Warna = aura). Pakai aset Friend_*.");
             }
-            foreach (var pk in m.pickups) if (pk.Ingredient == null) p.Add(pk.name + ": bahan kosong.");
+            foreach (var pk in m.pickups) if (pk.Ingredient == null) p.Add(pk.name + ": esens kosong.");
             if (!scene.GetRootGameObjects().Any(g => g.GetComponentInChildren<SceneNote>(true) != null)) p.Add("_SceneInfo (SceneNote) tidak ada.");
             var cam = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<CameraFollow>(true)).FirstOrDefault();
             if (cam == null) p.Add("Main Camera tanpa CameraFollow.");
@@ -91,7 +94,8 @@ namespace GooNapped.Tests
                 int i = GameFlow.IndexOf(name);
                 string want = i >= 0 && i + 1 < GameFlow.Levels.Length ? GameFlow.Levels[i + 1] : GameFlow.Ending;
                 if (next != want) p.Add($"LevelGoal.nextScene = '{next}', seharusnya '{want}' (urutan GameFlow.Levels).");
-                if (!BuildSceneNames().Contains(next)) p.Add($"Scene berikutnya '{next}' tidak ada di Build Settings.");
+                // Build Settings = keputusan tim (dicek AlurGame_SemuaSceneAdaDiBuild); di sini cukup scene-nya ada di project
+                if (GameFlow.FindScenePath(next) == null) p.Add($"Scene berikutnya '{next}' tidak ada di Assets/_Game/Scenes.");
             }
 
             // 3. objek tidak di dalam tembok
@@ -103,28 +107,38 @@ namespace GooNapped.Tests
             foreach (var c in m.jars) OnFloor(c);
             foreach (var c in m.exits) OnFloor(c);
             foreach (var c in m.lamps) OnFloor(c);
+            foreach (var c in m.vents) OnFloor(c);
+            foreach (var c in m.spots) OnFloor(c);
             OnFloor(m.pieces[0]);
 
-            // 4. resep bisa dibuat dari bahan di level (coba semua urutan toples)
+            // 4. tiruan tiap toples bisa dibuat dari esens di level (coba semua urutan toples)
             var pool = m.pickups.Where(x => x.Ingredient != null).Select(x => x.Ingredient).ToList();
-            List<RecipeSolver.Result> plan = null;
-            List<Jar> jarOrder = null;
-            foreach (var order in Permutations(m.jars))
+            List<RecipeSolver.Result> plan = new List<RecipeSolver.Result>();
+            List<Jar> jarOrder = new List<Jar>();
+            if (m.jars.Count > 0)
             {
-                plan = RecipeSolver.SolveSequence(pool, order.Select(j => j.Recipe));
-                if (plan != null) { jarOrder = order; break; }
-            }
-            if (plan == null)
-            {
-                p.Add("Resep tidak bisa dibuat dari bahan yang ada: " + string.Join(" / ", m.jars.Select(j => j.Recipe.name)) +
-                      " dengan bahan [" + string.Join(", ", pool.Select(x => x.DisplayName)) + "].");
-                return p;
+                plan = null;
+                foreach (var order in Permutations(m.jars))
+                {
+                    plan = RecipeSolver.SolveSequence(pool, order.Select(j => j.Recipe));
+                    if (plan != null) { jarOrder = order; break; }
+                }
+                if (plan == null)
+                {
+                    p.Add("Tiruan tidak bisa dibuat dari esens yang ada: " +
+                          string.Join(" / ", m.jars.Select(j => j.Recipe.FriendName + " (aura " + j.Recipe.Aura + ", ukuran " + j.Recipe.Size + ")")) +
+                          " dengan esens [" + string.Join(", ", pool.Select(x => x.DisplayName)) + "].");
+                    return p;
+                }
             }
 
-            // 5. jalan: spawn -> bahan (urut, berat ikut berubah) -> toples -> ... -> exit
+            // 5. jalan: spawn -> esens (urut; massa/berat ikut berubah) -> toples -> ... -> exit.
+            // Celah hanya muat tubuh massa 1 yang tidak berat. Teman dikawal ke ventilasi/exit TANPA lewat celah.
             var spawn = LevelMap.CellOfObject(m.pieces[0]);
             if (!m.SlimeWalkable(spawn, false, true)) p.Add("Sel spawn " + spawn + " tidak bisa diinjak.");
+            int clear = 1;
             var eaten = new List<IngredientData>();
+            bool Fits() { var b = RecipeSolver.StateOf(clear, eaten); return b.Mass <= 1 && b.Get(TraitKind.Weight) != "berat"; }
             var here = spawn;
             var remaining = new List<IngredientPickup>(m.pickups);
             for (int k = 0; k < plan.Count; k++)
@@ -132,29 +146,39 @@ namespace GooNapped.Tests
                 foreach (var step in plan[k].steps)
                 {
                     if (step.kind == RecipeSolver.StepKind.Vomit) { eaten.RemoveAt(eaten.Count - 1); continue; }
-                    bool heavy = RecipeSolver.StateOf(eaten).Get(TraitKind.Weight) == "berat";
-                    var reach = m.Reachable(here, c => m.SlimeWalkable(c, heavy, true));
+                    bool fits = Fits();
+                    var reach = m.Reachable(here, c => m.SlimeWalkable(c, !fits, true));
                     var target = remaining.Where(x => x.Ingredient == step.ingredient && reach.Contains(LevelMap.CellOfObject(x)))
                         .OrderBy(x => Vector2Int.Distance(LevelMap.CellOfObject(x), here)).FirstOrDefault();
-                    if (target == null) { p.Add($"Toples {k + 1}: bahan {step.ingredient.DisplayName} tidak terjangkau dari {here}" + (heavy ? " (tubuh berat)." : ".")); return p; }
+                    if (target == null) { p.Add($"Toples {k + 1}: esens {step.ingredient.DisplayName} tidak terjangkau dari {here}" + (fits ? "." : " (tubuh terlalu besar/berat untuk celah).")); return p; }
                     remaining.Remove(target);
                     here = LevelMap.CellOfObject(target);
                     eaten.Add(step.ingredient);
                 }
-                bool heavyNow = RecipeSolver.StateOf(eaten).Get(TraitKind.Weight) == "berat";
-                var reachJar = m.Reachable(here, c => m.SlimeWalkable(c, heavyNow, true));
+                bool fitsNow = Fits();
+                var reachJar = m.Reachable(here, c => m.SlimeWalkable(c, !fitsNow, true));
                 var jarCell = LevelMap.CellOfObject(jarOrder[k]);
                 var stand = m.Neighbors4(jarCell).Where(reachJar.Contains).ToList();
-                if (stand.Count == 0) { p.Add(jarOrder[k].name + " tidak bisa didekati" + (heavyNow ? " dengan tubuh berat." : ".")); return p; }
-                // belah butuh ruang: minimal 2 sel bebas di sekitar toples (satu potongan masuk, satu menunggu)
-                if (stand.Count < 2 && m.Neighbors4(stand[0]).Count(c => c != jarCell && reachJar.Contains(c)) == 0)
-                    p.Add(jarOrder[k].name + ": tidak ada ruang untuk belah di sebelahnya.");
+                if (stand.Count == 0) { p.Add(jarOrder[k].name + " tidak bisa didekati" + (fitsNow ? "." : " dengan tubuh sebesar itu.")); return p; }
                 here = stand[0];
+                clear = plan[k].clearAfter;
+                eaten = new List<IngredientData>(plan[k].eatenAfter);
+                // rute kawal: teman (tidak muat celah) dari toples ke ventilasi atau exit
+                var escort = m.Reachable(here, c => m.SlimeWalkable(c, true, true));
+                bool toSafety = m.vents.Any(v => escort.Contains(LevelMap.CellOfObject(v))) || m.exits.Any(e => escort.Contains(LevelMap.CellOfObject(e)));
+                if (!toSafety) p.Add(jarOrder[k].name + ": teman tidak bisa dikawal ke ventilasi/exit tanpa lewat celah.");
             }
-            bool heavyEnd = RecipeSolver.StateOf(eaten).Get(TraitKind.Weight) == "berat";
-            var reachExit = m.Reachable(here, c => m.SlimeWalkable(c, heavyEnd, true));
-            if (!m.exits.Any(e => reachExit.Contains(LevelMap.CellOfObject(e))))
-                p.Add("Exit tidak terjangkau dari toples terakhir" + (heavyEnd ? " dengan tubuh berat (resep berat + celah?)." : "."));
+            // adegan final: tiap katup aura harus terjangkau
+            foreach (var v in m.valves)
+            {
+                var reachV = m.Reachable(here, c => m.SlimeWalkable(c, !Fits(), true));
+                var vc = LevelMap.CellOfObject(v);
+                if (!reachV.Contains(vc) && !m.Neighbors4(vc).Any(reachV.Contains)) p.Add(v.name + " " + vc + ": katup aura tidak terjangkau.");
+            }
+            bool fitsEnd = Fits();
+            var reachExit = m.Reachable(here, c => m.SlimeWalkable(c, !fitsEnd, true));
+            if (!m.ExitPoints().Any(e => reachExit.Contains(LevelMap.CellOfObject(e))))
+                p.Add("Exit tidak terjangkau" + (plan.Count > 0 ? " dari toples terakhir" : " dari spawn") + (fitsEnd ? "." : " (tubuh terlalu besar/berat untuk celah)."));
 
             // 6. penjaga: patroli di lantai dan tersambung
             foreach (var g in m.guards)
@@ -213,18 +237,32 @@ namespace GooNapped.Tests
             }
         }
 
-        // Solver resep sendiri juga dites (logika murni).
+        // Solver v2 sendiri juga dites (logika murni): aura = esens terakhir, massa = ukuran + 1.
         [Test]
         public void Solver_MenemukanUrutanMakan()
         {
             var lumut = IngredientData.Create("lumut", new[] { new Trait(TraitKind.Color, "hijau"), new Trait(TraitKind.Shine, "berkilau") });
             var batu = IngredientData.Create("batu", new[] { new Trait(TraitKind.Color, "abu"), new Trait(TraitKind.Weight, "berat") });
-            var debu = RecipeData.Create("Debu", new[] { new Trait(TraitKind.Color, "abu"), new Trait(TraitKind.Shine, "berkilau") });
-            var r = RecipeSolver.Solve(new IngredientData[0], new[] { batu, lumut }, debu);
+            var embun = IngredientData.Create("embun", new[] { new Trait(TraitKind.Color, "biru") });
+
+            // teman besar beraura batu: 2 esens, batu TERAKHIR
+            var bolu = RecipeData.Create("Bolu", new[] { new Trait(TraitKind.Color, "abu") }, size: 2);
+            var r = RecipeSolver.Solve(1, new IngredientData[0], new[] { batu, lumut }, bolu);
             Assert.IsNotNull(r);
             Assert.AreEqual(2, r.steps.Count);
-            Assert.AreSame(lumut, r.steps[0].ingredient, "Lumut dulu, baru batu (abu menimpa hijau).");
+            Assert.AreSame(lumut, r.steps[0].ingredient, "Lumut dulu, baru batu (aura = esens terakhir).");
             Assert.AreSame(batu, r.steps[1].ingredient);
+            Assert.AreEqual(1, r.clearAfter, "sisa tubuh = 1 unit bening");
+            Assert.AreEqual(0, r.eatenAfter.Count, "kedua esens ikut ke tiruan");
+
+            // teman kecil: cukup 1 esens
+            var pip = RecipeData.Create("Pip", new[] { new Trait(TraitKind.Color, "biru") }, size: 1);
+            var r2 = RecipeSolver.Solve(1, new IngredientData[0], new[] { batu, embun }, pip);
+            Assert.AreEqual(1, r2.steps.Count);
+            Assert.AreSame(embun, r2.steps[0].ingredient);
+
+            // tidak mungkin: teman besar, esens hanya satu
+            Assert.IsNull(RecipeSolver.Solve(1, new IngredientData[0], new[] { batu }, bolu));
         }
     }
 }

@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d888777b70d839a4bbf9782db94ee0a8, type: 3}
-  m_Name: Ingredient_GaramBeku
+  m_Name: Essence_Beku
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.IngredientData
-  id: garambeku
-  displayName: Garam Beku
+  id: beku
+  displayName: Frost Essence
   traits:
   - kind: 0
     value: putih
@@ -23,5 +23,7 @@ MonoBehaviour:
   emitsLight: 0
   smellRadius: 0
   extinguishes: 1
-  bodyMaterial: {fileID: 0}
+  stepNoiseRadius: 0
+  sightMultiplier: 1
+  bodyMaterial: {fileID: 2100000, guid: e35c66af44975394aa89369a4b674894, type: 2}
   placeholderTint: {r: 0.85, g: 0.95, b: 1, a: 1}

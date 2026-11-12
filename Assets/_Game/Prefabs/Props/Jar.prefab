@@ -352,3 +352,7 @@ MonoBehaviour:
   recipe: {fileID: 0}
   friendPrefab: {fileID: 4093739866988764209, guid: 65080ea22715dad4abc45ffab50586a7, type: 3}
   contentRenderer: {fileID: 541168582906412882}
+  alarmDelay: 90
+  wrongAlarmDelay: 30
+  glowMaterial: {fileID: 2100000, guid: a23a969a9a35ac045a70385bd6b0ab06, type: 2}
+  glowAlpha: 0.5

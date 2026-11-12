@@ -11,9 +11,9 @@ using Object = UnityEngine.Object;
 namespace GooNapped.Tests
 {
     // Playtest otomatis (Play mode, scene asli, gerak & collision asli):
-    //   Bot_MenyelesaikanLevel : penjaga dimatikan, bot memainkan alur lengkap (makan sesuai resep -> belah -> Shift ->
-    //                            tukar -> telan -> exit) lewat API yang sama dengan tombol pemain. Membuktikan level
-    //                            bisa diselesaikan dan tidak ada lorong yang menyangkut badan slime.
+    //   Bot_MenyelesaikanLevel : penjaga dimatikan, bot memainkan alur v2 lengkap (makan esens sesuai solver -> belah ke
+    //                            toples -> F ajak teman -> bawa ke ventilasi exit) lewat API yang sama dengan tombol
+    //                            pemain. Membuktikan level bisa diselesaikan dan tidak ada lorong yang menyangkut badan.
     //   Penjaga_PatroliJalan   : pemain diam di spawn 40 detik game: tidak ketahuan, dan tiap penjaga sampai ke semua
     //                            titik patrolinya (pathfinding tidak macet).
     //   Alur scene cerita/menu : Boot -> MainMenu, Intro -> level pertama, Ending -> MainMenu.
@@ -31,17 +31,30 @@ namespace GooNapped.Tests
         private bool hadUnlock;
         private string failure;
 
+        const string PowersKey = "gn_powers";
+        const string RescuedKey = "gn_rescued";
+        private string savedRescued;
+        private bool hadRescued;
+        private string savedPowers;
+        private bool hadPowers;
+
         [OneTimeSetUp]
         public void SaveProgress()
         {
             hadUnlock = PlayerPrefs.HasKey(UnlockKey);
             savedUnlock = PlayerPrefs.GetInt(UnlockKey, 0);
+            hadPowers = PlayerPrefs.HasKey(PowersKey);
+            savedPowers = PlayerPrefs.GetString(PowersKey, "");
+            hadRescued = PlayerPrefs.HasKey(RescuedKey);
+            savedRescued = PlayerPrefs.GetString(RescuedKey, "");
         }
 
         [OneTimeTearDown]
         public void RestoreProgress()
         {
             if (hadUnlock) PlayerPrefs.SetInt(UnlockKey, savedUnlock); else PlayerPrefs.DeleteKey(UnlockKey);
+            if (hadPowers) PlayerPrefs.SetString(PowersKey, savedPowers); else PlayerPrefs.DeleteKey(PowersKey);
+            if (hadRescued) PlayerPrefs.SetString(RescuedKey, savedRescued); else PlayerPrefs.DeleteKey(RescuedKey);
             PlayerPrefs.Save();
         }
 
@@ -62,7 +75,7 @@ namespace GooNapped.Tests
 
         static IEnumerator Load(string scene)
         {
-            SceneManager.LoadScene(scene);
+            GameFlow.Load(scene);   // di editor juga memuat scene di luar Build Settings (sandbox, level v2 baru)
             float t = 0f;
             while (SceneManager.GetActiveScene().name != scene && t < 15f) { t += Time.unscaledDeltaTime; yield return null; }
             Assert.AreEqual(scene, SceneManager.GetActiveScene().name, "Scene tidak termuat: " + scene);
@@ -70,15 +83,25 @@ namespace GooNapped.Tests
             yield return null;   // Start() semua objek sudah jalan
         }
 
+        // Dialog menghentikan waktu game: bot memajukannya supaya loop berbasis jam game tidak macet.
+        static void StoryNext() { if (StoryPlayer.IsPlaying) StoryPlayer.Next(); }
+
+        // Tunggu dalam jam game. Dialog yang muncul (menghentikan waktu game) dimajukan supaya tidak menunggu selamanya.
         static IEnumerator WaitGame(float seconds)
         {
             float end = Time.time + seconds;
-            while (Time.time < end) yield return null;
+            float guard = Time.realtimeSinceStartup + seconds / Mathf.Max(0.1f, Time.timeScale) + 30f;
+            while (Time.time < end && Time.realtimeSinceStartup < guard)
+            {
+                if (StoryPlayer.IsPlaying) StoryPlayer.Next();
+                yield return null;
+            }
         }
 
         static LevelMap Map() => LevelMap.From(SceneManager.GetActiveScene().GetRootGameObjects());
 
-        static bool Heavy(SlimePiece p) => p.Body.State.Get(TraitKind.Weight) == "berat";
+        // Tidak muat celah: tubuh lebih dari massa 1, atau berat (desain-v2 bagian 5).
+        static bool Heavy(SlimePiece p) => p.Body.State.Mass > 1 || p.Body.State.Get(TraitKind.Weight) == "berat";
 
         static bool InRange(SlimePiece a, Component target, float r)
         {
@@ -139,7 +162,8 @@ namespace GooNapped.Tests
                     Assert.IsNotNull(target, "Bahan " + step.ingredient.DisplayName + " tidak ada di level.");
                     yield return Walk(brain, LevelMap.CellOfObject(target), 0.3f, "ke " + target.name);
                     if (failure != null) Assert.Fail(failure);
-                    Assert.AreSame(target, a.FindPickup(), $"Berdiri di {target.name}, tapi bahan terdekat yang termakan berbeda (bahan terlalu berdempetan?).");
+                    yield return new WaitForFixedUpdate();   // posisi collider ikut langkah fisika sebelum OverlapCircle
+                    Assert.AreSame(target, a.FindPickup(), $"Berdiri di {target.name}, tapi bahan terdekat yang termakan berbeda (bahan terlalu berdempetan?). Jarak pusat slime ke bahan {Vector2.Distance(a.Center, target.transform.position):F2}, slime {a.Center}, bahan {(Vector2)target.transform.position}, lompat {a.Motor.IsHopping}.");
                     int before = a.Body.State.Eaten.Count;
                     Assert.IsTrue(brain.Interact(), "E di depan " + target.name + " tidak melakukan apa-apa. Pesan: " + brain.Message);
                     Assert.AreEqual(before + 1, a.Body.State.Eaten.Count, "Bahan tidak termakan. Pesan: " + brain.Message);
@@ -147,39 +171,72 @@ namespace GooNapped.Tests
                     yield return WaitGame(1f);
                 }
 
-                // belah, Shift ke potongan baru, potongan baru masuk toples, potongan lama menelan teman
+                // v2: Space di depan toples = membelah langsung ke dalam toples, lalu F mengajak teman ikut
                 var carrier = brain.Active;
                 yield return WalkToJar(brain, jar);
                 if (failure != null) Assert.Fail(failure);
-                yield return Split(brain);
-                if (failure != null) Assert.Fail(failure);
-                brain.SwitchNext();
-                var decoy = brain.Active;
-                Assert.AreNotSame(carrier, decoy, "Shift tidak pindah ke potongan baru.");
-                yield return WalkToJar(brain, jar);
-                if (failure != null) Assert.Fail(failure);
-                Assert.IsTrue(brain.Interact(), "E di depan toples tidak menukar. Pesan: " + brain.Message);
-                Assert.IsFalse(jar.HasFriend, "Toples masih berisi teman setelah tukar. Pesan: " + brain.Message);
+                Assert.IsTrue(brain.SplitOrMerge(), "Space di depan toples tidak memasukkan tiruan. Pesan: " + brain.Message);
+                yield return WaitGame(1.2f);
+                Assert.IsFalse(jar.HasFriend, "Toples masih berisi teman setelah tiruan masuk. Pesan: " + brain.Message);
                 Assert.AreEqual(0, jar.DecoyMismatch, "Tiruan tidak sempurna (solver dan game beda hitung).");
-                Assert.AreSame(carrier, brain.Active, "Setelah tukar, kendali tidak kembali ke potongan pembawa.");
-                route.Add("tukar " + jar.name);
-                yield return WaitGame(0.6f);
+                Assert.AreSame(carrier, brain.Active, "Kendali pindah setelah tiruan masuk toples.");
+                route.Add("tiruan " + jar.name);
 
                 var friend = Object.FindObjectsByType<FriendSlime>(FindObjectsSortMode.None)
                     .OrderBy(f => Vector2.Distance(f.transform.position, jar.transform.position)).FirstOrDefault();
-                Assert.IsNotNull(friend, "Teman tidak muncul setelah tukar.");
-                yield return WalkUntil(brain, LevelMap.CellOfObject(friend), () => InRange(brain.Active, friend, Interact), "ke teman");
-                if (failure != null) Assert.Fail(failure);
-                Assert.IsTrue(brain.Interact(), "E di depan teman tidak menelan. Pesan: " + brain.Message);
-                Assert.AreEqual(k + 1, brain.Active.Carried.Count, "Teman tidak terbawa.");
-                route.Add("telan");
+                Assert.IsNotNull(friend, "Teman tidak muncul setelah tiruan masuk.");
+                Assert.IsTrue(brain.Command(), "F tidak mengajak teman. Pesan: " + brain.Message);
+                Assert.AreEqual(FriendSlime.Mode.Following, friend.State, "Teman tidak mengikuti setelah F.");
+                route.Add("ajak " + friend.Name);
             }
 
-            var exit = Map().exits.OrderBy(e => Vector2.Distance(e.transform.position, brain.Active.Center)).First();
-            yield return WalkUntil(brain, LevelMap.CellOfObject(exit), () => goal.IsComplete, "ke exit");
-            if (failure != null) Assert.Fail(failure);
-            yield return WaitGame(0.5f);
-            Assert.IsTrue(goal.IsComplete, "Sampai exit tapi level tidak selesai.");
+            var endMap = Map();
+            var exitVent = endMap.vents.FirstOrDefault(v => v.ExitsLevel);
+            if (endMap.kingJars.Count > 0)
+            {
+                // adegan final: putar semua katup, toples raja terbuka, lalu Alkemis (dimatikan di test ini) disegel
+                foreach (var valve in endMap.valves.OrderBy(v => Vector2.Distance(v.transform.position, brain.Active.Center)))
+                {
+                    while (StoryPlayer.IsPlaying) { StoryPlayer.Next(); yield return null; }
+                    yield return WalkUntil(brain, LevelMap.CellOfObject(valve), () => InRange(brain.Active, valve, 1.0f), "ke " + valve.name);
+                    if (failure != null) Assert.Fail(failure);
+                    Assert.IsTrue(brain.Interact(), "E di katup tidak memutarnya. Pesan: " + brain.Message);
+                    yield return WaitGame(valve.TurnTime + 0.3f);
+                    Assert.IsTrue(valve.IsReversed, valve.name + " tidak terbalik.");
+                    route.Add("katup");
+                }
+                yield return WaitGame(0.3f);
+                Assert.IsTrue(KingJar.Instance != null && KingJar.Instance.IsOpen, "Semua katup terbalik tapi toples raja tidak terbuka.");
+                var boss = Object.FindObjectsByType<Guard>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault(g => g.IsBoss);
+                Assert.IsNotNull(boss, "Tidak ada Guard boss (Alkemis) di level final.");
+                KingJar.Instance.Seal(boss);
+                float until = Time.time + 20f;
+                while (!goal.IsComplete && Time.time < until) { if (StoryPlayer.IsPlaying) StoryPlayer.Next(); yield return null; }
+                Assert.IsTrue(goal.IsComplete, "Alkemis tersegel tapi level final tidak selesai.");
+                route.Add("segel");
+            }
+            else if (exitVent != null)
+            {
+                // v2: berdiri di lubang exit, tunggu teman merapat, lalu C (masuk). Teman ikut masuk = selamat.
+                yield return WalkUntil(brain, LevelMap.CellOfObject(exitVent), () => InRange(brain.Active, exitVent, 0.5f), "ke ventilasi exit");
+                if (failure != null) Assert.Fail(failure);
+                float until = Time.time + 6f;
+                while (Time.time < until && FriendSlime.All.Any(f => f != null && f.State == FriendSlime.Mode.Following &&
+                       Vector2.Distance(f.transform.position, brain.Active.transform.position) > 1.4f)) yield return null;
+                Assert.IsTrue(brain.ToggleHide(brain.Active), "C di lubang exit tidak masuk ventilasi. Pesan: " + brain.Message);
+                yield return WaitGame(1.5f);
+                string fs = string.Join("; ", FriendSlime.All.Where(f => f != null).Select(f => f.Name + " " + f.State + " @" + ((Vector2)f.transform.position).ToString("F1")));
+                Assert.IsTrue(goal.IsComplete, $"Masuk ventilasi exit tapi level tidak selesai (teman selamat {goal.Saved}/{goal.Required}). Pemain @{((Vector2)brain.Active.transform.position).ToString("F1")}. Teman: {fs}. Pesan: {brain.Message}");
+                route.Add("ventilasi exit");
+            }
+            else
+            {
+                var exit = endMap.exits.OrderBy(e => Vector2.Distance(e.transform.position, brain.Active.Center)).First();
+                yield return WalkUntil(brain, LevelMap.CellOfObject(exit), () => goal.IsComplete, "ke exit");
+                if (failure != null) Assert.Fail(failure);
+                yield return WaitGame(0.5f);
+                Assert.IsTrue(goal.IsComplete, "Sampai exit tapi level tidak selesai.");
+            }
             Debug.Log($"[QA] {level}: bot selesai dalam {Time.time - t0:F0} detik game (tanpa penjaga). Rute: {string.Join(" > ", route)}");
         }
 
@@ -233,7 +290,7 @@ namespace GooNapped.Tests
         {
             var a = brain.Active;
             float wake = Time.time + 2f;
-            while ((a.IsTransforming || a.IsEating) && Time.time < wake) yield return null;
+            while ((a.IsTransforming || a.IsEating) && Time.time < wake) { StoryNext(); yield return null; }
             var history = new List<string>();
             for (int attempt = 0; attempt < 3; attempt++)
             {
@@ -259,7 +316,7 @@ namespace GooNapped.Tests
                     {
                         if (done != null && done()) { a.Move(Vector2.zero); yield break; }
                         a.Move((wp - a.Center).normalized);
-                        yield return null;
+                        StoryNext(); yield return null;
                         float d = Vector2.Distance(a.Center, wp);
                         if (d < best - 0.03f) { best = d; since = 0f; } else since += Time.deltaTime;
                         if (since > 3f) { stuck = true; break; }
@@ -268,14 +325,14 @@ namespace GooNapped.Tests
                 }
                 a.Move(Vector2.zero);
                 float settle = Time.time + 1f;
-                while (a.Motor.IsHopping && Time.time < settle) { a.Move(Vector2.zero); yield return null; }
+                while (a.Motor.IsHopping && Time.time < settle) { a.Move(Vector2.zero); StoryNext(); yield return null; }
                 if (!stuck && (done == null || done())) yield break;
                 if (!stuck && done != null)
                 {
                     // sampai sel tujuan tapi belum dalam jangkauan: dekati pusat objek sedikit
                     float until = Time.time + 1.5f;
                     var center = LevelMap.CenterOf(goal);
-                    while (!done() && Time.time < until) { a.Move((center - a.Center).normalized * 0.6f); yield return null; }
+                    while (!done() && Time.time < until) { a.Move((center - a.Center).normalized * 0.6f); StoryNext(); yield return null; }
                     a.Move(Vector2.zero);
                     if (done()) yield break;
                     history.Add($"sampai {a.Center:F2} tapi belum dalam jangkauan");
@@ -293,19 +350,25 @@ namespace GooNapped.Tests
             var goal = Object.FindFirstObjectByType<LevelGoal>();
             var guards = Object.FindObjectsByType<Guard>(FindObjectsSortMode.None);
             if (guards.Length == 0) Assert.Pass("Tanpa penjaga.");
-            var reached = guards.ToDictionary(g => g, g => new bool[g.PatrolPoints.Count]);
+            // titik patroli awal disalin: GuardShift mengganti rute saat istirahat
+            var points = guards.ToDictionary(g => g, g => new List<Vector2>(g.PatrolPoints));
+            var reached = guards.ToDictionary(g => g, g => new bool[points[g].Count]);
+            // pemburu (Alkemis) memang mendatangi pemain yang diam: perburuan dimatikan, test ini hanya cek patroli + spawn
+            var huntField = typeof(Guard).GetField("huntInterval", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            foreach (var g in guards) huntField.SetValue(g, 0f);
             Time.timeScale = 4f;
-            float end = Time.time + 40f;
+            float end = Time.time + 100f;   // peta besar: rute golem terpanjang ~35 dtk sekali jalan
             while (Time.time < end && !goal.IsFailed)
             {
+                if (StoryPlayer.IsPlaying) StoryPlayer.Next();   // dialog menghentikan waktu game
                 foreach (var g in guards)
-                    for (int i = 0; i < g.PatrolPoints.Count; i++)
-                        if (Vector2.Distance(g.transform.position, g.PatrolPoints[i]) < 0.35f) reached[g][i] = true;
+                    for (int i = 0; i < points[g].Count; i++)
+                        if (Vector2.Distance(g.transform.position, points[g][i]) < 0.35f) reached[g][i] = true;
                 yield return null;
             }
             Assert.IsFalse(goal.IsFailed, level + ": pemain yang diam di spawn ketahuan (" + goal.FailReason + ").");
             var stuck = guards.Where(g => reached[g].Any(r => !r))
-                .Select(g => g.name + " tidak pernah sampai titik " + string.Join(",", Enumerable.Range(0, reached[g].Length).Where(i => !reached[g][i]).Select(i => g.PatrolPoints[i].ToString())))
+                .Select(g => g.name + " tidak pernah sampai titik " + string.Join(",", Enumerable.Range(0, reached[g].Length).Where(i => !reached[g][i]).Select(i => points[g][i].ToString())))
                 .ToList();
             Assert.IsEmpty(stuck, level + ": " + string.Join("; ", stuck));
         }
@@ -396,7 +459,7 @@ namespace GooNapped.Tests
                 var jc = LevelMap.CellOfObject(jars[k]);
                 stops.Add(map.Neighbors4(jc).First(c => map.SlimeWalkable(c, false, true)));
             }
-            stops.Add(LevelMap.CellOfObject(map.exits[0]));
+            stops.Add(LevelMap.CellOfObject(map.ExitPoints().First()));
             var route = new List<Vector2Int>();
             var cur = LevelMap.CellOfObject(map.pieces[0]);
             route.Add(cur);

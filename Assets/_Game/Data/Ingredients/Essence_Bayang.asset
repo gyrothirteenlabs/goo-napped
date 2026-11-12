@@ -10,17 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d888777b70d839a4bbf9782db94ee0a8, type: 3}
-  m_Name: Ingredient_MinyakBelerang
+  m_Name: Essence_Bayang
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.IngredientData
-  id: minyakbelerang
-  displayName: Minyak Belerang
+  id: bayang
+  displayName: Shade Essence
   traits:
   - kind: 0
-    value: kuning
-  - kind: 4
-    value: belerang
+    value: ungu
+  - kind: 3
+    value: redup
   speedMultiplier: 1
   emitsLight: 0
-  smellRadius: 3
-  bodyMaterial: {fileID: 0}
-  placeholderTint: {r: 0.9, g: 0.85, b: 0.3, a: 1}
+  smellRadius: 0
+  extinguishes: 0
+  stepNoiseRadius: 0
+  sightMultiplier: 0.7
+  bodyMaterial: {fileID: 2100000, guid: 8f2e9a90e70675e4c8b0f7a025c12db1, type: 2}
+  placeholderTint: {r: 0.55, g: 0.4, b: 0.85, a: 1}

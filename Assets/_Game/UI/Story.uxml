@@ -30,6 +30,6 @@
         </ui:VisualElement>
 
         <ui:Label name="next" text="v" class="next-indicator" />
-        <ui:Label name="skip-hint" text="E / Space: lanjut    Esc: lewati" class="skip-hint" />
+        <ui:Label name="skip-hint" text="E / Space: next    Esc: skip" class="skip-hint" />
     </ui:VisualElement>
 </ui:UXML>
