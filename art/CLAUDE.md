@@ -96,10 +96,10 @@ art/
 ## Art fondasi per area (AI, 13 Nov 2026, SEMENTARA)
 Keputusan user 13 Nov: desainer belum sempat, jadi AI membuat **fondasi** art level (opsi A) dengan acuan gaya gambar konsep lab gelap. Karakter tetap lewat Blender 3D seperti biasa.
 - Generator: `art/tools/gen_area_art.py` (python + pillow + numpy). Menggambar albedo + height map lalu menurunkan normal map. Pratinjau: `art/sprites/_preview_area_<area>.png`.
-- Output: `Sprites/Tiles/<Area>/` (lantai, tembok, dekor; tembok frame 0 = atas, 1.. = muka), `Sprites/Props/<Area>/` (tong, peti, obor, ventilasi, toples kaca, pintu sel, rak ramuan, pohon, semak).
+- Output: `Sprites/Tiles/<Area>/` (lantai, tembok, dekor; tembok frame 0 = atas, 1.. = muka), `Sprites/Props/<Area>/`. Area: Garden (taman kastil), Dungeon (penjara), Castle (kastil atas: kayu, plester anggur, list emas), Summit (puncak: panel mesin ungu). Props: tong, peti, obor, ventilasi, toples kaca, pintu sel, rak ramuan, pohon, semak, lemari, tudung saji, panci, tirai, vas, kandelabra, katup aura, toples raja, mesin penyadap.
 - Sprite lebih besar dari 48: akhiran nama `_c96` (contoh `prop_tree_c96.png`), importer memotong per 96 px.
-- Unity: `Editor/Level/AreaArt.cs`. `LevelBlockout.Config.area` = `garden` (L01–L03) atau `dungeon` (L04–L06, Markas). Tembok = RuleTile (atas/muka otomatis), dekor acak tetap di Grid/Decor, pohon di dalam massa pagar tanaman. Sprite props prefab: GooNapped > Art > Pasang sprite props fondasi.
-- Area kastil atas dan puncak belum. Desainer boleh menimpa file mana pun (nama file sama = langsung terpakai).
+- Unity: `Editor/Level/AreaArt.cs`. `LevelBlockout.Config.area` = `garden` (L01–L03), `dungeon` (L04–L06, Markas), `castle` (L07–L10), `summit` (L11). Tempat sembunyi berganti tampilan per area (taman = semak, kastil = lemari untuk P, tudung saji/panci/tirai untuk T). Tembok = RuleTile (atas/muka otomatis), dekor acak tetap di Grid/Decor, pohon di dalam massa pagar tanaman. Sprite props prefab: GooNapped > Art > Pasang sprite props fondasi.
+- Desainer boleh menimpa file mana pun (nama file sama = langsung terpakai). Karpet (`cst_carpet`), kandelabra, dan mesin penyadap sudah dibuat tapi belum ditaruh otomatis (untuk dekor level manual).
 
 ## Workflow
 - Modeling → skill `slime-model`. Render → template + add-on (model baru) atau `art/tools/render_slime.py` (slime_v06).

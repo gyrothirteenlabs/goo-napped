@@ -551,6 +551,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L07_GreatHall = new Config
         {
+            area = "castle",
             scene = "Assets/_Game/Scenes/Levels/V2/L07_GreatHall.unity",
             recipe = "Friend_Dad",
             recipe2 = null,
@@ -580,6 +581,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L08_Dining = new Config
         {
+            area = "castle",
             scene = "Assets/_Game/Scenes/Levels/V2/L08_Dining.unity",
             recipe = "Friend_Mom",
             recipe2 = null,
@@ -608,6 +610,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L09_Gallery = new Config
         {
+            area = "castle",
             scene = "Assets/_Game/Scenes/Levels/V2/L09_Gallery.unity",
             recipe = "Friend_Sis",
             recipe2 = null,
@@ -635,6 +638,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L10_Tower = new Config
         {
+            area = "castle",
             scene = "Assets/_Game/Scenes/Levels/V2/L10_Tower.unity",
             recipe = "Friend_Gran",
             recipe2 = null,
@@ -664,6 +668,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L11_Summit = new Config
         {
+            area = "summit",
             scene = "Assets/_Game/Scenes/Levels/V2/L11_Summit.unity",
             recipe = null,
             recipe2 = null,
@@ -1081,7 +1086,14 @@ namespace GooNapped.EditorTools
                         {
                             var root = PropRoot();
                             string pf = ch == 'P' ? "HidingSpot_Crate" : "HidingSpot_Barrel";
-                            Spawn(P + "Level/" + pf + ".prefab", root, new Vector3(x + 0.5f, y, 0f), pf);
+                            var hs = Spawn(P + "Level/" + pf + ".prefab", root, new Vector3(x + 0.5f, y, 0f), pf);
+                            // tampilan tempat sembunyi sesuai area (semak di taman, lemari/panci/tudung saji di kastil)
+                            var look = art != null ? AreaArt.HidingLook(art, ch == 'P', x, y) : null;
+                            if (look != null)
+                            {
+                                var vis = hs.GetComponentInChildren<SpriteRenderer>();
+                                if (vis != null) vis.sprite = look;
+                            }
                             break;
                         }
                         case '/':

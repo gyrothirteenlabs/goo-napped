@@ -25,6 +25,7 @@ namespace GooNapped.EditorTools
             public float decorChance;
             public Sprite mud, water;
             public Sprite[] trees;     // taman saja
+            public Sprite[] hideSmall, hideBig;   // tampilan tempat sembunyi T (muat 1) / P (muat 2); null = prefab bawaan
         }
 
         static readonly Dictionary<string, Set> cache = new Dictionary<string, Set>();
@@ -35,11 +36,27 @@ namespace GooNapped.EditorTools
             if (cache.TryGetValue(area, out var s) && s.wall != null) return s;
             s = area == "garden" ? Build("Garden", "gdn_grass", "gdn_hedge", "gdn_decor", 0.10f)
               : area == "dungeon" ? Build("Dungeon", "dng_floor", "dng_wall", "dng_decor", 0.12f)
+              : area == "castle" ? Build("Castle", "cst_floor", "cst_wall", "cst_decor", 0.08f)
+              : area == "summit" ? Build("Summit", "smt_floor", "smt_wall", "smt_decor", 0.10f)
               : null;
             if (s == null) { Debug.LogWarning("AreaArt: area '" + area + "' belum punya art fondasi."); return null; }
             var mw = Frames(Spr + "Tiles/Garden/env_mud_water.png");
             if (mw.Length >= 2) { s.mud = mw[0]; s.water = mw[1]; }
-            if (area == "garden") s.trees = Frames(Spr + "Props/Garden/prop_tree_c96.png");
+            if (area == "garden")
+            {
+                s.trees = Frames(Spr + "Props/Garden/prop_tree_c96.png");
+                var bush = Frames(Spr + "Props/Garden/prop_bush.png");
+                if (bush.Length > 0) s.hideSmall = s.hideBig = new[] { bush[0] };
+            }
+            if (area == "castle")
+            {
+                var small = new List<Sprite>();
+                small.AddRange(First(Spr + "Props/Castle/prop_cloche.png"));
+                small.AddRange(First(Spr + "Props/Castle/prop_pot.png"));
+                small.AddRange(First(Spr + "Props/Castle/prop_curtain.png"));
+                s.hideSmall = small.ToArray();
+                s.hideBig = First(Spr + "Props/Castle/prop_wardrobe.png");
+            }
             cache[area] = s;
             return s;
         }
@@ -117,6 +134,19 @@ namespace GooNapped.EditorTools
             }
         }
 
+        static Sprite[] First(string png)
+        {
+            var f = Frames(png);
+            return f.Length > 0 ? new[] { f[0] } : new Sprite[0];
+        }
+
+        public static Sprite HidingLook(Set s, bool big, int x, int y)
+        {
+            var arr = big ? s.hideBig : s.hideSmall;
+            if (arr == null || arr.Length == 0) return null;
+            return arr[Hash(x, y, 5) % arr.Length];
+        }
+
         public static TileBase FloorAt(Set s, int x, int y)
         {
             // variasi pertama paling sering supaya tidak ramai
@@ -167,7 +197,40 @@ namespace GooNapped.EditorTools
                 }
                 PrefabUtility.UnloadPrefabContents(root);
             }
+            // vas rapuh (utuh/pecah), katup aura (tertutup/terbalik), toples raja 96 px
+            var vase = Frames(Spr + "Props/Castle/prop_vase.png");
+            if (vase.Length >= 2) n += SetSprites(P + "Level/FragileVase.prefab", vase[0], new[] { ("brokenSprite", vase[1]) }, 1f);
+            var valve = Frames(Spr + "Props/Summit/prop_valve.png");
+            if (valve.Length >= 2) n += SetSprites(P + "Level/AuraValve.prefab", valve[0], new[] { ("closedSprite", valve[0]), ("reversedSprite", valve[1]) }, 1f);
+            var king = Frames(Spr + "Props/Summit/prop_kingjar_c96.png");
+            if (king.Length >= 1) n += SetSprites(P + "Level/KingJar.prefab", king[0], new (string, Sprite)[0], 1f);
             Debug.Log("AreaArt: sprite props fondasi dipasang di " + n + " prefab.");
+        }
+
+        // Sprite renderer pertama + field Sprite di komponen mana pun di prefab. visualScale: skala anak renderer (toples raja 96 px = 1).
+        static int SetSprites(string prefab, Sprite main, (string field, Sprite sprite)[] fields, float visualScale)
+        {
+            var root = PrefabUtility.LoadPrefabContents(prefab);
+            var sr = root.GetComponentInChildren<SpriteRenderer>(true);
+            if (sr != null)
+            {
+                sr.sprite = main;
+                if (sr.transform != root.transform) sr.transform.localScale = Vector3.one * visualScale;
+            }
+            foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                var so = new SerializedObject(mb);
+                bool changed = false;
+                foreach (var (field, sprite) in fields)
+                {
+                    var p = so.FindProperty(field);
+                    if (p != null && p.propertyType == SerializedPropertyType.ObjectReference) { p.objectReferenceValue = sprite; changed = true; }
+                }
+                if (changed) so.ApplyModifiedPropertiesWithoutUndo();
+            }
+            PrefabUtility.SaveAsPrefabAsset(root, prefab);
+            PrefabUtility.UnloadPrefabContents(root);
+            return 1;
         }
 
         static int SwapRenderer(string prefab, Sprite[] frames, int frame, string rendererName = null)
