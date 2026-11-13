@@ -175,6 +175,8 @@ Menu **GooNapped > Build**:
 - **Windows Rilis** -> `Builds/Windows/` (tanpa log; log bisa dinyalakan dengan argumen `-gnLog`).
 - Folder `Builds/` diabaikan git.
 
+Nama game (sementara **Goo-napped**, versi `0.2.0-jam`), nama tim, dan ikon dipasang otomatis **hanya selama build** lalu dikembalikan (`Editor/Build/Branding.cs`, ubah di sana). Logo + ikon sementara dibuat `art/tools/gen_logo.py` (`Assets/_Game/Art/UI/`), logo tampil di main menu.
+
 Build ini **tidak mengubah Build Settings**: daftar scene = scene aktif di Build Settings + semua scene alur (menu, Intro, Markas, L01..L11, Ending) ditambahkan otomatis. Kalau build lewat File > Build Profiles biasa, level v2 tidak ikut dan setelah Intro layarnya hitam (sekarang kembali ke menu + error di log).
 
 Di folder build dev ada dua file .bat:

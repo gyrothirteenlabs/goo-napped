@@ -59,11 +59,13 @@ namespace GooNapped.EditorTools
             floor.ClearAllTiles(); walls.ClearAllTiles(); decor.ClearAllTiles();
             var ground = AssetDatabase.LoadAssetAtPath<Tile>("Assets/_Game/Art/Tiles/Placeholder/Tile_Ground.asset");
             var rock = AssetDatabase.LoadAssetAtPath<Tile>("Assets/_Game/Art/Tiles/Placeholder/Tile_Rock.asset");
+            var art = AreaArt.Get("dungeon");   // art fondasi penjara (lab gelap)
             for (int row = 0; row < Map.Length; row++)
                 for (int col = 0; col < Map[row].Length; col++)
                 {
                     var c = new Vector3Int(OriginX + col, OriginY - row, 0);
-                    if (Map[row][col] == '#') walls.SetTile(c, rock); else floor.SetTile(c, ground);
+                    if (Map[row][col] == '#') walls.SetTile(c, art != null ? art.wall : rock);
+                    else floor.SetTile(c, art != null ? AreaArt.FloorAt(art, c.x, c.y) : ground);
                 }
             var wc = grid.transform.Find("Walls").GetComponent<TilemapCollider2D>();
             if (wc != null) Object.DestroyImmediate(wc);

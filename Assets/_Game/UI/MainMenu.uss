@@ -9,7 +9,13 @@
 .mm-shade-top { position: absolute; left: 0; right: 0; top: 0; height: 18%; background-color: rgba(11, 15, 26, 0.45); }
 .mm-shade-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 12%; background-color: rgba(11, 15, 26, 0.55); }
 
-.mm-title-block { position: absolute; left: 48px; top: 40px; }
+.mm-title-block { position: absolute; left: 40px; top: 30px; }
+/* logo sementara (art/tools/gen_logo.py), gambar asli 252x48 diperbesar 2x tanpa blur */
+.mm-logo {
+    width: 504px; height: 96px;
+    background-image: url("../Art/UI/logo_goonapped.png");
+    -unity-background-scale-mode: scale-to-fit;
+}
 .mm-title {
     font-size: 64px;
     -unity-font-style: bold;

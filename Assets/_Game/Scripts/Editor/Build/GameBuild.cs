@@ -53,7 +53,10 @@ namespace GooNapped.EditorTools
                 options = dev ? BuildOptions.Development : BuildOptions.None,
             };
             Debug.Log("GameBuild: " + opts.scenes.Length + " scene -> " + opts.locationPathName + "\n" + string.Join("\n", opts.scenes));
-            var report = BuildPipeline.BuildPlayer(opts);
+            // nama game + ikon sementara hanya selama build, lalu dikembalikan (ProjectSettings = keputusan tim)
+            BuildReport report;
+            using (new Branding.Scope())
+                report = BuildPipeline.BuildPlayer(opts);
             var sum = report.summary;
             if (sum.result == BuildResult.Succeeded)
             {
