@@ -81,7 +81,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1255523762, guid: 2becb01b9e94e3948bd0ea0be54c7ecd, type: 3}
+  m_Sprite: {fileID: 1791662035, guid: 67b43236889af2e4897e93a400ec82ef, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -174,7 +174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.AuraValve
   spriteRenderer: {fileID: 6367102911702140402}
-  closedSprite: {fileID: -1255523762, guid: 2becb01b9e94e3948bd0ea0be54c7ecd, type: 3}
-  reversedSprite: {fileID: -320875569, guid: 2becb01b9e94e3948bd0ea0be54c7ecd, type: 3}
+  closedSprite: {fileID: 1791662035, guid: 67b43236889af2e4897e93a400ec82ef, type: 3}
+  reversedSprite: {fileID: -1739271546, guid: 67b43236889af2e4897e93a400ec82ef, type: 3}
   turnTime: 1.2
   noiseRadius: 6

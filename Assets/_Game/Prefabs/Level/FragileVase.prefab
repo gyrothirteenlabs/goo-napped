@@ -83,7 +83,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.FragileItem
   spriteRenderer: {fileID: 5414430716725859773}
-  brokenSprite: {fileID: -906470216, guid: 11631424a6c5f1a419a331f51d5a6ff7, type: 3}
+  brokenSprite: {fileID: 662033781, guid: f18616061427d474ba284fb2fc202650, type: 3}
   noiseRadius: 4.5
 --- !u!1 &6661895574865107966
 GameObject:
@@ -166,7 +166,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 812029122, guid: 11631424a6c5f1a419a331f51d5a6ff7, type: 3}
+  m_Sprite: {fileID: -62389363, guid: f18616061427d474ba284fb2fc202650, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
