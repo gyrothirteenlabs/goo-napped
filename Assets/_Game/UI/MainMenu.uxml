@@ -7,7 +7,7 @@
         <ui:VisualElement class="mm-shade-bottom" picking-mode="Ignore" />
 
         <ui:VisualElement name="title-block" class="mm-title-block" picking-mode="Ignore">
-            <ui:Label name="title" text="GOO-NAPPED" class="mm-title" picking-mode="Ignore" />
+            <ui:VisualElement name="logo" class="mm-logo" picking-mode="Ignore" />
             <ui:Label name="subtitle" text="working title  ·  Game Off 2026: SHIFT" class="mm-subtitle" picking-mode="Ignore" />
         </ui:VisualElement>
 

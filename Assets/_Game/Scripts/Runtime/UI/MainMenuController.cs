@@ -50,7 +50,8 @@ namespace GooNapped
             if (document == null) document = FindFirstObjectByType<UIDocument>();
             if (document == null) { Debug.LogError("MainMenuController: UIDocument tidak ada (jalankan GooNapped > Blockout > Main menu)."); return; }
             root = document.rootVisualElement;
-            root.Q<Label>("title").text = gameTitle;
+            var titleLabel = root.Q<Label>("title");   // versi lama tanpa logo
+            if (titleLabel != null) titleLabel.text = gameTitle;
             root.Q<Label>("subtitle").text = subtitle;
             mainPanel = root.Q("main-panel");
             levelPanel = root.Q("level-panel");
