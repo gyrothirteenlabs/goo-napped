@@ -1,0 +1,129 @@
+*GOO-NAPPED — TODO PER DIVISI* (13 Nov)
+Game Off 2026, tema SHIFT. Detail lengkap ada di PDF *todo-tim.pdf*.
+
+*Jadwal usulan*
+- Minggu 3 (17–23 Nov): semua aset utama masuk + dipasang ke game
+- Minggu 4 (24 Nov–rilis): playtest, bug fix, halaman itch.io. *TIDAK tambah fitur*
+- P1 = wajib buat rilis, P2 = penting, P3 = bonus kalau sempat
+
+Status sekarang: semua sistem v2, 11 level blockout, adegan final, main menu sementara, dan build Windows dengan log sudah jalan. Yang kurang terutama *art final, suara, isi cerita, dan playtest manusia*.
+
+━━━━━━━━━━━━━━━
+*💻 PROGRAMMER*
+P1
+- Pasang semua sprite final yang masuk (slime, teman, 9 musuh, tileset, props) + animasinya
+- Sistem audio: tambah slot SFX baru, musik per area, musik kejar, detak jantung saat penjaga dekat, sirene alarm, pengaturan volume
+- Pause menu + Options (volume musik/SFX, fullscreen/resolusi) versi UI Toolkit
+- Player Settings: nama produk (masih "My project"), ikon, splash, versi
+- Putuskan Build Settings bareng tim (sementara build lewat GooNapped > Build sudah lengkap)
+- Fix bug dari QA tiap hari, build dev rutin + jalankan smoke_test.bat
+- Setel angka dari playtest (alarm 90/30 dtk, kecepatan penjaga, massa)
+P2
+- Tempat sembunyi per area (semak, lemari, tudung saji, panci, tirai, toples kosong)
+- Pasang isi cerita (strip Intro/Ending, dialog level, kalimat markas)
+- Layout level final dari desainer level → peta blockout
+- Toples 2 ukuran + pendar aura
+P3
+- Koleksi catatan + tetes kenangan (mural markas), lampu bersakelar, rak rahasia, build WebGL
+
+━━━━━━━━━━━━━━━
+*🧊 DESAINER 3D (Blender → sprite 48px)*
+Pakai template art/blender/sprite_template.blend + panduan docs/panduan-blender-3d.md. Sprite: 48×48, 3 arah (depan, samping kanan, belakang), cahaya TIDAK di-bake (albedo flat + normal map).
+P1
+- Slime pemain final (Blip): idle, move, eat, split, merge, jelly, masuk/keluar sembunyi
+- Teman (1 desain dasar, beda warna aura + aksesori): Pip, Bolu, Tok, Lumi, Ayah, Ibu, Adik, Nenek, Raja. Anim: idle, move, takut (menunggu), senang
+- Musuh generik: Golem Batu, Anjing Lendir (idle, jalan, curiga/alert)
+- Musuh unik: Monster Gerbang, Familiar Api, Mata Penyihir, Zirah Hampa, Pelayan Tudung, Lukisan Bermata, Alkemis (idle, jalan, alert + gerak khas)
+P2
+- Alkemis: menerkam, tersegel di toples (buat final + ending)
+- Toples raja + mesin penyadap/katup (kalau lebih cepat dibuat 3D)
+P3
+- Pose khusus buat strip cerita (bisa dipakai desainer 2D)
+
+━━━━━━━━━━━━━━━
+*🎨 DESAINER 2D PIXEL*
+Tile/prop 48px, albedo flat + normal map, palet per area (art/palette.hex masih usulan).
+P1
+- Palet final 4 area: taman (biru bulan), bawah tanah (hijau aura), kastil atas (emas pudar + merah anggur), puncak (ungu roh)
+- Tileset 4 area: lantai, tembok (atas + muka), variasi, dekor
+- Props mekanik: ventilasi + ventilasi exit, toples kecil & besar, toples raja, katup (tertutup/terbalik), pintu, tuas, pelat ringan/berat, celah tikus, peti dorong, lentera/obor (nyala + padam)
+- Tempat sembunyi: semak, tong, peti, toples kosong, lemari, tudung saji, panci, tirai
+- 7 esens (kristal): Batu, Pendar, Embun, Bara, Belerang, Beku, Bayang
+- Barang rapuh (vas/piring/botol + pecah), lantai berderit, lumpur, genangan
+P2
+- Strip cerita Intro (prolog) + Ending (peran tertukar, kerajaan pulih)
+- Potret dialog: Pip, Bolu, Tok, Lumi, Ayah, Ibu, Adik, Nenek, Raja, Alkemis
+- VFX: jejak lumpur, garis bau, uap, kabut, kristal umpan pecah, gelombang dentum, sihir segel, lampu alarm
+P3
+- Mural markas (tetes kenangan), catatan koleksi, rak rahasia
+
+━━━━━━━━━━━━━━━
+*🖼️ DESAINER UI*
+UI pakai UI Toolkit (file .uss/.uxml di Assets/_Game/UI). Kirim mockup PNG atau langsung ubah .uss.
+P1
+- Font pixel (lisensi bebas) + logo judul (nama final menyusul)
+- Main menu final (sekarang placeholder), pilih level, pause, options
+- HUD: ukuran tubuh, aura, potongan, objektif, status teman, jatah kekuatan, timer alarm
+- Ikon ? / ! di atas penjaga, kotak dialog + papan nama + bingkai potret
+- Banner: tertangkap, level selesai, alarm
+- Petunjuk tombol keyboard (WASD, E, Space, Shift, C, F, Q, R, Esc)
+P2
+- UI di ventilasi: pilih kekuatan teman (Shift), pilih lubang (A/D)
+- Markas: prompt bicara, layar kredit
+- Halaman itch.io: cover 630×500, banner, 5+ screenshot, GIF, ikon .ico
+P3
+- Layar loading/transisi, animasi menu
+
+━━━━━━━━━━━━━━━
+*🔊 SOUND DESIGN*
+Format: WAV 44.1 kHz 16-bit. SFX mono, musik/ambience stereo + loop mulus. Nama file: sfx_xxx / mus_xxx / amb_xxx. Catat sumber + lisensi tiap file (wajib, repo publik).
+P1 — MUSIK
+- Main menu, stealth per area (taman, bawah tanah, kastil atas, puncak), musik kejar, markas (tenang), Intro/Ending
+P1 — AMBIENCE (loop)
+- Taman malam, penjara (tetes air), lab (dengung mesin, gelembung), aula kastil, puncak (angin + mesin sedot), dalam ventilasi
+P1 — SFX SLIME
+- Lompat kecil, lompat besar "dug", mendarat squish, makan esens, belah, gabung, muntah, masuk/keluar sembunyi, Shift pindah kendali, lumpur, cuci, nyelip celah
+P1 — SFX PENJAGA
+- Curiga naik (?), ketahuan (!), teriak panggil penjaga, tertangkap, detak jantung (loop)
+- Per musuh: langkah Golem, Anjing endus + gonggong, Monster Gerbang geram + dengung sorot, Familiar Api kretek api, Mata Penyihir dengung melayang + periksa, Zirah Hampa langkah besi + dengar, Pelayan Tudung langkah + buka tudung, Lukisan mata berderit, Alkemis langkah + bisikan + amuk + tersegel
+P1 — SFX DUNIA
+- Toples: tukar tiruan (kaca + lendir), teman keluar, sirene alarm penyadapan
+- Pintu, tuas, pelat klik (ringan/berat), vas pecah, lantai berderit, peti diseret, lentera padam, ventilasi masuk/keluar/pindah, checkpoint tersimpan, katup diputar (keras), toples raja terbuka, segel raja
+- Kekuatan: Dentum, Padam, Umpan Kristal (lempar + pecah), Kabut
+P1 — UI
+- Pindah pilihan, pilih, kembali, terkunci, pause buka/tutup, dialog lanjut, blip suara bicara per tokoh, level selesai (jingle), tertangkap (stinger)
+
+━━━━━━━━━━━━━━━
+*🧪 QA / QC*
+Build: di Unity GooNapped > Build > Windows Dev. Cek cepat: jalankan smoke_test.bat. Main: GooNapped.exe (F1 = lihat log).
+P1
+- Tiap build baru: smoke test + main 1 level penuh
+- Checklist alur: New Game → Intro → L01 … L11 → Ending → menu. Continue, Select Level, Reset, Quit, Pause, Retry (R)
+- Checklist per level: objektif selesai, teman selamat, checkpoint ventilasi, tertangkap → ulang dari ventilasi, perilaku tiap musuh, kekuatan teman, sembunyi, lumpur/cuci, final (katup + segel)
+- Catat waktu main per level (target 2–4 menit) + tingkat susah
+- Lapor bug pakai format di bawah, *lampirkan goo-napped_log.txt*
+P2
+- Resolusi 1280×720 / 1920×1080, fullscreen/windowed, alt-tab, PC spek rendah
+- Cek teks Inggris (typo), keterbacaan di tempat gelap, volume suara seimbang
+- Playtest orang baru: tonton tanpa membantu, catat di mana bingung
+QC aset (sebelum dipasang)
+- Sprite: 48px, 3 arah, ada _normal, cahaya tidak di-bake, lolos tes siluet
+- Audio: format benar, loop mulus, tidak clipping, ada lisensi
+
+*Format lapor bug (copas)*
+Build/tanggal:
+Level:
+Langkah:
+Harusnya:
+Yang terjadi:
+Parah: Crash / Blocker / Mayor / Minor
+Lampiran: log + screenshot/video
+
+━━━━━━━━━━━━━━━
+*👥 SEMUA TIM — PERLU DIPUTUSKAN*
+- Nama game final + nama pemain (usulan Blip)
+- Siapa pemegang kata akhir desain
+- Daftar 11 level + musuh per level OK?
+- Build Settings (ProjectSettings)
+- Isian lore yang masih usulan (asal roh, Segel Raja, dll)
+- Penulis isi cerita (strip, dialog, catatan): siapa?
