@@ -863,6 +863,97 @@ namespace GooNapped.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        // Karpet kastil: sel di bagian dalam ruangan/koridor (8 tetangga bukan tembok), hanya baris dengan bentangan >= 6 sel.
+        // Tidak menutup lantai berderit (c), lumpur/genangan (m =), celah (~), dan exit (E) supaya tanda bahayanya tetap terlihat.
+        static bool[,] CarpetCells(string[] map, bool enabled, System.Func<int, int, char> at)
+        {
+            int h = map.Length, w = map[0].Length;
+            var res = new bool[h, w];
+            if (!enabled) return res;
+            const string skip = "#cm=~E";
+            for (int row = 0; row < h; row++)
+            {
+                int runStart = -1;
+                for (int x = 0; x <= w; x++)
+                {
+                    bool ok = x < w && skip.IndexOf(at(x, row)) < 0;
+                    for (int dy = -1; dy <= 1 && ok; dy++)
+                        for (int dx = -1; dx <= 1 && ok; dx++)
+                            if (at(x + dx, row + dy) == '#') ok = false;
+                    if (ok) { if (runStart < 0) runStart = x; continue; }
+                    if (runStart >= 0 && x - runStart >= 6)
+                        for (int i = runStart; i < x; i++) res[row, i] = true;
+                    runStart = -1;
+                }
+            }
+            // tebal maksimal 2 baris, rata bawah, supaya karpet tetap runner lurus (tidak melebar jadi bentuk L di ruang terbuka)
+            for (int x = 0; x < w; x++)
+            {
+                int stack = 0;
+                for (int row = h - 1; row >= 0; row--)
+                {
+                    if (!res[row, x]) { stack = 0; continue; }
+                    if (++stack > 2) res[row, x] = false;
+                }
+            }
+            // potongan pendek sisa pemangkasan dibuang
+            for (int row = 0; row < h; row++)
+            {
+                int runStart = -1;
+                for (int x = 0; x <= w; x++)
+                {
+                    if (x < w && res[row, x]) { if (runStart < 0) runStart = x; continue; }
+                    if (runStart >= 0 && x - runStart < 6)
+                        for (int i = runStart; i < x; i++) res[row, i] = false;
+                    runStart = -1;
+                }
+            }
+            return res;
+        }
+
+        // Jalan tanah taman: rute terpendek (BFS 4 arah) dari spawn S ke ventilasi tujuan X (atau exit E).
+        // Hanya hiasan, tidak memblok. Sel lumpur/genangan/celah/lantai berderit tidak ditimpa.
+        static bool[,] PathCells(string[] map, bool enabled, System.Func<int, int, char> at)
+        {
+            int h = map.Length, w = map[0].Length;
+            var res = new bool[h, w];
+            if (!enabled) return res;
+            Vector2Int start = new Vector2Int(-1, -1), goal = new Vector2Int(-1, -1);
+            for (int row = 0; row < h; row++)
+                for (int x = 0; x < w; x++)
+                {
+                    char ch = at(x, row);
+                    if (ch == 'S') start = new Vector2Int(x, row);
+                    if (ch == 'X' || (ch == 'E' && goal.x < 0)) goal = new Vector2Int(x, row);
+                }
+            if (start.x < 0 || goal.x < 0) return res;
+            var prev = new Vector2Int?[h, w];
+            var q = new Queue<Vector2Int>();
+            q.Enqueue(start);
+            prev[start.y, start.x] = start;
+            var dirs = new[] { Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down };
+            while (q.Count > 0)
+            {
+                var p = q.Dequeue();
+                if (p == goal) break;
+                foreach (var d in dirs)
+                {
+                    var n = p + d;
+                    if (at(n.x, n.y) == '#' || prev[n.y, n.x] != null) continue;
+                    prev[n.y, n.x] = p;
+                    q.Enqueue(n);
+                }
+            }
+            if (prev[goal.y, goal.x] == null) return res;
+            const string skip = "cm=~";
+            for (var p = goal; ; p = prev[p.y, p.x].Value)
+            {
+                if (skip.IndexOf(at(p.x, p.y)) < 0) res[p.y, p.x] = true;
+                if (p == start) break;
+            }
+            return res;
+        }
+
         static void Clear(Transform t)
         {
             for (int i = t.childCount - 1; i >= 0; i--) Object.DestroyImmediate(t.GetChild(i).gameObject);
@@ -941,6 +1032,9 @@ namespace GooNapped.EditorTools
             }
 
             int h = c.map.Length, w = c.map[0].Length;
+            System.Func<int, int, char> at = (tx, trow) => trow < 0 || trow >= h || tx < 0 || tx >= w || tx >= c.map[trow].Length ? '#' : c.map[trow][tx];
+            var carpetCells = CarpetCells(c.map, art != null && art.carpet != null, at);
+            var pathCells = PathCells(c.map, art != null && art.path != null && art.path.Length > 0, at);
             int hubSlot = 0;
             bool hasFinal = false;
             var breakPoints = new List<Vector2>();
@@ -969,8 +1063,11 @@ namespace GooNapped.EditorTools
                     // jadi pivot ditaruh 0.28 di atas tepi bawah tile supaya kaki tepat di TENGAH tile (tidak menempel tembok).
                     var pos = new Vector3(x + 0.5f, y + 0.28f, 0f);
                     if (ch == '#') { walls.SetTile(cell, art != null ? art.wall : rockTile); continue; }
-                    floor.SetTile(cell, art != null ? AreaArt.FloorAt(art, x, y) : floorTile);
-                    if (art != null && decor != null && ch == '.')
+                    bool onCarpet = carpetCells[row, x];
+                    bool onPath = pathCells[row, x];
+                    floor.SetTile(cell, onCarpet ? art.carpet : onPath ? art.path[AreaArt.Hash(x, y, 13) % art.path.Length]
+                        : art != null ? AreaArt.FloorAt(art, x, y) : floorTile);
+                    if (art != null && decor != null && ch == '.' && !onCarpet && !onPath)
                     {
                         var dt = AreaArt.DecorAt(art, x, y);
                         if (dt != null) decor.SetTile(cell, dt);
@@ -1187,6 +1284,54 @@ namespace GooNapped.EditorTools
                         tsr.flipX = AreaArt.Hash(x, row, 9) % 2 == 0;
                     }
             }
+
+            // dekor berdiri di depan tembok (kandelabra kastil/puncak, rak ramuan penjara) (lantai kosong yang di atasnya tembok, jarak >= 5 sel).
+            // Tanpa collider dan tanpa cahaya, jadi tidak mengubah gameplay (cahaya = bahaya hanya dari lentera L).
+            if (art != null && art.wallProps != null && art.wallProps.Length > 0)
+            {
+                var candleRoot = new GameObject("WallProps").transform;
+                candleRoot.SetParent(PropRoot(), false);
+                for (int row = 1; row < h; row++)
+                {
+                    int last = -99;
+                    for (int x = 1; x < w - 1; x++)
+                    {
+                        if (at(x, row) != '.' || carpetCells[row, x] || pathCells[row, x]) continue;
+                        if (at(x - 1, row - 1) != '#' || at(x, row - 1) != '#' || at(x + 1, row - 1) != '#') continue;
+                        if (at(x - 1, row) == '#' || at(x + 1, row) == '#') continue;   // jangan di pojok/celah
+                        if (x - last < 5 || AreaArt.Hash(x, row, 11) % 100 >= 40) continue;
+                        bool nearKingJar = false;   // jangan menutupi mesin penyadap di atas toples raja
+                        for (int dr = 0; dr <= 3; dr++)
+                            for (int dx = -2; dx <= 2; dx++)
+                                if (at(x + dx, row + dr) == 'R') nearKingJar = true;
+                        if (nearKingJar) continue;
+                        last = x;
+                        int y = h - 1 - row;
+                        var cgo = new GameObject("WallProp");
+                        cgo.transform.SetParent(candleRoot, false);
+                        cgo.transform.position = new Vector3(x + 0.5f, y + 0.45f, 0f);
+                        var csr = cgo.AddComponent<SpriteRenderer>();
+                        csr.sprite = art.wallProps[AreaArt.Hash(x, row, 12) % art.wallProps.Length];
+                        csr.sharedMaterial = envMat;
+                    }
+                }
+            }
+
+            // puncak: mesin penyadap (96 px) menempel di tembok terdekat di atas toples raja (R)
+            if (art != null && art.machine != null)
+                for (int row = 0; row < h; row++)
+                    for (int x = 0; x < w; x++)
+                    {
+                        if (at(x, row) != 'R') continue;
+                        int wr = row - 1;
+                        while (wr > 0 && at(x, wr) != '#') wr--;
+                        var mgo = new GameObject("DrainMachine");
+                        mgo.transform.SetParent(PropRoot(), false);
+                        mgo.transform.position = new Vector3(x + 0.5f, h - 1 - wr, 0f);   // pivot bawah = tepi bawah sel tembok
+                        var msr = mgo.AddComponent<SpriteRenderer>();
+                        msr.sprite = art.machine;
+                        msr.sharedMaterial = envMat;
+                    }
 
             if (hasFinal)
             {
