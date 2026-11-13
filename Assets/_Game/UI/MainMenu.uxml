@@ -1,0 +1,33 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- Main menu PLACEHOLDER. Layout di sini, tampilan di MainMenu.uss. Isi menu dan level dibuat MainMenuController.cs lewat nama elemen. -->
+    <Style src="MainMenu.uss" />
+    <ui:VisualElement name="root" class="mm-root" picking-mode="Ignore">
+        <ui:VisualElement class="mm-shade-left" picking-mode="Ignore" />
+        <ui:VisualElement class="mm-shade-top" picking-mode="Ignore" />
+        <ui:VisualElement class="mm-shade-bottom" picking-mode="Ignore" />
+
+        <ui:VisualElement name="title-block" class="mm-title-block" picking-mode="Ignore">
+            <ui:Label name="title" text="GOO-NAPPED" class="mm-title" picking-mode="Ignore" />
+            <ui:Label name="subtitle" text="working title  ·  Game Off 2026: SHIFT" class="mm-subtitle" picking-mode="Ignore" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="main-panel" class="mm-main" picking-mode="Ignore">
+            <ui:VisualElement name="items" class="mm-items" />
+            <ui:Label name="progress" class="mm-progress" picking-mode="Ignore" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="level-panel" class="mm-levels mm-hidden">
+            <ui:Label text="SELECT LEVEL" class="mm-panel-title" picking-mode="Ignore" />
+            <ui:VisualElement name="level-grid" class="mm-level-grid" />
+            <ui:VisualElement name="level-actions" class="mm-level-actions" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="confirm" class="mm-confirm mm-hidden">
+            <ui:Label name="confirm-text" class="mm-confirm-text" />
+            <ui:VisualElement name="confirm-actions" class="mm-confirm-actions" />
+        </ui:VisualElement>
+
+        <ui:Label name="hint" class="mm-hint" picking-mode="Ignore" />
+        <ui:VisualElement name="fade" class="mm-fade" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

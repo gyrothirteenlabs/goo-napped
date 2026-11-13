@@ -108,6 +108,7 @@ Prefab `Characters/Slime_Player`:
 - Posisi/susunan: `Hud.uxml` (buka dengan UI Builder: Window > UI Toolkit > UI Builder). Jangan ganti `name` elemen (dipakai `GameHud.cs`).
 - Skala keseluruhan: `HudPanelSettings.asset` > Reference Resolution (besar = UI lebih kecil).
 - Font pixel: taruh font di `Art/Fonts/`, set `-unity-font-definition` di `.hud-root`.
+- **Main menu** (placeholder, gaya adegan hidup gelap): gaya di `UI/MainMenu.uss`, susunan di `MainMenu.uxml` (nama elemen dipakai `MainMenuController.cs`). Latar (ruang, lentera, toples teman, slime) dibangun GooNapped > Blockout > Main menu (`Editor/Level/MainMenuBuilder.cs`): ubah peta/posisi di situ lalu jalankan ulang, atau susun manual di scene `Menus/MainMenu`.
 - Ikon di atas penjaga: komponen `GuardMeter` di prefab penjaga, isi `Question Sprite` / `Exclaim Sprite` dengan sprite sendiri (kosong = ikon placeholder dari kode).
 
 ## 8. Cerita: cutscene & dialog
@@ -166,3 +167,18 @@ Window > General > **Test Runner**. Wajib hijau sebelum PR, terutama setelah men
 Error/exception apa pun di console selama PlayMode test = test gagal. Progres pemain (PlayerPrefs) dikembalikan setelah test. Kode QA bersama (peta grid level, solver resep) ada di `Tests/Shared/`.
 
 Yang **tidak** bisa dicek otomatis: rasa kontrol, keterbacaan visual, apakah stealth terasa adil/seru, kesulitan. Itu tetap butuh playtest manusia.
+
+## 12. Build Windows & test build
+
+Menu **GooNapped > Build**:
+- **Windows Dev (dengan log)** -> `Builds/Windows-Dev/GooNapped.exe`. Development Build: semua log ditulis ke `goo-napped_log.txt` di sebelah .exe, **F1** di game = lihat 25 baris log terakhir, penanda merah di pojok kalau ada error.
+- **Windows Rilis** -> `Builds/Windows/` (tanpa log; log bisa dinyalakan dengan argumen `-gnLog`).
+- Folder `Builds/` diabaikan git.
+
+Build ini **tidak mengubah Build Settings**: daftar scene = scene aktif di Build Settings + semua scene alur (menu, Intro, Markas, L01..L11, Ending) ditambahkan otomatis. Kalau build lewat File > Build Profiles biasa, level v2 tidak ikut dan setelah Intro layarnya hitam (sekarang kembali ke menu + error di log).
+
+Di folder build dev ada dua file .bat:
+- `smoke_test.bat`: game jalan sendiri (menu -> Intro sampai pindah sendiri ke L01 -> tiap level + Markas + Ending), screenshot tiap scene ke `smoke_shots/`, hasil `SMOKE OK/GAGAL` di log, lalu keluar.
+- `main_dengan_log.bat`: main biasa dengan log.
+
+Kalau ada bug di build: kirim `goo-napped_log.txt` (dan kalau perlu `Player.log` di `%USERPROFILE%\AppData\LocalLow\DefaultCompany\My project\`).

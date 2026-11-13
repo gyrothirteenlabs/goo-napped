@@ -32,7 +32,9 @@ Menu → Intro → L01 … L11 (Markas di antaranya) → Ending.
 | ✅ | Blockout 11 level v2 (L01_Gate s/d L11_Summit, sesuai daftar usulan desain-v2 bagian 3), alur Intro > L01 > Markas > ... > L11 > Ending. Lolos validator + bot tamat semua | `Scenes/Levels/V2`, menu GooNapped > Blockout > Semua level v2. Peta diperbesar (12 Nov) jadi 44 kolom x 14–18 baris, luas lantai sekitar 2x: konsep tiap level sama, ruang dan rute lebih panjang, tempat sembunyi lebih banyak. Golem shift jaga L07 sekarang menjaga pos pendek dekat exit. Layout final dan ukuran: tim desainer. |
 | ✅ | Adegan final L11: putar balik 3 katup aura (E, diam 1,2 dtk, berisik), toples raja terbuka, Alkemis mengamuk (berburu tiap 3 dtk, 1,25x cepat). Tinggalkan potongan di toples raja: Alkemis menerkamnya di dalam = tersegel, dialog raja, lalu Ending. Katup tersimpan di checkpoint | `AuraValve`, `KingJar`, `FinalSequence`, `Guard.isBoss`, legenda `Y R`. Teks dialog placeholder: tim |
 | ⬜ | Isi cerita (strip, dialog, catatan) | tim |
-| ⬜ | Build Settings ke daftar level v2 | ProjectSettings = keputusan tim |
+| ✅ | Build Windows dari menu GooNapped > Build (scene alur ikut otomatis tanpa mengubah Build Settings), versi dev dengan log file + F1, smoke test build (`smoke_test.bat`, screenshot tiap scene). Fix: layar hitam setelah Intro di build (L01 tidak ikut di-build); scene yang hilang sekarang kembali ke menu + error di log | `GameBuild`, `DevLog`, `BuildSmokeTest`, docs cara-edit-unity bagian 12 |
+| ✅ | Main menu placeholder "adegan hidup gelap": ruang lab, lentera, 3 toples teman berpendar, slime bergerak sendiri, menu UI Toolkit (keyboard + mouse), pilih level kartu 4 kolom, konfirmasi new game/reset | `MainMenuBuilder`, `MainMenu.uxml/uss`, `MainMenuController`, `MenuSlime`. **Tampilan final: tim** |
+| ⬜ | Build Settings ke daftar level v2 (opsional, build lewat GooNapped > Build sudah lengkap) | ProjectSettings = keputusan tim |
 
 ## Art & audio (tim desainer)
 | | Fitur |
