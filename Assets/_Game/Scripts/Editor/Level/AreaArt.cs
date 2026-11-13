@@ -26,6 +26,9 @@ namespace GooNapped.EditorTools
             public Sprite mud, water;
             public Sprite[] trees;     // taman saja
             public Sprite[] hideSmall, hideBig;   // tampilan tempat sembunyi T (muat 1) / P (muat 2); null = prefab bawaan
+            public TileBase carpet;    // kastil: karpet di bagian dalam ruangan/koridor
+            public Sprite[] candles;   // kastil + puncak: kandelabra dekor di depan tembok (tanpa cahaya)
+            public Sprite machine;     // puncak: mesin penyadap 96 px di tembok belakang toples raja
         }
 
         static readonly Dictionary<string, Set> cache = new Dictionary<string, Set>();
@@ -56,6 +59,15 @@ namespace GooNapped.EditorTools
                 small.AddRange(First(Spr + "Props/Castle/prop_curtain.png"));
                 s.hideSmall = small.ToArray();
                 s.hideBig = First(Spr + "Props/Castle/prop_wardrobe.png");
+                var carpet = Frames(Spr + "Tiles/Castle/cst_carpet.png");
+                if (carpet.Length > 0) s.carpet = SimpleTile("cst_carpet_0", carpet[0], Tile.ColliderType.None);
+            }
+            if (area == "castle" || area == "summit")
+                s.candles = First(Spr + "Props/Castle/prop_candelabra.png");
+            if (area == "summit")
+            {
+                var m = First(Spr + "Props/Summit/prop_drainmachine_c96.png");
+                if (m.Length > 0) s.machine = m[0];
             }
             cache[area] = s;
             return s;
