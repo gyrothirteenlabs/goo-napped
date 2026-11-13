@@ -886,6 +886,71 @@ namespace GooNapped.EditorTools
                     runStart = -1;
                 }
             }
+            // tebal maksimal 2 baris, rata bawah, supaya karpet tetap runner lurus (tidak melebar jadi bentuk L di ruang terbuka)
+            for (int x = 0; x < w; x++)
+            {
+                int stack = 0;
+                for (int row = h - 1; row >= 0; row--)
+                {
+                    if (!res[row, x]) { stack = 0; continue; }
+                    if (++stack > 2) res[row, x] = false;
+                }
+            }
+            // potongan pendek sisa pemangkasan dibuang
+            for (int row = 0; row < h; row++)
+            {
+                int runStart = -1;
+                for (int x = 0; x <= w; x++)
+                {
+                    if (x < w && res[row, x]) { if (runStart < 0) runStart = x; continue; }
+                    if (runStart >= 0 && x - runStart < 6)
+                        for (int i = runStart; i < x; i++) res[row, i] = false;
+                    runStart = -1;
+                }
+            }
+            return res;
+        }
+
+        // Jalan tanah taman: rute terpendek (BFS 4 arah) dari spawn S ke ventilasi tujuan X (atau exit E).
+        // Hanya hiasan, tidak memblok. Sel lumpur/genangan/celah/lantai berderit tidak ditimpa.
+        static bool[,] PathCells(string[] map, bool enabled, System.Func<int, int, char> at)
+        {
+            int h = map.Length, w = map[0].Length;
+            var res = new bool[h, w];
+            if (!enabled) return res;
+            Vector2Int start = new Vector2Int(-1, -1), goal = new Vector2Int(-1, -1);
+            for (int row = 0; row < h; row++)
+                for (int x = 0; x < w; x++)
+                {
+                    char ch = at(x, row);
+                    if (ch == 'S') start = new Vector2Int(x, row);
+                    if (ch == 'X' || (ch == 'E' && goal.x < 0)) goal = new Vector2Int(x, row);
+                }
+            if (start.x < 0 || goal.x < 0) return res;
+            var prev = new Vector2Int?[h, w];
+            var q = new Queue<Vector2Int>();
+            q.Enqueue(start);
+            prev[start.y, start.x] = start;
+            var dirs = new[] { Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down };
+            while (q.Count > 0)
+            {
+                var p = q.Dequeue();
+                if (p == goal) break;
+                foreach (var d in dirs)
+                {
+                    var n = p + d;
+                    if (at(n.x, n.y) == '#' || prev[n.y, n.x] != null) continue;
+                    prev[n.y, n.x] = p;
+                    q.Enqueue(n);
+                }
+            }
+            if (prev[goal.y, goal.x] == null) return res;
+            const string skip = "cm=~";
+            for (var p = goal; ; p = prev[p.y, p.x].Value)
+            {
+                if (skip.IndexOf(at(p.x, p.y)) < 0) res[p.y, p.x] = true;
+                if (p == start) break;
+            }
             return res;
         }
 
@@ -969,6 +1034,7 @@ namespace GooNapped.EditorTools
             int h = c.map.Length, w = c.map[0].Length;
             System.Func<int, int, char> at = (tx, trow) => trow < 0 || trow >= h || tx < 0 || tx >= w || tx >= c.map[trow].Length ? '#' : c.map[trow][tx];
             var carpetCells = CarpetCells(c.map, art != null && art.carpet != null, at);
+            var pathCells = PathCells(c.map, art != null && art.path != null && art.path.Length > 0, at);
             int hubSlot = 0;
             bool hasFinal = false;
             var breakPoints = new List<Vector2>();
@@ -998,8 +1064,10 @@ namespace GooNapped.EditorTools
                     var pos = new Vector3(x + 0.5f, y + 0.28f, 0f);
                     if (ch == '#') { walls.SetTile(cell, art != null ? art.wall : rockTile); continue; }
                     bool onCarpet = carpetCells[row, x];
-                    floor.SetTile(cell, onCarpet ? art.carpet : art != null ? AreaArt.FloorAt(art, x, y) : floorTile);
-                    if (art != null && decor != null && ch == '.' && !onCarpet)
+                    bool onPath = pathCells[row, x];
+                    floor.SetTile(cell, onCarpet ? art.carpet : onPath ? art.path[AreaArt.Hash(x, y, 13) % art.path.Length]
+                        : art != null ? AreaArt.FloorAt(art, x, y) : floorTile);
+                    if (art != null && decor != null && ch == '.' && !onCarpet && !onPath)
                     {
                         var dt = AreaArt.DecorAt(art, x, y);
                         if (dt != null) decor.SetTile(cell, dt);
@@ -1217,18 +1285,18 @@ namespace GooNapped.EditorTools
                     }
             }
 
-            // kastil + puncak: kandelabra dekor berdiri di depan tembok (lantai kosong yang di atasnya tembok, jarak >= 5 sel).
+            // dekor berdiri di depan tembok (kandelabra kastil/puncak, rak ramuan penjara) (lantai kosong yang di atasnya tembok, jarak >= 5 sel).
             // Tanpa collider dan tanpa cahaya, jadi tidak mengubah gameplay (cahaya = bahaya hanya dari lentera L).
-            if (art != null && art.candles != null && art.candles.Length > 0)
+            if (art != null && art.wallProps != null && art.wallProps.Length > 0)
             {
-                var candleRoot = new GameObject("Candelabras").transform;
+                var candleRoot = new GameObject("WallProps").transform;
                 candleRoot.SetParent(PropRoot(), false);
                 for (int row = 1; row < h; row++)
                 {
                     int last = -99;
                     for (int x = 1; x < w - 1; x++)
                     {
-                        if (at(x, row) != '.' || carpetCells[row, x]) continue;
+                        if (at(x, row) != '.' || carpetCells[row, x] || pathCells[row, x]) continue;
                         if (at(x - 1, row - 1) != '#' || at(x, row - 1) != '#' || at(x + 1, row - 1) != '#') continue;
                         if (at(x - 1, row) == '#' || at(x + 1, row) == '#') continue;   // jangan di pojok/celah
                         if (x - last < 5 || AreaArt.Hash(x, row, 11) % 100 >= 40) continue;
@@ -1239,11 +1307,11 @@ namespace GooNapped.EditorTools
                         if (nearKingJar) continue;
                         last = x;
                         int y = h - 1 - row;
-                        var cgo = new GameObject("Candelabra");
+                        var cgo = new GameObject("WallProp");
                         cgo.transform.SetParent(candleRoot, false);
                         cgo.transform.position = new Vector3(x + 0.5f, y + 0.45f, 0f);
                         var csr = cgo.AddComponent<SpriteRenderer>();
-                        csr.sprite = art.candles[AreaArt.Hash(x, row, 12) % art.candles.Length];
+                        csr.sprite = art.wallProps[AreaArt.Hash(x, row, 12) % art.wallProps.Length];
                         csr.sharedMaterial = envMat;
                     }
                 }
