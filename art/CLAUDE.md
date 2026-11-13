@@ -93,6 +93,14 @@ art/
 - **Placeholder musuh (BUKAN desain final):** `art/tools/make_placeholder_enemies.py` membangun `art/blender/<nama>_placeholder_v01.blend` + `art/sprites/{golem,familiarapi,anjinglendir,matapenyihir}/` (pose diam, 3 arah) dari primitif, hanya untuk tes penjaga di Unity. Ringkasan: `art/sprites/_preview_musuh_placeholder.png`. Diganti desain tim desainer.
 - Hasil v06 lewat template = identik pixel dengan `art/sprites/slime/` (sudah dites 9 Nov).
 
+## Art fondasi per area (AI, 13 Nov 2026, SEMENTARA)
+Keputusan user 13 Nov: desainer belum sempat, jadi AI membuat **fondasi** art level (opsi A) dengan acuan gaya gambar konsep lab gelap. Karakter tetap lewat Blender 3D seperti biasa.
+- Generator: `art/tools/gen_area_art.py` (python + pillow + numpy). Menggambar albedo + height map lalu menurunkan normal map. Pratinjau: `art/sprites/_preview_area_<area>.png`.
+- Output: `Sprites/Tiles/<Area>/` (lantai, tembok, dekor; tembok frame 0 = atas, 1.. = muka), `Sprites/Props/<Area>/` (tong, peti, obor, ventilasi, toples kaca, pintu sel, rak ramuan, pohon, semak).
+- Sprite lebih besar dari 48: akhiran nama `_c96` (contoh `prop_tree_c96.png`), importer memotong per 96 px.
+- Unity: `Editor/Level/AreaArt.cs`. `LevelBlockout.Config.area` = `garden` (L01–L03) atau `dungeon` (L04–L06, Markas). Tembok = RuleTile (atas/muka otomatis), dekor acak tetap di Grid/Decor, pohon di dalam massa pagar tanaman. Sprite props prefab: GooNapped > Art > Pasang sprite props fondasi.
+- Area kastil atas dan puncak belum. Desainer boleh menimpa file mana pun (nama file sama = langsung terpakai).
+
 ## Workflow
 - Modeling → skill `slime-model`. Render → template + add-on (model baru) atau `art/tools/render_slime.py` (slime_v06).
 - Pakai Blender MCP. Setelah tiap tahap, ambil screenshot/preview dan **cek sendiri** sebelum lanjut.

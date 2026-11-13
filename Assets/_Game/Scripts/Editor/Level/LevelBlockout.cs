@@ -39,6 +39,8 @@ namespace GooNapped.EditorTools
         class Config
         {
             public string scene, recipe, recipe2, next, note;
+            // art fondasi per area (AreaArt): "garden", "dungeon"; kosong = tile placeholder lama
+            public string area;
             public string[] map;
             // markas: teman untuk kursi `n`, berurutan (aset Data/Recipes/Friend_*)
             public string[] friends;
@@ -313,6 +315,7 @@ namespace GooNapped.EditorTools
         // kursinya dan bisa diajak bicara (E). Ventilasi exit = lanjut ke level berikutnya.
         static readonly Config Hub = new Config
         {
+            area = "dungeon",
             scene = "Assets/_Game/Scenes/Story/Markas.unity",
             next = "",
             friends = new[] { "Friend_Pip", "Friend_Bolu", "Friend_Tok", "Friend_Lumi", "Friend_Dad", "Friend_Mom", "Friend_Sis", "Friend_Gran" },
@@ -365,6 +368,7 @@ namespace GooNapped.EditorTools
         // ===== Level v2 (desain-v2 bagian 3). Blockout kasar, layout final dari tim desainer. =====
         static readonly Config V2_L01_Gate = new Config
         {
+            area = "garden",
             scene = "Assets/_Game/Scenes/Levels/V2/L01_Gate.unity",
             recipe = null,
             recipe2 = null,
@@ -397,6 +401,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L02_Hedge = new Config
         {
+            area = "garden",
             scene = "Assets/_Game/Scenes/Levels/V2/L02_Hedge.unity",
             recipe = null,
             recipe2 = null,
@@ -428,6 +433,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L03_Mud = new Config
         {
+            area = "garden",
             scene = "Assets/_Game/Scenes/Levels/V2/L03_Mud.unity",
             recipe = null,
             recipe2 = null,
@@ -459,6 +465,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L04_Cells = new Config
         {
+            area = "dungeon",
             scene = "Assets/_Game/Scenes/Levels/V2/L04_Cells.unity",
             recipe = "Friend_Pip",
             recipe2 = null,
@@ -486,6 +493,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L05_CellBlock = new Config
         {
+            area = "dungeon",
             scene = "Assets/_Game/Scenes/Levels/V2/L05_CellBlock.unity",
             recipe = "Friend_Bolu",
             recipe2 = null,
@@ -514,6 +522,7 @@ namespace GooNapped.EditorTools
 
         static readonly Config V2_L06_DrainLab = new Config
         {
+            area = "dungeon",
             scene = "Assets/_Game/Scenes/Levels/V2/L06_DrainLab.unity",
             recipe = "Friend_Tok",
             recipe2 = "Friend_Lumi",
@@ -871,10 +880,20 @@ namespace GooNapped.EditorTools
             var floorTile = PlaceholderTile("Tile_Ground", "Assets/_Game/Art/Sprites/Tiles/tile_floor_stone.png", new Color(0.7f, 0.6f, 0.5f));
             var rockTile = PlaceholderTile("Tile_Rock", "Assets/_Game/Art/Sprites/Tiles/tile_wall_stone.png", new Color(0.4f, 0.42f, 0.5f));
 
+            var art = AreaArt.Get(c.area);
             var floor = Find(scene, "Grid/Floor").GetComponent<Tilemap>();
             var walls = Find(scene, "Grid/Walls").GetComponent<Tilemap>();
+            var decorT = Find(scene, "Grid/Decor");
+            var decor = decorT != null ? decorT.GetComponent<Tilemap>() : null;
             floor.ClearAllTiles();
             walls.ClearAllTiles();
+            if (decor != null)
+            {
+                decor.ClearAllTiles();
+                decor.tileAnchor = new Vector3(0.5f, 0.5f, 0f);
+                decor.GetComponent<TilemapRenderer>().sharedMaterial = envMat;
+                decor.GetComponent<TilemapRenderer>().sortingOrder = -97;
+            }
             floor.tileAnchor = walls.tileAnchor = new Vector3(0.5f, 0.5f, 0f);
             floor.GetComponent<TilemapRenderer>().sharedMaterial = envMat;
             floor.GetComponent<TilemapRenderer>().sortingOrder = -100;
@@ -944,8 +963,13 @@ namespace GooNapped.EditorTools
                     // Posisi aktor = pivot sprite (tengah bawah cell 48px). Kaki/collider ada ±0.22–0.29 di atas pivot,
                     // jadi pivot ditaruh 0.28 di atas tepi bawah tile supaya kaki tepat di TENGAH tile (tidak menempel tembok).
                     var pos = new Vector3(x + 0.5f, y + 0.28f, 0f);
-                    if (ch == '#') { walls.SetTile(cell, rockTile); continue; }
-                    floor.SetTile(cell, floorTile);
+                    if (ch == '#') { walls.SetTile(cell, art != null ? art.wall : rockTile); continue; }
+                    floor.SetTile(cell, art != null ? AreaArt.FloorAt(art, x, y) : floorTile);
+                    if (art != null && decor != null && ch == '.')
+                    {
+                        var dt = AreaArt.DecorAt(art, x, y);
+                        if (dt != null) decor.SetTile(cell, dt);
+                    }
                     switch (ch)
                     {
                         case 'S':
@@ -1007,9 +1031,10 @@ namespace GooNapped.EditorTools
                             z.transform.SetParent(PropRoot(), false);
                             z.transform.position = new Vector3(x + 0.5f, y + 0.5f, 0f);   // sprite tile pivot tengah
                             var sr = z.AddComponent<SpriteRenderer>();
-                            sr.sprite = floorTile.sprite;
+                            var zoneSprite = art != null ? (ch == 'm' ? art.mud : art.water) : null;
+                            sr.sprite = zoneSprite != null ? zoneSprite : floorTile.sprite;
                             sr.sharedMaterial = envMat;
-                            sr.color = ch == 'm' ? new Color(0.45f, 0.32f, 0.2f) : new Color(0.35f, 0.55f, 0.9f);
+                            sr.color = zoneSprite != null ? Color.white : ch == 'm' ? new Color(0.45f, 0.32f, 0.2f) : new Color(0.35f, 0.55f, 0.9f);
                             sr.sortingOrder = -95;
                             var bc = z.AddComponent<BoxCollider2D>();
                             bc.isTrigger = true;
@@ -1124,6 +1149,31 @@ namespace GooNapped.EditorTools
             {
                 var g = Spawn(P + "Enemies/" + kind + "_Placeholder.prefab", guardRoot, sp, kind + "_" + (++gi));
                 Set(g.GetComponent<Guard>(), "patrolPoints", q => { q.arraySize = 1; q.GetArrayElementAtIndex(0).vector2Value = sp; });
+            }
+
+            // taman: pohon di tengah massa pagar tanaman (sel tembok yang 8 tetangganya tembok/luar peta)
+            if (art != null && art.trees != null && art.trees.Length > 0)
+            {
+                var treeRoot = new GameObject("Trees").transform;
+                treeRoot.SetParent(PropRoot(), false);
+                System.Func<int, int, bool> solid = (tx, trow) => trow < 0 || trow >= h || tx < 0 || tx >= w || c.map[trow][tx] == '#';
+                for (int row = 0; row < h; row++)
+                    for (int x = 0; x < w; x++)
+                    {
+                        bool inner = true;
+                        for (int dy = -1; dy <= 1 && inner; dy++)
+                            for (int dx = -1; dx <= 1 && inner; dx++)
+                                if (!solid(x + dx, row + dy)) inner = false;
+                        if (!inner || AreaArt.Hash(x, row, 7) % 100 >= 45) continue;
+                        int y = h - 1 - row;
+                        var tgo = new GameObject("Tree");
+                        tgo.transform.SetParent(treeRoot, false);
+                        tgo.transform.position = new Vector3(x + 0.5f, y - 0.1f, 0f);
+                        var tsr = tgo.AddComponent<SpriteRenderer>();
+                        tsr.sprite = art.trees[AreaArt.Hash(x, row, 8) % art.trees.Length];
+                        tsr.sharedMaterial = envMat;
+                        tsr.flipX = AreaArt.Hash(x, row, 9) % 2 == 0;
+                    }
             }
 
             if (hasFinal)

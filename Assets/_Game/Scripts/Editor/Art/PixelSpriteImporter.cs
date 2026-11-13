@@ -17,7 +17,16 @@ public class PixelSpriteImporter : AssetPostprocessor
 {
     public const string Root = "Assets/_Game/Art/Sprites/";
     public const string TilesRoot = Root + "Tiles/";
-    const int Cell = 48;
+    const int DefaultCell = 48;
+    // Sprite besar: akhiran _c<N> di nama file = sel N px (contoh prop_tree_c96.png). PPU tetap 48.
+    int Cell
+    {
+        get
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(Path.GetFileNameWithoutExtension(assetPath), @"_c(\d+)(_normal)?$");
+            return m.Success ? int.Parse(m.Groups[1].Value) : DefaultCell;
+        }
+    }
 
     Vector2 Pivot => assetPath.StartsWith(TilesRoot) ? new Vector2(0.5f, 0.5f) : new Vector2(0.5f, 0f);
     SpriteAlignment Alignment => assetPath.StartsWith(TilesRoot) ? SpriteAlignment.Center : SpriteAlignment.BottomCenter;
@@ -51,7 +60,7 @@ public class PixelSpriteImporter : AssetPostprocessor
 
         ti.textureType = TextureImporterType.Sprite;
         ti.spriteImportMode = SpriteImportMode.Multiple;
-        ti.spritePixelsPerUnit = Cell;
+        ti.spritePixelsPerUnit = DefaultCell;
         ti.filterMode = FilterMode.Point;
         ti.textureCompression = TextureImporterCompression.Uncompressed;
         ti.mipmapEnabled = false;

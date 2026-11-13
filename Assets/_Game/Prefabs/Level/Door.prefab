@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: -85
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 275734804, guid: 59bde1d52f13d6c408d16c0e797b6ea2, type: 3}
+  m_Sprite: {fileID: -1428965884, guid: d2e6aeadd123100408a958192ec565ca, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -153,6 +153,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.Door
   startsOpen: 0
   spriteRenderer: {fileID: 462105847326575386}
-  closedSprite: {fileID: 275734804, guid: 59bde1d52f13d6c408d16c0e797b6ea2, type: 3}
-  openSprite: {fileID: 2027152123, guid: 59bde1d52f13d6c408d16c0e797b6ea2, type: 3}
+  closedSprite: {fileID: -1428965884, guid: d2e6aeadd123100408a958192ec565ca, type: 3}
+  openSprite: {fileID: -1424823172, guid: d2e6aeadd123100408a958192ec565ca, type: 3}
   noiseRadius: 2.5

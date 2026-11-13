@@ -3,7 +3,8 @@
     "rootNamespace": "GooNapped.Editor",
     "references": [
         "GooNapped.Runtime",
-        "Unity.2D.Sprite.Editor"
+        "Unity.2D.Sprite.Editor",
+        "Unity.2D.Tilemap.Extras"
     ],
     "includePlatforms": [
         "Editor"
