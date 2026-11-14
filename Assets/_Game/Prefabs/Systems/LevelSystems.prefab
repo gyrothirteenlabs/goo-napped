@@ -138,6 +138,8 @@ MonoBehaviour:
   mergeGap: 0.15
   interactRadius: 0.85
   peekRadius: 1.6
+  hideRadius: 0.9
+  friendJoinRadius: 2.4
   switchCooldown: 0.7
   switchLock: 0.3
   splitWindup: 0.3
@@ -209,6 +211,11 @@ MonoBehaviour:
   actionMap: Player
   pauseAction: Pause
   restartAction: Restart
+  panelSettings: {fileID: 11400000, guid: c06df40afa58ec74ba562d6ca0f73ff3, type: 2}
+  styleSheets:
+  - {fileID: 7433441132597879392, guid: e755d1601a98f3f4eb0641037d3f461b, type: 3}
+  - {fileID: 7433441132597879392, guid: 06dc7c0ec0daaf441bdf58f159760087, type: 3}
+  sortingOrder: 50
 --- !u!1001 &7918353921503967793
 PrefabInstance:
   m_ObjectHideFlags: 0

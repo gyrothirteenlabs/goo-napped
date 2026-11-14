@@ -38,6 +38,7 @@ namespace GooNapped
         private static AudioDirector instance;
         private AudioSource[] pool;
         private int next;
+        private AudioSource musicSource, ambienceSource;
 
         private void Awake()
         {
@@ -50,13 +51,23 @@ namespace GooNapped
                 go.transform.SetParent(transform, false);
                 pool[i] = Configure3D(go.AddComponent<AudioSource>());
             }
-            Loop(music, musicVolume, "Music");
-            Loop(ambience, ambienceVolume, "Ambience");
+            musicSource = Loop(music, "Music");
+            ambienceSource = Loop(ambience, "Ambience");
+            ApplyVolumes();
+            GameSettings.Changed += ApplyVolumes;
         }
 
         private void OnDestroy()
         {
+            GameSettings.Changed -= ApplyVolumes;
             if (instance == this) instance = null;
+        }
+
+        // Volume loop = volume dasar di Inspector x setelan pemain (Options). Ambience ikut volume efek.
+        private void ApplyVolumes()
+        {
+            if (musicSource != null) musicSource.volume = musicVolume * GameSettings.MusicVolume;
+            if (ambienceSource != null) ambienceSource.volume = ambienceVolume * GameSettings.SfxVolume;
         }
 
         private AudioSource Configure3D(AudioSource s)
@@ -70,17 +81,17 @@ namespace GooNapped
             return s;
         }
 
-        private void Loop(AudioClip clip, float volume, string name)
+        private AudioSource Loop(AudioClip clip, string name)
         {
-            if (clip == null) return;
+            if (clip == null) return null;
             var go = new GameObject(name);
             go.transform.SetParent(transform, false);
             var s = go.AddComponent<AudioSource>();
             s.clip = clip;
             s.loop = true;
-            s.volume = volume;
             s.spatialBlend = 0f;
             s.Play();
+            return s;
         }
 
         // Kamera ada di z = -10, aktor di z = 0: pendengar dipindah ke bidang permainan supaya jarak suara = jarak di layar.
@@ -128,7 +139,7 @@ namespace GooNapped
             instance.next = (instance.next + 1) % instance.pool.Length;
             s.transform.position = new Vector3(position.x, position.y, 0f);
             s.clip = clip;
-            s.volume = volume * instance.sfxVolume;
+            s.volume = volume * instance.sfxVolume * GameSettings.SfxVolume;
             s.pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
             s.Play();
         }

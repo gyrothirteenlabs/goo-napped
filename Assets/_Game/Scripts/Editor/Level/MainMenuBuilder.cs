@@ -110,7 +110,7 @@ namespace GooNapped.EditorTools
 
             // kamera: diam di tengah ruang
             var cam = Camera.main;
-            cam.transform.position = new Vector3(0.5f, -0.4f, -10f);
+            cam.transform.position = new Vector3(-0.9f, -0.4f, -10f);   // digeser kiri supaya ruangan tampil di kanan slab menu
             cam.backgroundColor = new Color(0.02f, 0.03f, 0.06f);
 
             // cahaya global redup seperti level (mood gelap)

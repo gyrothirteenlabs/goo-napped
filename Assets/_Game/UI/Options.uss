@@ -1,0 +1,211 @@
+/* Options + Pause + transisi (14 Nov, desain Figma "Menu Flow"). Dipakai bersama MainMenu.uss
+   (kelas mm-item, mm-caret, mm-slash, lv-title-*, mm-hidden).
+   Nama kelas dipakai OptionsPanel.cs, PauseMenu.cs, SlimeMusicArt.cs, UiFx.cs: jangan diganti tanpa mengubah kode.
+   Resolusi acuan 960x540. Warna dari art/palette.hex (USULAN). */
+
+/* ================= OPTIONS (layar penuh) ================= */
+.op-panel {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    -unity-font-definition: url("/Assets/ThirdParty/Fonts/PixelifySans/PixelifySans.ttf");
+    color: rgb(186, 178, 164);
+    overflow: hidden;
+}
+.op-dim { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(5, 7, 12, 0.6); }
+.op-slab { position: absolute; left: -120px; top: -80px; width: 560px; height: 700px; background-color: rgba(10, 9, 12, 0.94); rotate: 8deg; }
+.op-accent { position: absolute; left: 418px; top: -80px; width: 10px; height: 700px; background-color: rgb(122, 24, 36); rotate: 8deg; }
+.op-accent2 { position: absolute; left: 436px; top: -80px; width: 4px; height: 700px; background-color: rgba(86, 140, 130, 0.7); rotate: 8deg; }
+
+.op-list { position: absolute; left: 36px; top: 120px; width: 470px; rotate: 4deg; flex-direction: column; }
+.op-row { height: 52px; align-items: center; }
+.op-row .mm-caret { margin-right: 8px; }
+.op-row .mm-caret { margin-right: 12px; }
+.op-name { width: 168px; }
+.op-row .mm-item-label { font-size: 20px; }
+.op-row--button { margin-top: 10px; }
+
+.op-value-box { flex-direction: row; align-items: center; }
+.op-arrow {
+    width: 14px; font-size: 20px; -unity-font-style: bold;
+    color: rgba(0, 0, 0, 0); -unity-text-align: middle-center; margin: 0 2px; padding: 0;
+}
+.mm-item--selected .op-arrow { color: rgb(201, 160, 82); }
+.op-arrow:hover { color: rgb(226, 214, 184); scale: 1.2 1.2; }
+
+/* bar 10 blok pixel */
+.op-bar { flex-direction: row; }
+.op-block {
+    width: 8px; height: 16px; margin-right: 3px;
+    background-color: rgb(40, 36, 40);
+    transition-property: background-color, translate; transition-duration: 0.08s;
+}
+.op-block--on { background-color: rgb(86, 140, 130); }
+.mm-item--selected .op-block--on { background-color: rgb(201, 160, 82); }
+.op-block:hover { translate: 0 -3px; }
+.op-pct { width: 34px; font-size: 12px; -unity-font-style: bold; color: rgb(140, 132, 122); margin: 0 0 0 4px; padding: 0; }
+.mm-item--selected .op-pct { color: rgb(201, 160, 82); }
+.op-pct--off { color: rgb(122, 24, 36); }
+
+/* toggle OFF / ON */
+.op-pill {
+    width: 52px; height: 22px; margin-right: 4px;
+    font-size: 14px; -unity-font-style: bold; -unity-text-align: middle-center;
+    color: rgb(96, 90, 86); background-color: rgb(28, 26, 30);
+    padding: 0;
+    transition-property: background-color, scale; transition-duration: 0.08s;
+}
+.op-pill:hover { scale: 1.08 1.08; }
+.op-pill--on { color: rgb(10, 9, 12); background-color: rgb(86, 140, 130); rotate: -3deg; }
+.mm-item--selected .op-pill--on { background-color: rgb(201, 160, 82); }
+
+.op-value { width: 112px; font-size: 18px; -unity-font-style: bold; color: rgb(186, 178, 164); -unity-text-align: middle-center; margin: 0; padding: 0; }
+.mm-item--selected .op-value { color: rgb(226, 214, 184); }
+
+/* ilustrasi kanan */
+.op-art-frame {
+    position: absolute; left: 556px; top: 120px; width: 332px; height: 212px;
+    background-color: rgb(10, 9, 12);
+    border-width: 3px; border-color: rgb(226, 214, 184);
+    rotate: -2deg;
+    overflow: hidden;
+}
+.op-mood {
+    position: absolute; left: 566px; top: 344px;
+    font-size: 18px; -unity-font-style: bold; letter-spacing: 2px;
+    color: rgb(86, 140, 130);
+    margin: 0; padding: 0;
+}
+.op-mood--party { color: rgb(201, 160, 82); }
+.op-mood--off { color: rgb(96, 90, 86); }
+.op-note { position: absolute; left: 566px; top: 372px; font-size: 12px; color: rgb(96, 90, 86); margin: 0; padding: 0; }
+
+/* ================= ART SLIME (SlimeMusicArt) ================= */
+.art-root { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.art-glow { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.art-stage { position: absolute; left: 6px; top: 14px; width: 320px; height: 180px; }
+.art-floor { background-color: rgb(40, 36, 40); }
+.art-shadow { background-color: rgb(5, 7, 12); opacity: 0.6; }
+.art-px { }
+.art-eye { background-color: rgb(10, 9, 12); }
+.art-eye-shine { }
+.art-mouth { background-color: rgb(10, 9, 12); }
+.art-band { background-color: rgb(10, 9, 12); }
+.art-cup { border-width: 2px; border-color: rgb(10, 9, 12); }
+.art-speaker { background-color: rgb(28, 26, 30); border-width: 2px; border-color: rgb(10, 9, 12); }
+.art-cone { background-color: rgb(10, 9, 12); border-width: 3px; border-color: rgb(60, 54, 56); }
+.art-note { position: absolute; }
+.art-z { font-size: 14px; -unity-font-style: bold; color: rgb(186, 178, 164); margin: 0; padding: 0; }
+.art-sfx { background-color: rgb(186, 178, 164); }
+.art-sfx-wave { background-color: rgb(86, 140, 130); }
+.art-sfx-x { background-color: rgb(122, 24, 36); }
+
+/* ================= PAUSE ================= */
+.pz-overlay {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    -unity-font-definition: url("/Assets/ThirdParty/Fonts/PixelifySans/PixelifySans.ttf");
+    overflow: hidden;
+}
+/* game di belakang: diabukan + digelapkan */
+.pz-grey { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(24, 22, 24, 0.55); }
+.pz-panel { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.pz-slab { position: absolute; left: -160px; top: -60px; width: 590px; height: 700px; background-color: rgba(10, 9, 12, 0.96); rotate: 8deg; }
+.pz-strip { position: absolute; right: 48px; top: 0; bottom: 0; width: 12px; background-color: rgb(122, 24, 36); }
+.pz-strip2 { position: absolute; right: 28px; top: 0; bottom: 0; width: 4px; background-color: rgba(86, 140, 130, 0.7); }
+/* PAUSED besar vertikal (ref Dishonored) */
+.pz-word { position: absolute; left: -96px; top: 222px; width: 340px; height: 100px; rotate: -90deg; }
+.pz-word-text, .pz-word-shadow { position: absolute; left: 0; top: 0; font-size: 92px; -unity-font-style: bold; letter-spacing: 6px; margin: 0; padding: 0; }
+.pz-word-text { color: rgb(226, 214, 184); }
+.pz-word-shadow { color: rgb(70, 14, 20); translate: 6px 6px; }
+.pz-items { position: absolute; left: 128px; top: 150px; width: 300px; rotate: 5deg; flex-direction: column; }
+.pz-item { height: 48px; }
+.pz-item .mm-item-label { font-size: 26px; color: rgb(140, 132, 122); }
+.pz-item.mm-item--selected .mm-item-label { color: rgb(226, 214, 184); }
+/* kartu level sekarang */
+.pz-card {
+    position: absolute; left: 600px; top: 330px; width: 320px;
+    background-color: rgba(10, 9, 12, 0.92);
+    border-width: 2px; border-color: rgb(226, 214, 184);
+    padding: 6px 16px 10px 16px;
+    rotate: -2deg;
+}
+.pz-card-head { flex-direction: row; align-items: center; }
+.pz-card-num { font-size: 54px; -unity-font-style: bold; color: rgb(226, 214, 184); margin: 0 14px 0 0; padding: 0; }
+.pz-card-names { }
+.pz-card-name { font-size: 22px; -unity-font-style: bold; color: rgb(226, 214, 184); letter-spacing: 1px; margin: 0; padding: 0; }
+.pz-card-area { align-self: flex-start; font-size: 12px; -unity-font-style: bold; color: rgb(10, 9, 12); background-color: rgb(160, 96, 46); padding: 1px 6px; margin: 3px 0 0 0; }
+.pz-card-info {
+    font-size: 13px; -unity-font-style: bold; color: rgb(140, 132, 122); letter-spacing: 1px;
+    white-space: normal;
+    border-top-width: 2px; border-top-color: rgb(40, 36, 40);
+    padding-top: 6px; margin: 6px 0 0 0;
+}
+.pz-hint { position: absolute; right: 22px; bottom: 40px; font-size: 13px; color: rgb(140, 132, 122); margin: 0; padding: 0; }
+
+/* ================= TRANSISI (UiFx) ================= */
+.fx-layer { -unity-font-definition: url("/Assets/ThirdParty/Fonts/PixelifySans/PixelifySans.ttf"); }
+/* slash: lembar darah-gelap miring + garis tulang tipis + tepi hitam */
+.fx-slash-sheet {
+    position: absolute; left: -300px; top: -400px; width: 1600px; height: 1400px;
+    background-color: rgb(58, 14, 20);
+    rotate: -12deg;
+}
+.fx-slash-line { position: absolute; right: 26px; top: 0; bottom: 0; width: 4px; background-color: rgb(122, 24, 36); }
+.fx-slash-edge { position: absolute; right: -18px; top: 0; bottom: 0; width: 18px; background-color: rgb(6, 5, 7); }
+/* goo drip: lendir gelap kehijauan dengan kepala tetes */
+.fx-goo-drop { position: absolute; top: 0; height: 0; background-color: rgb(14, 30, 28); }
+.fx-goo-head { position: absolute; left: -2px; right: -2px; bottom: -6px; height: 10px; background-color: rgb(14, 30, 28); border-bottom-width: 2px; border-bottom-color: rgb(46, 82, 76); }
+.fx-goo-shine { position: absolute; left: 30%; top: 8px; width: 2px; height: 30%; background-color: rgba(86, 140, 130, 0.35); }
+/* kartu judul */
+.fx-card { position: absolute; left: 0; right: 0; top: 0; bottom: 0; justify-content: center; }
+.fx-card-band {
+    position: absolute; left: -40px; right: -40px; top: 208px; height: 124px;
+    background-color: rgb(10, 9, 12);
+    rotate: -3deg;
+    transform-origin: left;
+}
+.fx-card-band-line { position: absolute; left: 0; right: 0; top: 8px; height: 3px; background-color: rgb(122, 24, 36); }
+.fx-card-band-edge { position: absolute; left: 0; right: 0; bottom: 8px; height: 3px; background-color: rgb(122, 24, 36); }
+.fx-card-row { flex-direction: row; align-items: center; margin-left: 140px; rotate: -3deg; }
+.fx-solid { }
+.fx-card-numwrap { }
+.fx-card-num { font-size: 96px; -unity-font-style: bold; color: rgb(226, 214, 184); margin: 0; padding: 0; }
+.fx-card-num--shadow { position: absolute; left: 6px; top: 6px; color: rgb(122, 24, 36); }
+.fx-card-num--red { position: absolute; left: 0; top: 0; color: rgba(170, 52, 52, 0.8); }
+.fx-card-num--teal { position: absolute; left: 0; top: 0; color: rgba(86, 140, 130, 0.7); }
+.fx-card-right { margin-left: 26px; }
+.fx-card-kicker { font-size: 16px; -unity-font-style: bold; letter-spacing: 4px; color: rgb(201, 160, 82); margin: 0 0 2px 2px; padding: 0; }
+.fx-card-title { font-size: 48px; -unity-font-style: bold; color: rgb(226, 214, 184); letter-spacing: 3px; margin: 0; padding: 0; }
+.fx-card-title--shadow { position: absolute; left: 4px; top: 4px; color: rgb(70, 14, 20); }
+.fx-card-area {
+    align-self: flex-start;
+    font-size: 16px; -unity-font-style: bold; letter-spacing: 2px;
+    color: rgb(10, 9, 12); background-color: rgb(140, 132, 122);
+    padding: 2px 10px; margin: 6px 0 0 2px;
+}
+.fx-card-info {
+    position: absolute; left: 0; right: 0; top: 356px;
+    font-size: 16px; -unity-font-style: bold; letter-spacing: 2px;
+    color: rgb(140, 132, 122); -unity-text-align: middle-center;
+    margin: 0; padding: 0;
+}
+
+/* ================= TEKSTUR DUNGEON untuk Options & Pause (lihat MainMenu.uss) ================= */
+.op-slab, .pz-slab {
+    background-color: rgb(16, 13, 15);
+    background-image: url("../Art/UI/Generated/ui_brick.png");
+    background-repeat: repeat; background-size: 80px 40px;
+}
+.op-accent {
+    left: 412px; width: 16px;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("../Art/UI/Generated/ui_iron.png");
+    background-repeat: repeat-y; background-size: 16px 40px;
+}
+.op-accent2, .pz-strip2 { display: none; }
+.pz-strip {
+    width: 16px; right: 44px;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("../Art/UI/Generated/ui_iron.png");
+    background-repeat: repeat-y; background-size: 16px 40px;
+}
+.op-art-frame { border-color: rgb(96, 84, 86); }
+.pz-card { border-color: rgb(96, 84, 86); }

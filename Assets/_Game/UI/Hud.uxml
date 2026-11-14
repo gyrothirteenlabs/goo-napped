@@ -1,23 +1,68 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <!-- HUD level. Layout di sini, tampilan (warna, ukuran, font) di Hud.uss. Isi diisi GameHud.cs lewat nama elemen. -->
+    <!-- HUD level. Layout di sini, tampilan di Hud.uss. Isi diisi GameHud.cs lewat nama elemen.
+         Kiri atas = satu kartu slime: potret bulat (ikut besar & warna aura), aura, ukuran, potongan, teman, efek. -->
     <Style src="Hud.uss" />
     <ui:VisualElement name="root" class="hud-root" picking-mode="Ignore">
         <ui:VisualElement class="top-row" picking-mode="Ignore">
-            <ui:VisualElement name="body-panel" class="panel body-panel" picking-mode="Ignore">
-                <ui:Label text="BODY" class="panel-title" />
-                <ui:VisualElement name="traits" class="chip-row" />
-                <ui:VisualElement name="tags" class="chip-row" />
+            <ui:VisualElement name="slime-card" class="sc-card" picking-mode="Ignore">
+                <!-- pita kain di belakang nama aura (Figma "HUD A - Medali besi + pita kain") -->
+                <ui:VisualElement class="sc-ribbon" picking-mode="Ignore" />
+                <!-- potret: medali besi (cincin luar + dalam + 8 paku kuningan) -->
+                <ui:VisualElement class="sc-portrait-wrap" picking-mode="Ignore">
+                    <ui:VisualElement class="sc-medal-shadow" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-medal-outer" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-medal-inner" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-rivet sc-rivet--0" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-rivet sc-rivet--1" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-rivet sc-rivet--2" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-rivet sc-rivet--3" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-rivet sc-rivet--4" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-rivet sc-rivet--5" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-rivet sc-rivet--6" picking-mode="Ignore" />
+                    <ui:VisualElement class="sc-rivet sc-rivet--7" picking-mode="Ignore" />
+                    <ui:VisualElement name="sc-portrait" class="sc-portrait" picking-mode="Ignore">
+                        <ui:VisualElement name="sc-glow" class="sc-glow" picking-mode="Ignore" />
+                        <ui:VisualElement name="sc-slime" class="sc-slime" picking-mode="Ignore">
+                            <ui:VisualElement name="sc-body" class="sc-sprite" picking-mode="Ignore" />
+                            <ui:VisualElement name="sc-face" class="sc-sprite" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="sc-mass" class="sc-mass" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement class="sc-info" picking-mode="Ignore">
+                    <ui:VisualElement class="sc-line" picking-mode="Ignore">
+                        <ui:VisualElement name="sc-aura-dot" class="sc-aura-dot" picking-mode="Ignore" />
+                        <ui:Label name="sc-aura" class="sc-aura" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="sc-line" picking-mode="Ignore">
+                        <ui:Label text="SIZE" class="sc-key" picking-mode="Ignore" />
+                        <ui:VisualElement name="sc-size" class="sc-pips" picking-mode="Ignore" />
+                        <ui:Label text="PIECES" class="sc-key sc-key--gap" picking-mode="Ignore" />
+                        <ui:VisualElement name="sc-pieces" class="sc-pips" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <!-- teman (ikon slime kecil + jumlah yang ikut) di kiri, lalu efek tubuh (titik warna aura + nama) -->
+                    <ui:VisualElement class="sc-line sc-line--fx" picking-mode="Ignore">
+                        <ui:VisualElement name="sc-friend" class="sc-friend" picking-mode="Ignore">
+                            <ui:VisualElement class="sc-friend-icon" picking-mode="Ignore">
+                                <ui:VisualElement class="sc-fi-top" picking-mode="Ignore" />
+                                <ui:VisualElement class="sc-fi-body" picking-mode="Ignore" />
+                                <ui:VisualElement class="sc-fi-eye sc-fi-eye--l" picking-mode="Ignore" />
+                                <ui:VisualElement class="sc-fi-eye sc-fi-eye--r" picking-mode="Ignore" />
+                            </ui:VisualElement>
+                            <ui:Label name="sc-friend-count" text="0" class="sc-friend-count" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="sc-effects" class="sc-effects" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <ui:Label name="sc-goal" class="sc-goal" picking-mode="Ignore" />
+                    <ui:Label name="blob" class="sc-status" picking-mode="Ignore" />
+                </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="recipes" class="recipes" picking-mode="Ignore" />
         </ui:VisualElement>
         <ui:VisualElement class="spacer" picking-mode="Ignore" />
         <ui:Label name="toast" class="toast" />
         <ui:VisualElement class="bottom-row" picking-mode="Ignore">
-            <ui:VisualElement name="stats" class="panel stats" picking-mode="Ignore">
-                <ui:Label name="pieces" class="stat" />
-                <ui:Label name="carried" class="stat" />
-                <ui:Label name="blob" class="stat" />
-            </ui:VisualElement>
+            <ui:VisualElement class="spacer-h" picking-mode="Ignore" />
             <ui:Label name="controls" class="controls" />
         </ui:VisualElement>
         <ui:Label name="banner" class="banner" />
