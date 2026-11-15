@@ -73,39 +73,39 @@ MonoBehaviour:
   - anim: idle
     dir: front
     body:
-    - {fileID: 580349141, guid: c13635244d513ec4cb39f33a1e56369c, type: 3}
+    - {fileID: 32891379, guid: 0dfa20ec8c9cd804ab234d323d478d80, type: 3}
     face:
-    - {fileID: -1637738880, guid: 083bce3fa525d3b4598a36d02f247202, type: 3}
+    - {fileID: 1573982770, guid: cf076f39642ff014385fe2b91a0958fe, type: 3}
   - anim: idle
     dir: side
     body:
-    - {fileID: -1025825897, guid: 390a5dd27b35e2946bcd0a5d9fce7953, type: 3}
+    - {fileID: 154195901, guid: ddbaee8b50255cd479b8d1fb3996827e, type: 3}
     face:
-    - {fileID: 818759134, guid: a9079c78efe04cd4392ad75677b8ca13, type: 3}
+    - {fileID: -1824110620, guid: 07c577be6b2190b4da39f11e8898624b, type: 3}
   - anim: idle
     dir: back
     body:
-    - {fileID: 1327369440, guid: 7afd3723e6b33c0428896568ca2b8564, type: 3}
+    - {fileID: 1335234322, guid: 5ddcb439d01554c4b97c50dac4a67f16, type: 3}
     face:
-    - {fileID: -546837196, guid: 8d2d00350eda98c4eb777cf5224947ec, type: 3}
+    - {fileID: 153653333, guid: ce1e3607080eb76448a89d2426937726, type: 3}
   - anim: move
     dir: front
     body:
-    - {fileID: 580349141, guid: c13635244d513ec4cb39f33a1e56369c, type: 3}
+    - {fileID: 32891379, guid: 0dfa20ec8c9cd804ab234d323d478d80, type: 3}
     face:
-    - {fileID: -1637738880, guid: 083bce3fa525d3b4598a36d02f247202, type: 3}
+    - {fileID: 1573982770, guid: cf076f39642ff014385fe2b91a0958fe, type: 3}
   - anim: move
     dir: side
     body:
-    - {fileID: -1025825897, guid: 390a5dd27b35e2946bcd0a5d9fce7953, type: 3}
+    - {fileID: 154195901, guid: ddbaee8b50255cd479b8d1fb3996827e, type: 3}
     face:
-    - {fileID: 818759134, guid: a9079c78efe04cd4392ad75677b8ca13, type: 3}
+    - {fileID: -1824110620, guid: 07c577be6b2190b4da39f11e8898624b, type: 3}
   - anim: move
     dir: back
     body:
-    - {fileID: 1327369440, guid: 7afd3723e6b33c0428896568ca2b8564, type: 3}
+    - {fileID: 1335234322, guid: 5ddcb439d01554c4b97c50dac4a67f16, type: 3}
     face:
-    - {fileID: -546837196, guid: 8d2d00350eda98c4eb777cf5224947ec, type: 3}
+    - {fileID: 153653333, guid: ce1e3607080eb76448a89d2426937726, type: 3}
   anim: idle
   dir: front
   faceLeft: 0
@@ -234,6 +234,7 @@ MonoBehaviour:
   inspectsJars: 1
   huntInterval: 0
   huntError: 2.5
+  isBoss: 0
   coneMaterial: {fileID: 2100000, guid: 9e729fbbf04433041b2cfa5b24069e88, type: 2}
   coneSortingOrder: -50
 --- !u!82 &3046492034972842579
@@ -607,7 +608,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1637738880, guid: 083bce3fa525d3b4598a36d02f247202, type: 3}
+  m_Sprite: {fileID: 1573982770, guid: cf076f39642ff014385fe2b91a0958fe, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -698,7 +699,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 580349141, guid: c13635244d513ec4cb39f33a1e56369c, type: 3}
+  m_Sprite: {fileID: 32891379, guid: 0dfa20ec8c9cd804ab234d323d478d80, type: 3}
   m_Color: {r: 0.75, g: 0.45, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

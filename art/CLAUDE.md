@@ -101,6 +101,15 @@ Keputusan user 13 Nov: desainer belum sempat, jadi AI membuat **fondasi** art le
 - Unity: `Editor/Level/AreaArt.cs`. `LevelBlockout.Config.area` = `garden` (L01–L03), `dungeon` (L04–L06, Markas), `castle` (L07–L10), `summit` (L11). Tempat sembunyi berganti tampilan per area (taman = semak, kastil = lemari untuk P, tudung saji/panci/tirai untuk T). Tembok = RuleTile (atas/muka otomatis), dekor acak tetap di Grid/Decor, pohon di dalam massa pagar tanaman. Sprite props prefab: GooNapped > Art > Pasang sprite props fondasi.
 - Desainer boleh menimpa file mana pun (nama file sama = langsung terpakai). Dipasang otomatis oleh `LevelBlockout`: karpet (`cst_carpet`) di bagian dalam ruangan/koridor kastil (tidak menutup lantai berderit, lumpur, celah, exit), kandelabra (kastil, puncak) dan rak ramuan (penjara) di depan tembok (tanpa collider/cahaya), mesin penyadap di tembok atas toples raja (L11), jalan tanah (`gdn_dirt`) di taman dari spawn ke ventilasi tujuan.
 
+## Witch Eye (model tim, 15 Nov 2026)
+- Sumber: `art/blender/witcheye_v01.blend` (salinan dari file desainer, file asli tidak diubah). Render lewat template: nama `witcheye`, mode warna flat, `pose:1-1`, tinggi 1.2 m, diangkat 0.35 m (melayang). Hasil `art/sprites/witcheye/` → `Sprites/Enemies/WitchEye/`, dipasang di `WitchEye_Placeholder.prefab` (idle/move pakai pose yang sama).
+- Perbaikan teknis dari file asli: objek belum masuk koleksi MODEL_Body/MODEL_Face dan tidak di-parent ke `Model_Root` (arah side/back tidak berputar); model tidak di tengah dan setengah bola mata di bawah lantai; iris + pupil terbenam di bola mata (hanya menonjol 2 cm/0.4 cm, tidak terlihat di 48 px) → dimajukan 7–8.5 cm, monokel ikut maju; kaca monokel padat menutupi iris → tidak dirender (pindah ke koleksi `WIP_tidak_dirender`); tengkorak melayang tanpa material (`WIP_Tengkorak`) → tidak dirender, tidak dihapus; path output mengarah ke komputer lain → relatif `//../`; salinan add-on di dalam file versi lama → diperbarui.
+- Layer face = iris + pupil. Warna, bentuk, topi, monokel tetap desain tim.
+
+## Strip cerita sementara (AI, 15 Nov 2026)
+- `art/tools/gen_story_strips.py` merakit panel Intro (5) dan Ending (4) dari sprite game yang ada → `Assets/_Game/Art/Story/strip_*.png` (lebar 256×120, tinggi 120×168), pratinjau `art/sprites/_preview_story.png`. Siluet Alkemis = sementara.
+- Teks di `Data/Story/Story_Intro.asset` dan `Story_Ending.asset` (bahasa Inggris). Tim tinggal mengganti gambar (nama file sama) atau isi Inspector.
+
 ## Workflow
 - Modeling → skill `slime-model`. Render → template + add-on (model baru) atau `art/tools/render_slime.py` (slime_v06).
 - Pakai Blender MCP. Setelah tiap tahap, ambil screenshot/preview dan **cek sendiri** sebelum lanjut.
