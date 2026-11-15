@@ -354,6 +354,7 @@ namespace GooNapped
                     : "RESCUE  ·  " + left + (left == 1 ? " FRIEND" : " FRIENDS") + " INSIDE";
             }
             else if (scene == GameFlow.Intro) card.title = "PROLOGUE";
+            else if (scene == GameFlow.Tutorial) { card.kicker = "LEVEL"; card.number = "00"; card.title = "TUTORIAL"; card.area = "DUNGEON"; card.info = "LEARN TO SNEAK, SPLIT AND RESCUE"; }
             return card;
         }
     }

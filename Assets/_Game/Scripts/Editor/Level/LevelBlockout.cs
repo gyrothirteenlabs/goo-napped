@@ -44,6 +44,83 @@ namespace GooNapped.EditorTools
             public string[] map;
             // markas: teman untuk kursi `n`, berurutan (aset Data/Recipes/Friend_*)
             public string[] friends;
+            // stage tutorial: area prompt (TutorialTrigger) dalam koordinat peta
+            public Tip[] tips;
+        }
+
+        // Area prompt tutorial: kotak di peta (kolom & baris kiri-atas, lebar, tinggi dalam tile).
+        // keys kosong = prompt info saja (tampil selama di area). after = indeks tip sebelumnya yang harus selesai dulu (-1 = tidak ada).
+        class Tip
+        {
+            public int col, row, w, h;
+            public string keys, text;
+            public float hold;
+            public int after = -1;
+            public Tip(int col, int row, int w, int h, string keys, string text, float hold = 0f, int after = -1)
+            { this.col = col; this.row = row; this.w = w; this.h = h; this.keys = keys; this.text = text; this.hold = hold; this.after = after; }
+        }
+
+        // ---------- STAGE TUTORIAL (otomatis setelah Intro pada New Game) ----------
+        // Atas (kiri -> kanan): gerak, sembunyi, cahaya, makan + belah/pindah/gabung, muntah + ventilasi.
+        // Bawah (kanan -> kiri): selamatkan Pip (esens cocok, belah di toples, F), lewati Golem, kabur lewat ventilasi exit.
+        static readonly Config V2_L00_Tutorial = new Config
+        {
+            area = "dungeon",
+            scene = "Assets/_Game/Scenes/Levels/V2/L00_Tutorial.unity",
+            recipe = "Friend_Pip",
+            recipe2 = null,
+            next = "L01_Gate",
+            note = "L00 TUTORIAL (otomatis setelah Intro pada New Game). Semua mekanik dasar berurutan, prompt melayang di atas slime\n" +
+                   "(TutorialTrigger di Actors/Tutorial, teks diatur di LevelBlockout.V2_L00_Tutorial.tips). Golem patroli di lorong bawah.\n" +
+                   "Dibangun oleh GooNapped > Blockout > Tutorial (L00). Layout final: tim desainer.",
+            map = new[]
+            {
+                "##########################################",
+                "#......#.......#........#.......#........#",
+                "#......#...T...#...L....#.......#........#",
+                "#.S....#.......#........#..b....#...l....#",
+                "#........................................#",
+                "#......#.......#........#.......#......A.#",
+                "#......#.......#........#.......#........#",
+                "####################################..####",
+                "#......#.................#...............#",
+                "#......#.................#..1......w.....#",
+                "#......#..g.........G....#...............#",
+                "#........................................#",
+                "#......#...T.............#...............#",
+                "#..X...#...........T.....#...............#",
+                "#......#.................#...............#",
+                "##########################################",
+            },
+            tips = new[]
+            {
+                /* 0 */ new Tip(1, 1, 6, 6, "WASD", "to move", 0.6f),
+                /* 1 */ new Tip(8, 1, 7, 6, "C", "to hide · again to come out"),
+                /* 2 */ new Tip(16, 1, 8, 6, "", "light = danger · guards see you there"),
+                /* 3 */ new Tip(25, 1, 7, 6, "E", "to eat essence"),
+                /* 4 */ new Tip(25, 1, 7, 6, "SPACE", "to split", 0f, 3),
+                /* 5 */ new Tip(25, 1, 7, 6, "SHIFT", "to switch piece", 0f, 4),
+                /* 6 */ new Tip(25, 1, 7, 6, "SPACE", "touch your half to merge", 0f, 5),
+                /* 7 */ new Tip(33, 1, 8, 6, "E", "glowing essence = easy to spot", 0f),
+                /* 8 */ new Tip(33, 1, 8, 6, "Q", "to spit the last essence out", 0f, 7),
+                /* 9 */ new Tip(33, 1, 8, 6, "C", "in a vent = safe + checkpoint", 0f, 8),
+                /* 10 */ new Tip(26, 8, 15, 7, "E", "eat the essence that matches the jar's glow"),
+                /* 11 */ new Tip(26, 8, 15, 7, "SPACE", "split next to the jar to leave a copy", 0f, 10),
+                /* 12 */ new Tip(26, 8, 15, 7, "F", "to call your friend", 0f, 11),
+                /* 13 */ new Tip(16, 8, 9, 7, "", "golem! stay out of its sight cone"),
+                /* 14 */ new Tip(8, 8, 8, 7, "C", "spotted? break its sight, then hide"),
+                /* 15 */ new Tip(1, 8, 6, 7, "C", "enter the vent with your friend to escape"),
+            },
+        };
+
+        [MenuItem("GooNapped/Blockout/Tutorial (L00)")]
+        public static void BuildTutorial()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/_Game/Scenes/Levels/V2"))
+                AssetDatabase.CreateFolder("Assets/_Game/Scenes/Levels", "V2");
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(V2_L00_Tutorial.scene) == null)
+                AssetDatabase.CopyAsset("Assets/_Game/Scenes/Levels/Chapter1/C1_L01.unity", V2_L00_Tutorial.scene);
+            Build(V2_L00_Tutorial);
         }
 
         static readonly Config C1L01 = new Config
@@ -1371,6 +1448,36 @@ namespace GooNapped.EditorTools
                     p.arraySize = 1;
                     p.GetArrayElementAtIndex(0).objectReferenceValue = nearest;
                 });
+            }
+
+            // area prompt tutorial (TutorialTrigger), dibangun ulang tiap blockout
+            var oldTips = GameObject.Find("Tutorial");
+            if (oldTips != null) Object.DestroyImmediate(oldTips);
+            if (c.tips != null && c.tips.Length > 0)
+            {
+                var tipRoot = new GameObject("Tutorial").transform;
+                tipRoot.SetParent(actors, false);
+                var made = new TutorialTrigger[c.tips.Length];
+                for (int i = 0; i < c.tips.Length; i++)
+                {
+                    var tip = c.tips[i];
+                    var tgo = new GameObject("Tip_" + i.ToString("00") + "_" + (string.IsNullOrEmpty(tip.keys) ? "info" : tip.keys));
+                    tgo.transform.SetParent(tipRoot, false);
+                    tgo.transform.position = new Vector3(tip.col + tip.w * 0.5f, (h - tip.row) - tip.h * 0.5f, 0f);
+                    var bc = tgo.AddComponent<BoxCollider2D>();
+                    bc.isTrigger = true;
+                    bc.size = new Vector2(tip.w, tip.h);
+                    var tt = tgo.AddComponent<TutorialTrigger>();
+                    Set(tt, "keys", p => p.stringValue = tip.keys ?? "");
+                    Set(tt, "text", p => p.stringValue = tip.text);
+                    Set(tt, "holdToComplete", p => p.floatValue = tip.hold);
+                    if (tip.after >= 0 && tip.after < i)
+                    {
+                        var prev = made[tip.after];
+                        Set(tt, "after", p => p.objectReferenceValue = prev);
+                    }
+                    made[i] = tt;
+                }
             }
 
             var sys = Spawn(P + "Systems/LevelSystems.prefab", null, Vector3.zero, "LevelSystems");

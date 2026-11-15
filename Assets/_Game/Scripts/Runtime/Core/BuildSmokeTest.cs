@@ -35,7 +35,8 @@ namespace GooNapped
                 if (StoryPlayer.IsPlaying) StoryPlayer.Next();
                 yield return new WaitForSecondsRealtime(0.25f);
             }
-            Check(SceneManager.GetActiveScene().name == GameFlow.Levels[0], "Intro selesai -> " + GameFlow.Levels[0] + " (sekarang: " + SceneManager.GetActiveScene().name + ")");
+            string expect = GameFlow.AfterIntro(GameFlow.Levels[0]);   // tutorial kalau ada, kalau tidak level pertama
+            Check(SceneManager.GetActiveScene().name == expect, "Intro selesai -> " + expect + " (sekarang: " + SceneManager.GetActiveScene().name + ")");
 
             foreach (var lv in GameFlow.Levels)
             {

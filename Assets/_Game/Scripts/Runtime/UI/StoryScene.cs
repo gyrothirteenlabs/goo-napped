@@ -14,7 +14,7 @@ namespace GooNapped
             StoryPlayer.Play(sequence, () =>
             {
                 if (string.IsNullOrEmpty(nextScene)) GameFlow.LoadMainMenu();
-                else GameFlow.Load(nextScene);
+                else GameFlow.Load(GameFlow.AfterIntro(nextScene));   // Intro -> tutorial -> L01 (New Game)
             });
         }
     }
