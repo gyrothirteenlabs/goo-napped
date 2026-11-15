@@ -57,6 +57,7 @@ namespace GooNapped
         private void Update()
         {
             if (inside <= 0 || (done && once)) return;
+            if (LevelIntro.Running) { enteredAt = Time.unscaledTime; return; }   // tip baru muncul setelah pembuka level selesai
             if (after != null && !after.Done) return;   // tunggu prompt sebelumnya selesai
             var prompt = TutorialPrompt.Get();
             if (prompt == null) return;

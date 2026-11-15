@@ -14,20 +14,48 @@ MonoBehaviour:
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.StorySequence
   pages:
   - layout: 1
-    image: {fileID: 21300000, guid: d2b2e1a9bba6dbe4e818ba33239ea005, type: 3}
+    image: {fileID: 21300000, guid: 5f88c86f2470c9349977832933e7eaad, type: 3}
     lines:
     - speaker: 
-      text: '[TULIS ENDING DI SINI]'
+      text: The spirit wanted the clear body for itself. It lunged, and caught only
+        a copy.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: The King's Seal shut the lid. The jailer was jailed in his own jar.
       portrait: {fileID: 0}
     autoAdvance: 0
   - layout: 0
-    image: {fileID: 21300000, guid: 5ee38ba08bafe094ca3ced09252d7814, type: 3}
+    image: {fileID: 21300000, guid: ce74024f221016d46803ab692b6ea3ad, type: 3}
     lines:
     - speaker: 
-      text: '[TULIS ENDING DI SINI]'
+      text: The curse broke. Without the spirit, the Alchemist simply faded away.
       portrait: {fileID: 0}
     - speaker: 
-      text: '[...]'
+      text: The machine turned backwards, and every stolen aura flew home.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: Even those who were lost woke up again.
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  - layout: 2
+    image: {fileID: 21300000, guid: 2f6bf3d2b8607bc41801bcea12f621b3, type: 3}
+    lines:
+    - speaker: 
+      text: Friends. Family. Everyone.
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  - layout: 1
+    image: {fileID: 21300000, guid: 1481533e38116174ea538a34b8ffed96, type: 3}
+    lines:
+    - speaker: 
+      text: The Alchemist's tools stayed behind, and the slimes put them to good
+        use.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: Jars became lanterns. The kingdom was rebuilt, brighter than before.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: THE END
       portrait: {fileID: 0}
     autoAdvance: 0
   pauseGame: 1

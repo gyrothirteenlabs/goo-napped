@@ -101,6 +101,19 @@ Keputusan user 13 Nov: desainer belum sempat, jadi AI membuat **fondasi** art le
 - Unity: `Editor/Level/AreaArt.cs`. `LevelBlockout.Config.area` = `garden` (L01–L03), `dungeon` (L04–L06, Markas), `castle` (L07–L10), `summit` (L11). Tempat sembunyi berganti tampilan per area (taman = semak, kastil = lemari untuk P, tudung saji/panci/tirai untuk T). Tembok = RuleTile (atas/muka otomatis), dekor acak tetap di Grid/Decor, pohon di dalam massa pagar tanaman. Sprite props prefab: GooNapped > Art > Pasang sprite props fondasi.
 - Desainer boleh menimpa file mana pun (nama file sama = langsung terpakai). Dipasang otomatis oleh `LevelBlockout`: karpet (`cst_carpet`) di bagian dalam ruangan/koridor kastil (tidak menutup lantai berderit, lumpur, celah, exit), kandelabra (kastil, puncak) dan rak ramuan (penjara) di depan tembok (tanpa collider/cahaya), mesin penyadap di tembok atas toples raja (L11), jalan tanah (`gdn_dirt`) di taman dari spawn ke ventilasi tujuan.
 
+## Witch Eye (model tim, 15 Nov 2026)
+- Sumber: `art/blender/witcheye_v02.blend` (salinan file desainer; file asli di Desktop tidak diubah). Desain tetap milik tim: bentuk, warna mata, topi, monokel, tengkorak pendamping.
+- Yang diubah AI hanya teknis + keterbacaan: objek dimasukkan ke koleksi MODEL_Body/MODEL_Face dan di-parent ke `Model_Root` (dulu arah side/back tidak berputar); posisi ditengahkan pada bola mata dan dibuat melayang; path output dibuat relatif; salinan add-on di file diperbarui; tengkorak (`Skull`) diberi material tulang `WE_Bone` dan lubang mata/hidungnya ditutup muka gelap `WE_BoneDark` (dulu bolong, jadi di 48 px terbaca gumpalan krem); tengkorak keluar dari Edit Mode.
+- Layer face = kaca monokel (di Unity memakai `Enemy_Glow_Unlit`, jadi lensa menyala dalam gelap).
+- Animasi (pivot `WE_Body` dan `WE_Skull`, kunci per frame): `idle` 1-8 (tengkorak mengorbit, mata miring), `move` 11-16 (condong ke depan, tengkorak tertinggal), `search` 21-28 (menoleh kiri-kanan sambil menunduk; dipakai Guard saat mencari/memeriksa kalau clip `search` ada). Melayang naik-turun tetap dari Guard (hoverParts).
+- Render: nama `witcheye`, mode warna flat, tinggi 1.2 m, `Model_Root` z -0.3. Hasil `art/sprites/witcheye/` → `Sprites/Enemies/WitchEye/`, dipasang di `WitchEye_Placeholder.prefab` (dipakai L06, L09, sandbox ProtoEnemies).
+- Bahan review desainer: `docs/review/witcheye/` (lembar sprite, GIF tiap animasi, screenshot di tiap level, gambar model).
+
+## Strip cerita sementara (AI, 15 Nov 2026)
+- `art/tools/gen_story_strips.py` merakit panel Intro (5) dan Ending (4) dari sprite game → `Assets/_Game/Art/Story/strip_*.png`. Semua panel **224x112** (tampil 2x di bingkai cutscene). Pratinjau `art/sprites/_preview_story.png`. Siluet Alkemis = sementara.
+- Tampilan cutscene gaya intro RPG 16-bit (Zelda SNES): gambar berbingkai tetap + kotak teks tetap, font Pixelify Sans, tiap baris mengganti isi kotak (tidak menumpuk/scroll), baris panjang dipecah per kalimat. `UI/Story.uxml/uss`, `StoryPlayer`.
+- Teks di `Data/Story/Story_Intro.asset` dan `Story_Ending.asset` (bahasa Inggris). Tim tinggal mengganti gambar (nama file sama, ukuran 224x112) atau isi Inspector.
+
 ## Workflow
 - Modeling → skill `slime-model`. Render → template + add-on (model baru) atau `art/tools/render_slime.py` (slime_v06).
 - Pakai Blender MCP. Setelah tiap tahap, ambil screenshot/preview dan **cek sendiri** sebelum lanjut.

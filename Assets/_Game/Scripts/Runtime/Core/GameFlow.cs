@@ -51,8 +51,20 @@ namespace GooNapped
             PlayerPrefs.Save();
         }
 
+        // Scene yang baru dimasuki lewat alur game (menu, cerita, markas, level sebelumnya). Pembuka level (LevelIntro)
+        // hanya diputar saat itu: tidak saat Retry / ulang dari checkpoint (ReloadCurrent), tidak di test yang memuat
+        // scene langsung lewat SceneManager.
+        private static string arrived = "";
+        public static bool ConsumeArrival(string scene)
+        {
+            if (arrived != scene) return false;
+            arrived = "";
+            return true;
+        }
+
         public static void Load(string scene)
         {
+            arrived = scene;
             Time.timeScale = 1f;
             Checkpoint.Clear();   // checkpoint hanya berlaku untuk level yang sedang dimainkan
             if (Application.CanStreamedLevelBeLoaded(scene)) { SceneManager.LoadScene(scene); return; }
@@ -125,6 +137,7 @@ namespace GooNapped
         // Di editor, scene sandbox yang tidak ada di Build Settings dimuat lewat path.
         public static void ReloadCurrent()
         {
+            arrived = "";
             Time.timeScale = 1f;
             var scene = SceneManager.GetActiveScene();
 #if UNITY_EDITOR

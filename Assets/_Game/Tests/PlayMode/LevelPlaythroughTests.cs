@@ -41,6 +41,7 @@ namespace GooNapped.Tests
         [OneTimeSetUp]
         public void SaveProgress()
         {
+            LevelIntro.Suppressed = true;   // bot langsung bermain, tanpa pembuka sinematik
             hadUnlock = PlayerPrefs.HasKey(UnlockKey);
             savedUnlock = PlayerPrefs.GetInt(UnlockKey, 0);
             hadPowers = PlayerPrefs.HasKey(PowersKey);
@@ -52,6 +53,7 @@ namespace GooNapped.Tests
         [OneTimeTearDown]
         public void RestoreProgress()
         {
+            LevelIntro.Suppressed = false;
             if (hadUnlock) PlayerPrefs.SetInt(UnlockKey, savedUnlock); else PlayerPrefs.DeleteKey(UnlockKey);
             if (hadPowers) PlayerPrefs.SetString(PowersKey, savedPowers); else PlayerPrefs.DeleteKey(PowersKey);
             if (hadRescued) PlayerPrefs.SetString(RescuedKey, savedRescued); else PlayerPrefs.DeleteKey(RescuedKey);

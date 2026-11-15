@@ -14,24 +14,66 @@ MonoBehaviour:
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.StorySequence
   pages:
   - layout: 2
-    image: {fileID: 21300000, guid: d2b2e1a9bba6dbe4e818ba33239ea005, type: 3}
-    lines: []
-    autoAdvance: 0
-  - layout: 0
-    image: {fileID: 21300000, guid: 5ee38ba08bafe094ca3ced09252d7814, type: 3}
+    image: {fileID: 21300000, guid: 4d001960f2006a54ab5cdabb894e4cde, type: 3}
     lines:
     - speaker: 
-      text: '[TULIS INTRO DI SINI]'
+      text: Once, the slime kingdom lived in peace.
       portrait: {fileID: 0}
     - speaker: 
-      text: '[...]'
+      text: 'Every slime carried an aura: a small spark of life, and a hidden strength.'
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  - layout: 0
+    image: {fileID: 21300000, guid: e36543352359cd5488f07716009b9934, type: 3}
+    lines:
+    - speaker: 
+      text: Long ago, our ancestors sealed an ancient spirit inside a jar.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: Then the Alchemist found that jar, and opened it.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: The spirit took his body. And it was hungry for aura.
       portrait: {fileID: 0}
     autoAdvance: 0
   - layout: 1
-    image: {fileID: 21300000, guid: d2b2e1a9bba6dbe4e818ba33239ea005, type: 3}
+    image: {fileID: 21300000, guid: cc558aac6d675b34cbb3a811eae8cf64, type: 3}
     lines:
     - speaker: 
-      text: '[TULIS INTRO DI SINI]'
+      text: The castle fell. His lens read every slime.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: Ordinary auras were drained to nothing. Strong hidden ones were locked
+        in jars, drained slowly.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: The King was taken to the very top, beside the great machine.
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  - layout: 0
+    image: {fileID: 21300000, guid: 9930838e163d5224cb6124b875cbe63e, type: 3}
+    lines:
+    - speaker: 
+      text: One small slime had an aura so clear, the lens read nothing at all.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: Empty, they said. Useless.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: So they threw it out.
+      portrait: {fileID: 0}
+    autoAdvance: 0
+  - layout: 1
+    image: {fileID: 21300000, guid: b8bee11504716f14f9c56651daf2187d, type: 3}
+    lines:
+    - speaker: 
+      text: But its best friend is in there. Its family too.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: And a clear body can copy any aura it eats.
+      portrait: {fileID: 0}
+    - speaker: 
+      text: Time to sneak back in.
       portrait: {fileID: 0}
     autoAdvance: 0
   pauseGame: 1

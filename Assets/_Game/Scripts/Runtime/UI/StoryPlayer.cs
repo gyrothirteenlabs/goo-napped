@@ -12,21 +12,28 @@ namespace GooNapped
     //   StoryPlayer.Play(sequence, () => { ... selesai ... });
     //   StoryPlayer.Say("Nama", "Teks dialog", potret);
     // Kalau sedang memutar, permintaan baru diantrekan. Selama cerita: input pemain terkunci, game dijeda (opsional).
+    //
+    // Tampilan gaya intro RPG 16-bit (Story.uxml/uss): halaman bergambar = gambar berbingkai tetap + kotak teks tetap
+    // di bawahnya; dialog = kotak teks di atas permainan. Tiap baris MENGGANTIKAN isi kotak (tidak menumpuk), dan baris
+    // yang terlalu panjang dipecah per kalimat jadi beberapa "kotak", jadi teks tidak pernah scroll dan gambar tidak hilang.
     [RequireComponent(typeof(UIDocument))]
     public class StoryPlayer : MonoBehaviour
     {
         [SerializeField] private InputActionAsset actions;
-        [SerializeField] private float charsPerSecond = 45f;
-        [SerializeField] private float fadeTime = 0.25f;
+        [SerializeField] private float charsPerSecond = 40f;
+        [Tooltip("Lama fade hitam antar halaman bergambar (detik).")]
+        [SerializeField] private float fadeTime = 0.22f;
+        [Tooltip("Batas karakter satu kotak teks (3 baris). Baris yang lebih panjang dipecah per kalimat.")]
+        [SerializeField] private int maxCharsPerBox = 150;
 
         public static StoryPlayer Instance { get; private set; }
         public static bool IsPlaying => Instance != null && Instance.playing;
 
-        private VisualElement root, backdrop, portrait;
-        private VisualElement[] layouts;
-        private VisualElement[] images;
-        private VisualElement[] lineBoxes;
-        private Label speaker, dialogueText, next, skipHint;
+        private VisualElement root, backdrop, fade, layoutCine, layoutDialogue, cineFrame, cineImage, cineBox, portrait;
+        private VisualElement cineNext, dialogueNext, barTop, barBottom;
+        private bool cinematic;
+        private float barHeight;   // tinggi garis sinematik sekarang (px panel)
+        private Label cineSpeaker, cineText, speaker, dialogueText, skipHint;
         private InputAction interact, jump, pause;
         private readonly Queue<(StorySequence seq, Action done)> queue = new Queue<(StorySequence, Action)>();
         private bool playing;
@@ -41,14 +48,22 @@ namespace GooNapped
             var doc = GetComponent<UIDocument>().rootVisualElement;
             root = doc.Q("story-root");
             backdrop = doc.Q("backdrop");
-            layouts = new[] { doc.Q("layout-left"), doc.Q("layout-top"), doc.Q("layout-only"), doc.Q("layout-dialogue") };
-            images = new[] { doc.Q("left-image"), doc.Q("top-image"), doc.Q("only-image"), null };
-            lineBoxes = new[] { doc.Q("left-lines"), doc.Q("top-lines"), doc.Q("only-lines"), null };
+            fade = doc.Q("fade");
+            layoutCine = doc.Q("layout-cine");
+            layoutDialogue = doc.Q("layout-dialogue");
+            cineFrame = doc.Q("cine-frame");
+            cineImage = doc.Q("cine-image");
+            cineBox = doc.Q("cine-box");
+            cineSpeaker = doc.Q<Label>("cine-speaker");
+            cineText = doc.Q<Label>("cine-text");
+            cineNext = doc.Q("cine-next");
             portrait = doc.Q("portrait");
             speaker = doc.Q<Label>("speaker");
             dialogueText = doc.Q<Label>("dialogue-text");
-            next = doc.Q<Label>("next");
+            dialogueNext = doc.Q("dialogue-next");
             skipHint = doc.Q<Label>("skip-hint");
+            barTop = doc.Q("bar-top");
+            barBottom = doc.Q("bar-bottom");
             if (actions != null)
             {
                 var map = actions.FindActionMap("Player", false);
@@ -110,6 +125,62 @@ namespace GooNapped
             return kb != null && kb.escapeKey.wasPressedThisFrame;
         }
 
+        // ---- mode sinematik (LevelIntro): garis hitam atas/bawah, layar bisa digelapkan, dialog tampil di atas game ----
+        public static bool CinematicActive => Instance != null && Instance.cinematic;
+
+        public static void SetCinematic(bool on)
+        {
+            if (Instance == null) return;
+            var s = Instance;
+            s.cinematic = on;
+            s.root.EnableInClassList("story--cinematic", on);
+            if (on)
+            {
+                s.root.RemoveFromClassList("story--hidden");
+                s.backdrop.AddToClassList("backdrop--hidden");
+                s.layoutCine.RemoveFromClassList("layout--active");
+                s.layoutDialogue.RemoveFromClassList("layout--active");
+                s.skipHint.style.display = DisplayStyle.Flex;
+            }
+            s.StopCoroutine(nameof(AnimateBars));
+            s.StartCoroutine(nameof(AnimateBars), on ? 30f : 0f);
+        }
+
+        private IEnumerator AnimateBars(float target)
+        {
+            while (!Mathf.Approximately(barHeight, target))
+            {
+                barHeight = Mathf.MoveTowards(barHeight, target, Time.unscaledDeltaTime * 90f);
+                barTop.style.height = barBottom.style.height = Mathf.Round(barHeight);
+                yield return null;
+            }
+            if (target <= 0f && !cinematic && !playing) root.AddToClassList("story--hidden");
+        }
+
+        // Layar hitam (0 = terang, 1 = hitam) bertahap; dipakai pembuka level.
+        public static IEnumerator FadeScreen(float to, float time = 0.4f)
+        {
+            if (Instance == null) yield break;
+            var s = Instance;
+            s.root.RemoveFromClassList("story--hidden");
+            float from = s.fade.resolvedStyle.opacity;
+            for (float t = 0f; t < time; t += Time.unscaledDeltaTime)
+            {
+                s.fade.style.opacity = Mathf.Lerp(from, to, Mathf.Floor(t / time * 5f) / 5f);
+                yield return null;
+            }
+            s.fade.style.opacity = to;
+        }
+
+        public static void SetBlack(bool black)
+        {
+            if (Instance == null) return;
+            Instance.root.RemoveFromClassList("story--hidden");
+            Instance.fade.style.opacity = black ? 1f : 0f;
+        }
+
+        private static bool IsCine(StorySequence.Page p) => p.layout != StorySequence.Layout.Dialogue;
+
         private IEnumerator RunQueue()
         {
             playing = true;
@@ -120,91 +191,118 @@ namespace GooNapped
                 if (seq.pauseGame) Time.timeScale = 0f;
                 root.RemoveFromClassList("story--hidden");
                 skipHint.style.display = seq.skippable ? DisplayStyle.Flex : DisplayStyle.None;
+                bool startsCine = seq.pages.Count > 0 && IsCine(seq.pages[0]);
+                fade.style.opacity = startsCine ? 1f : 0f;   // halaman bergambar pertama muncul dari hitam
                 yield return null;   // jangan pakai tombol yang memicu cerita sebagai "lanjut"
                 bool skipped = false;
+                StorySequence.Page prev = null;
                 foreach (var page in seq.pages)
                 {
                     if (skipped) break;
-                    yield return ShowPage(seq, page, s => skipped = s);
+                    yield return ShowPage(seq, prev, page, s => skipped = s);
+                    prev = page;
                 }
-                root.AddToClassList("story--hidden");
+                if (prev != null && IsCine(prev)) yield return FadeTo(1f);   // tutup ke hitam
+                if (!cinematic) root.AddToClassList("story--hidden");
+                else { layoutCine.RemoveFromClassList("layout--active"); layoutDialogue.RemoveFromClassList("layout--active"); backdrop.AddToClassList("backdrop--hidden"); }
+                fade.style.opacity = 0f;
                 Time.timeScale = prevScale <= 0f ? 1f : prevScale;
                 done?.Invoke();
             }
             playing = false;
         }
 
-        private IEnumerator ShowPage(StorySequence seq, StorySequence.Page page, Action<bool> setSkipped)
+        private IEnumerator ShowPage(StorySequence seq, StorySequence.Page prev, StorySequence.Page page, Action<bool> setSkipped)
         {
-            int li = (int)page.layout;
-            for (int i = 0; i < layouts.Length; i++) layouts[i].EnableInClassList("layout--active", i == li);
-            backdrop.EnableInClassList("backdrop--hidden", page.layout == StorySequence.Layout.Dialogue);
-            var layout = layouts[li];
-            if (images[li] != null)
+            bool cine = IsCine(page);
+            // ganti gambar lewat hitam (gaya intro 16-bit); dialog langsung
+            if (cine && prev != null && IsCine(prev)) yield return FadeTo(1f);
+            layoutCine.EnableInClassList("layout--active", cine);
+            layoutDialogue.EnableInClassList("layout--active", !cine);
+            backdrop.EnableInClassList("backdrop--hidden", !cine);
+            Label target;
+            VisualElement nextArrow;
+            if (cine)
             {
-                images[li].style.backgroundImage = page.image != null ? new StyleBackground(page.image) : new StyleBackground();
-                images[li].style.display = page.image != null ? DisplayStyle.Flex : DisplayStyle.None;
+                cineFrame.EnableInClassList("cine-frame--empty", page.image == null);
+                cineImage.style.backgroundImage = page.image != null ? new StyleBackground(page.image) : new StyleBackground(StyleKeyword.None);
+                cineText.text = "";
+                cineSpeaker.AddToClassList("speaker-tab--hidden");
+                cineBox.EnableInClassList("cine-box--hidden", page.lines.Count == 0);
+                target = cineText; nextArrow = cineNext;
+                yield return FadeTo(0f);
             }
-            if (lineBoxes[li] != null) lineBoxes[li].Clear();
-            yield return Fade(layout, 0f, 1f);
+            else
+            {
+                dialogueText.text = "";
+                target = dialogueText; nextArrow = dialogueNext;
+            }
 
             if (page.lines.Count == 0)
             {
                 // halaman gambar saja
                 bool skip = false;
-                yield return WaitAdvance(seq, page, s => skip = s);
-                if (skip) { setSkipped(true); yield break; }
+                yield return WaitAdvance(seq, page, nextArrow, s => skip = s);
+                if (skip) setSkipped(true);
+                yield break;
             }
 
             foreach (var line in page.lines)
             {
-                Label target;
-                if (page.layout == StorySequence.Layout.Dialogue)
+                var spk = cine ? cineSpeaker : speaker;
+                spk.text = line.speaker ?? "";
+                spk.EnableInClassList("speaker-tab--hidden", string.IsNullOrEmpty(line.speaker));
+                if (!cine)
                 {
-                    speaker.text = line.speaker ?? "";
-                    speaker.style.display = string.IsNullOrEmpty(line.speaker) ? DisplayStyle.None : DisplayStyle.Flex;
                     portrait.EnableInClassList("portrait--hidden", line.portrait == null);
                     if (line.portrait != null) portrait.style.backgroundImage = new StyleBackground(line.portrait);
-                    target = dialogueText;
                 }
-                else
+                foreach (var chunk in Chunks(line.text ?? "", maxCharsPerBox))
                 {
-                    // gaya cutscene: baris baru ditambahkan di bawah baris sebelumnya
-                    if (!string.IsNullOrEmpty(line.speaker))
+                    // ketik bertahap; tekan tombol = tampilkan seluruh kotak
+                    nextArrow.AddToClassList("next--hidden");
+                    float shown = 0f;
+                    while (shown < chunk.Length)
                     {
-                        var sp = new Label(line.speaker);
-                        sp.AddToClassList("line-speaker");
-                        lineBoxes[li].Add(sp);
+                        if (seq.skippable && SkipPressed()) { setSkipped(true); yield break; }
+                        if (AdvancePressed()) { yield return null; break; }
+                        shown += Time.unscaledDeltaTime * charsPerSecond;
+                        target.text = chunk.Substring(0, Mathf.Min(chunk.Length, (int)shown));
+                        yield return null;
                     }
-                    target = new Label();
-                    target.AddToClassList("line");
-                    lineBoxes[li].Add(target);
+                    target.text = chunk;
+                    bool skipNow = false;
+                    yield return WaitAdvance(seq, page, nextArrow, s => skipNow = s);
+                    if (skipNow) { setSkipped(true); yield break; }
                 }
-
-                // ketik bertahap; tekan tombol = tampilkan seluruh baris
-                string full = line.text ?? "";
-                next.AddToClassList("next--hidden");
-                float shown = 0f;
-                while (shown < full.Length)
-                {
-                    if (seq.skippable && SkipPressed()) { setSkipped(true); yield break; }
-                    if (AdvancePressed()) { shown = full.Length; yield return null; break; }
-                    shown += Time.unscaledDeltaTime * charsPerSecond;
-                    target.text = full.Substring(0, Mathf.Min(full.Length, (int)shown));
-                    yield return null;
-                }
-                target.text = full;
-
-                bool skipNow = false;
-                yield return WaitAdvance(seq, page, s => skipNow = s);
-                if (skipNow) { setSkipped(true); yield break; }
             }
-            yield return Fade(layout, 1f, 0f);
         }
 
-        private IEnumerator WaitAdvance(StorySequence seq, StorySequence.Page page, Action<bool> setSkipped)
+        // Pecah teks jadi potongan <= max karakter, di batas kalimat (. ! ? …) kalau bisa, kalau tidak di batas kata.
+        public static List<string> Chunks(string text, int max)
         {
-            next.RemoveFromClassList("next--hidden");
+            var result = new List<string>();
+            text = text.Trim();
+            while (text.Length > max)
+            {
+                int cut = -1;
+                for (int i = Mathf.Min(max, text.Length - 1); i > max / 3; i--)
+                {
+                    char c = text[i - 1];
+                    if ((c == '.' || c == '!' || c == '?' || c == ':' || c == ';' || c == '…') && text[i] == ' ') { cut = i; break; }
+                }
+                if (cut < 0) cut = text.LastIndexOf(' ', max);
+                if (cut <= 0) cut = max;
+                result.Add(text.Substring(0, cut).Trim());
+                text = text.Substring(cut).Trim();
+            }
+            if (text.Length > 0 || result.Count == 0) result.Add(text);
+            return result;
+        }
+
+        private IEnumerator WaitAdvance(StorySequence seq, StorySequence.Page page, VisualElement nextArrow, Action<bool> setSkipped)
+        {
+            nextArrow.RemoveFromClassList("next--hidden");
             float t = 0f;
             while (true)
             {
@@ -212,21 +310,25 @@ namespace GooNapped
                 if (AdvancePressed()) break;
                 t += Time.unscaledDeltaTime;
                 if (page.autoAdvance > 0f && t >= page.autoAdvance) break;
-                next.style.opacity = Mathf.PingPong(Time.unscaledTime * 2f, 1f);   // kedip
+                nextArrow.style.opacity = Mathf.Repeat(Time.unscaledTime * 1.6f, 1f) < 0.6f ? 1f : 0f;   // kedip pixel (bukan pudar)
                 yield return null;
             }
-            next.AddToClassList("next--hidden");
+            nextArrow.AddToClassList("next--hidden");
             yield return null;
         }
 
-        private IEnumerator Fade(VisualElement e, float from, float to)
+        private IEnumerator FadeTo(float to)
         {
+            float from = fade.resolvedStyle.opacity;
+            if (Mathf.Approximately(from, to)) { fade.style.opacity = to; yield break; }
             for (float t = 0f; t < fadeTime; t += Time.unscaledDeltaTime)
             {
-                e.style.opacity = Mathf.Lerp(from, to, t / fadeTime);
+                // fade bertangga 4 langkah (rasa 16-bit), bukan halus
+                float k = Mathf.Floor(Mathf.Clamp01(t / fadeTime) * 4f) / 4f;
+                fade.style.opacity = Mathf.Lerp(from, to, k);
                 yield return null;
             }
-            e.style.opacity = to;
+            fade.style.opacity = to;
         }
     }
 }

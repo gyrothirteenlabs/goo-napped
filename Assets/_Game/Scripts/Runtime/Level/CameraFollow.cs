@@ -41,6 +41,9 @@ namespace GooNapped
             return Clamp(new Vector3(p.x, p.y, transform.position.z));
         }
 
+        // Dipakai juga oleh LevelIntro (kamera sinematik tetap di dalam batas level).
+        public Vector3 ClampToBounds(Vector3 p) => Clamp(p);
+
         private Vector3 Clamp(Vector3 p)
         {
             if (bounds == null || cam == null || !cam.orthographic) return p;

@@ -46,6 +46,20 @@ namespace GooNapped.EditorTools
             public string[] friends;
             // stage tutorial: area prompt (TutorialTrigger) dalam koordinat peta
             public Tip[] tips;
+            // pembuka level sinematik (LevelIntro). null = level biasa: teks LevelCatalog, kamera menyorot tujuan (X / R / E).
+            public IntroShot[] intro;
+            public string[] introAfter;
+            public bool introDrop;          // slime jatuh dari pipa di langit-langit
+            public Vector2 introWalk;       // slime melompat sendiri sejauh ini setelah masuk (unit)
+        }
+
+        // Titik sorot kamera pembuka (kolom & baris peta, zoom keluar, lama gerak kamera).
+        class IntroShot
+        {
+            public float col, row, zoom, move;
+            public string line;
+            public IntroShot(float col, float row, float zoom, float move, string line)
+            { this.col = col; this.row = row; this.zoom = zoom; this.move = move; this.line = line; }
         }
 
         // Area prompt tutorial: kotak di peta (kolom & baris kiri-atas, lebar, tinggi dalam tile).
@@ -67,7 +81,7 @@ namespace GooNapped.EditorTools
         {
             area = "dungeon",
             scene = "Assets/_Game/Scenes/Levels/V2/L00_Tutorial.unity",
-            recipe = "Friend_Pip",
+            recipe = "Friend_Dot",   // teman khusus tutorial (Pip = sahabat di L04, jangan diselamatkan dua kali)
             recipe2 = null,
             next = "L01_Gate",
             note = "L00 TUTORIAL (otomatis setelah Intro pada New Game). Semua mekanik dasar berurutan, prompt melayang di atas slime\n" +
@@ -92,6 +106,18 @@ namespace GooNapped.EditorTools
                 "#......#.................#...............#",
                 "##########################################",
             },
+            // pembuka: kamera menyapu ruang bawah tanah (gambaran besar -> toples -> golem -> ventilasi keluar),
+            // lalu slime jatuh dari pipa di kamar pertama, melompat masuk, menengok, baru tip WASD muncul
+            intro = new[]
+            {
+                new IntroShot(21f, 7.5f, 2.2f, 0f, "The old drain pipe runs straight into the castle cellars. Nobody comes down here anymore."),
+                new IntroShot(29f, 9f, 1.3f, 1.8f, "Down there, a jar is glowing. Someone is trapped inside."),
+                new IntroShot(13f, 10f, 1.4f, 1.6f, "A golem patrols the lower hall. Never step into its sight."),
+                new IntroShot(3f, 13f, 1.3f, 1.3f, "And that vent leads out of the cellars."),
+            },
+            introAfter = new[] { "A small, clear slime. Nobody will notice you... if you're careful." },
+            introDrop = true,
+            introWalk = new Vector2(1.6f, 0f),
             tips = new[]
             {
                 /* 0 */ new Tip(1, 1, 6, 6, "WASD", "to move", 0.6f),
@@ -100,7 +126,7 @@ namespace GooNapped.EditorTools
                 /* 3 */ new Tip(25, 1, 7, 6, "E", "to eat essence"),
                 /* 4 */ new Tip(25, 1, 7, 6, "SPACE", "to split", 0f, 3),
                 /* 5 */ new Tip(25, 1, 7, 6, "SHIFT", "to switch piece", 0f, 4),
-                /* 6 */ new Tip(25, 1, 7, 6, "SPACE", "touch your half to merge", 0f, 5),
+                /* 6 */ new Tip(25, 1, 7, 6, "SPACE", "next to your other half to merge", 0f, 5),
                 /* 7 */ new Tip(33, 1, 8, 6, "E", "glowing essence = easy to spot", 0f),
                 /* 8 */ new Tip(33, 1, 8, 6, "Q", "to spit the last essence out", 0f, 7),
                 /* 9 */ new Tip(33, 1, 8, 6, "C", "in a vent = safe + checkpoint", 0f, 8),
@@ -1448,6 +1474,51 @@ namespace GooNapped.EditorTools
                     p.arraySize = 1;
                     p.GetArrayElementAtIndex(0).objectReferenceValue = nearest;
                 });
+            }
+
+            // pembuka level sinematik (LevelIntro): level v2 + tutorial, tidak di markas / sandbox
+            var oldIntro = GameObject.Find("LevelIntro");
+            if (oldIntro != null) Object.DestroyImmediate(oldIntro);
+            string sceneName = System.IO.Path.GetFileNameWithoutExtension(c.scene);
+            if (c.intro != null || GameFlow.IndexOf(sceneName) >= 0)
+            {
+                Vector2 goalPos = Vector2.zero;
+                foreach (char want in "XRE")
+                {
+                    bool found = false;
+                    for (int row = 0; row < h && !found; row++)
+                        for (int x = 0; x < w && !found; x++)
+                            if (at(x, row) == want) { goalPos = new Vector2(x + 0.5f, h - 1 - row + 0.5f); found = true; }
+                    if (found) break;
+                }
+                var introGo = new GameObject("LevelIntro");
+                var li = introGo.AddComponent<LevelIntro>();
+                Set(li, "fromCatalog", p => p.boolValue = c.intro == null);
+                Set(li, "goal", p => p.vector2Value = goalPos);
+                Set(li, "entry", p => p.enumValueIndex = c.introDrop ? (int)LevelIntro.Entry.Drop : (int)LevelIntro.Entry.None);
+                Set(li, "walkIn", p => p.vector2Value = c.introWalk);
+                Set(li, "lookAround", p => p.boolValue = c.intro != null);
+                if (c.intro != null)
+                    Set(li, "shots", p =>
+                    {
+                        p.arraySize = c.intro.Length;
+                        for (int i = 0; i < c.intro.Length; i++)
+                        {
+                            var e = p.GetArrayElementAtIndex(i);
+                            var sh = c.intro[i];
+                            e.FindPropertyRelative("focus").vector2Value = new Vector2(sh.col + 0.5f, h - 1 - sh.row + 0.5f);
+                            e.FindPropertyRelative("zoom").floatValue = sh.zoom;
+                            e.FindPropertyRelative("moveTime").floatValue = sh.move;
+                            e.FindPropertyRelative("hold").floatValue = 0.35f;
+                            e.FindPropertyRelative("line").stringValue = sh.line;
+                        }
+                    });
+                if (c.introAfter != null)
+                    Set(li, "afterLines", p =>
+                    {
+                        p.arraySize = c.introAfter.Length;
+                        for (int i = 0; i < c.introAfter.Length; i++) p.GetArrayElementAtIndex(i).stringValue = c.introAfter[i];
+                    });
             }
 
             // area prompt tutorial (TutorialTrigger), dibangun ulang tiap blockout
