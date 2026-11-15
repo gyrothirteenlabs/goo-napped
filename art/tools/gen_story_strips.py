@@ -1,6 +1,6 @@
 # Strip cerita SEMENTARA (AI, 15 Nov 2026) untuk Intro dan Ending. Diganti tim (gambar + teks).
 # Panel dirakit dari sprite game yang sudah ada (slime, toples, tile, toples raja, mesin penyadap) supaya gayanya nyambung.
-# Ukuran sama dengan placeholder lama: lebar 256x120 (layout ImageTop / ImageOnly), tinggi 120x168 (ImageLeft).
+# Semua panel 224x112, tampil 2x di bingkai cutscene gaya intro RPG 16-bit (Story.uss).
 # Output: Assets/_Game/Art/Story/strip_*.png + pratinjau art/sprites/_preview_story.png
 # Jalankan: python art/tools/gen_story_strips.py
 import os, math, random
@@ -10,7 +10,7 @@ from PIL import Image
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SPR = os.path.join(ROOT, "Assets", "_Game", "Art", "Sprites")
 OUT = os.path.join(ROOT, "Assets", "_Game", "Art", "Story")
-WIDE, TALL = (256, 120), (120, 168)
+P = (224, 112)   # ukuran semua panel
 
 AURA = {  # warna aura teman (selaras palet Slime_* di Unity, kira-kira)
     "pip": (90, 150, 230), "lumi": (150, 220, 90), "tok": (170, 110, 220), "bara": (235, 120, 60),
@@ -181,79 +181,8 @@ def smoke(cv, x, y, rgb=(140, 80, 200), seed=7):
 
 
 # ------------------------------------------------------------------ panel
-def p_kingdom():
-    cv = gradient(WIDE, (40, 50, 90), (80, 70, 110))
-    stars(cv, 25)
-    castle(cv, 86, 70, color=(40, 36, 70), windows=False)
-    tile_fill(cv, "Tiles/Garden/gdn_grass.png", frames=4, y0=84)
-    for x, c, f in ((44, "pip", False), (92, "lumi", True), (150, "tok", False), (204, "bara", True)):
-        put(cv, slime(c, flip=f), x, 112)
-    cv = glow(cv, 128, 100, 120, (255, 220, 150), 0.35)
-    return frame_border(vignette(cv, 0.4))
-
-
-def p_spirit():
-    cv = gradient(TALL, (12, 10, 22), (30, 22, 40))
-    tile_fill(cv, "Tiles/Dungeon/dng_floor.png", frames=3, y0=120)
-    j = frame(load("Props/Dungeon/prop_jar.png")).rotate(70, expand=False)
-    put(cv, j, 74, 150)
-    smoke(cv, 70, 128)
-    put(cv, alchemist(70), 38, 150)
-    cv = glow(cv, 70, 90, 60, (170, 90, 230), 0.5)
-    return frame_border(vignette(cv))
-
-
-def p_drain():
-    cv = Image.new("RGBA", WIDE, (10, 10, 18, 255))
-    tile_fill(cv, "Tiles/Dungeon/dng_wall.png", frames=1, y0=0, y1=72)
-    tile_fill(cv, "Tiles/Dungeon/dng_floor.png", frames=3, y0=72)
-    cv = shade(cv, 0.55)
-    m = load("Props/Summit/prop_drainmachine_c96.png").crop((0, 0, 96, 96))
-    put(cv, m, 128, 104)
-    for x, c in ((34, "pip"), (72, "lumi"), (184, "tok"), (222, "embun")):
-        cv = glow(cv, x, 86, 26, AURA[c], 0.7)
-        put(cv, jar_with(c), x, 108)
-        for yy in range(30, 70, 3):  # pipa aura ke mesin
-            rect(cv, x - 1, yy, x + 1, yy + 2, AURA[c], 160)
-    return frame_border(vignette(cv))
-
-
-def p_thrown():
-    cv = gradient(TALL, (16, 18, 34), (34, 30, 44))
-    stars(cv, 14, seed=9, ymax=50)
-    tile_fill(cv, "Tiles/Dungeon/dng_wall.png", frames=1, y0=48, y1=96)
-    cv = shade(cv, 0.7)
-    tile_fill(cv, "Tiles/Garden/gdn_dirt.png", frames=2, y0=96)
-    put(cv, slime("clear", anim="jelly", i=3, alpha=0.8), 60, 150)
-    rect(cv, 54, 154, 66, 156, (10, 8, 16), 120)
-    return frame_border(vignette(cv))
-
-
-def p_resolve():
-    cv = gradient(WIDE, (14, 16, 34), (30, 30, 54))
-    stars(cv, 30, seed=11)
-    castle(cv, 82, 52, color=(34, 30, 58))
-    tile_fill(cv, "Tiles/Garden/gdn_grass.png", frames=4, y0=80)
-    cv = shade(cv, 0.8)
-    hedge = load("Props/Garden/prop_bush.png")
-    for x in (24, 60, 200, 236):
-        put(cv, frame(hedge), x, 118)
-    put(cv, slime("clear", d="back", alpha=0.85), 128, 116)
-    return frame_border(vignette(cv))
-
-
-def p_sealed():
-    cv = Image.new("RGBA", WIDE, (14, 10, 24, 255))
-    tile_fill(cv, "Tiles/Summit/smt_wall.png", frames=1, y0=0, y1=64)
-    tile_fill(cv, "Tiles/Summit/smt_floor.png", frames=3, y0=64)
-    cv = shade(cv, 0.6)
-    kj = load("Props/Summit/prop_kingjar_c96.png").crop((0, 0, 96, 96))
-    inside = Image.new("RGBA", (96, 96), (0, 0, 0, 0))
-    inside.alpha_composite(alchemist(54), (34, 30))
-    inside.alpha_composite(kj)
-    cv = glow(cv, 128, 70, 70, (240, 200, 80), 0.6)
-    put(cv, inside, 128, 112)
-    put(cv, slime("king"), 60, 112)
+# Semua panel 224x112 (rasio 2:1), ditampilkan 2x di bingkai UI (Story.uss). Bingkai digambar UI, bukan di gambar.
+def crown_img():
     # mahkota: emas terang + garis gelap supaya tidak tenggelam di slime raja yang kuning
     rows = ["k.k..k..k.k", "kgkk.k.kkgk", "kgggkgkgggk", "kgrgggggrgk", "kkkkkkkkkkk"]
     pal = {"k": (40, 20, 10, 255), "g": (255, 230, 120, 255), "r": (220, 50, 70, 255)}
@@ -262,49 +191,131 @@ def p_sealed():
     for y, r in enumerate(rows):
         for x, ch in enumerate(r):
             if ch in pal: cp[x, y] = pal[ch]
-    put(cv, crown, 60, 80)
-    put(cv, slime("clear", flip=True, alpha=0.85), 200, 112)
-    return frame_border(vignette(cv))
+    return crown
+
+
+def p_kingdom():
+    cv = gradient(P, (40, 50, 90), (80, 70, 110))
+    stars(cv, 25)
+    castle(cv, 80, 37, color=(40, 36, 70), windows=False)
+    tile_fill(cv, "Tiles/Garden/gdn_grass.png", frames=4, y0=78)
+    for x, c, f in ((36, "pip", False), (84, "lumi", True), (140, "tok", False), (188, "bara", True)):
+        put(cv, slime(c, flip=f), x, 106)
+    cv = glow(cv, 112, 94, 110, (255, 220, 150), 0.35)
+    return vignette(cv, 0.4)
+
+
+def p_spirit():
+    cv = gradient(P, (12, 10, 22), (30, 22, 40))
+    tile_fill(cv, "Tiles/Dungeon/dng_wall.png", frames=1, y0=0, y1=60)
+    cv = shade(cv, 0.45)
+    tile_fill(cv, "Tiles/Dungeon/dng_floor.png", frames=3, y0=60)
+    cv = shade(cv, 0.8)
+    j = frame(load("Props/Dungeon/prop_jar.png")).rotate(70, expand=False)
+    put(cv, j, 136, 100)
+    smoke(cv, 132, 80)
+    put(cv, alchemist(72), 84, 102)
+    cv = glow(cv, 120, 50, 70, (170, 90, 230), 0.55)
+    return vignette(cv)
+
+
+def p_drain():
+    cv = Image.new("RGBA", P, (10, 10, 18, 255))
+    tile_fill(cv, "Tiles/Dungeon/dng_wall.png", frames=1, y0=0, y1=64)
+    tile_fill(cv, "Tiles/Dungeon/dng_floor.png", frames=3, y0=64)
+    cv = shade(cv, 0.55)
+    m = load("Props/Summit/prop_drainmachine_c96.png").crop((0, 0, 96, 96))
+    put(cv, m, 112, 98)
+    for x, c in ((26, "pip"), (60, "lumi"), (164, "tok"), (198, "embun")):
+        cv = glow(cv, x, 80, 24, AURA[c], 0.7)
+        put(cv, jar_with(c), x, 102)
+        for yy in range(24, 62, 3):  # pipa aura ke mesin
+            rect(cv, x - 1, yy, x + 1, yy + 2, AURA[c], 160)
+    return vignette(cv)
+
+
+def p_thrown():
+    cv = gradient(P, (16, 18, 34), (34, 30, 44))
+    stars(cv, 18, seed=9, ymax=30)
+    tile_fill(cv, "Tiles/Dungeon/dng_wall.png", frames=1, y0=30, y1=74)
+    cv = shade(cv, 0.7)
+    tile_fill(cv, "Tiles/Garden/gdn_dirt.png", frames=2, y0=74)
+    # gerbang kastil (pintu sel) di tembok, slime bening tergeletak di tanah
+    door = frame(load("Props/Dungeon/prop_celldoor.png"))
+    put(cv, door, 60, 74)
+    put(cv, slime("clear", anim="jelly", i=3, alpha=0.8), 128, 104)
+    return vignette(cv)
+
+
+def p_resolve():
+    cv = gradient(P, (14, 16, 34), (30, 30, 54))
+    stars(cv, 30, seed=11)
+    castle(cv, 76, 37, color=(34, 30, 58))
+    tile_fill(cv, "Tiles/Garden/gdn_grass.png", frames=4, y0=74)
+    cv = shade(cv, 0.8)
+    hedge = load("Props/Garden/prop_bush.png")
+    for x in (18, 50, 174, 206):
+        put(cv, frame(hedge), x, 112)
+    put(cv, slime("clear", d="back", alpha=0.85), 112, 110)
+    return vignette(cv)
+
+
+def p_sealed():
+    cv = Image.new("RGBA", P, (14, 10, 24, 255))
+    tile_fill(cv, "Tiles/Summit/smt_wall.png", frames=1, y0=0, y1=56)
+    tile_fill(cv, "Tiles/Summit/smt_floor.png", frames=3, y0=56)
+    cv = shade(cv, 0.6)
+    kj = load("Props/Summit/prop_kingjar_c96.png").crop((0, 0, 96, 96))
+    inside = Image.new("RGBA", (96, 96), (0, 0, 0, 0))
+    inside.alpha_composite(alchemist(54), (34, 30))
+    inside.alpha_composite(kj)
+    cv = glow(cv, 112, 60, 64, (240, 200, 80), 0.6)
+    put(cv, inside, 112, 106)
+    put(cv, slime("king"), 46, 106)
+    put(cv, crown_img(), 46, 74)
+    put(cv, slime("clear", flip=True, alpha=0.85), 178, 106)
+    return vignette(cv)
 
 
 def p_return():
-    cv = gradient(TALL, (20, 14, 36), (40, 28, 60))
+    cv = gradient(P, (20, 14, 36), (40, 28, 60))
     m = load("Props/Summit/prop_drainmachine_c96.png").crop((0, 0, 96, 96))
-    put(cv, m, 60, 160)
+    put(cv, m, 112, 110)
     rnd = random.Random(4)
     cols = [AURA[k] for k in ("pip", "lumi", "tok", "bara", "embun", "king")]
-    for k in range(90):  # aura kembali naik ke semua warga
-        x = 60 + rnd.randint(-50, 50)
-        y = rnd.randint(4, 110)
+    for k in range(110):  # aura kembali naik ke semua warga
+        x = 112 + rnd.randint(-100, 100)
+        y = rnd.randint(4, 70)
         c = rnd.choice(cols)
         rect(cv, x, y, x + 2, y + 2, c, rnd.randint(140, 255))
-    cv = glow(cv, 60, 60, 70, (220, 200, 255), 0.5)
-    return frame_border(vignette(cv, 0.35))
+    cv = glow(cv, 112, 40, 80, (220, 200, 255), 0.5)
+    return vignette(cv, 0.35)
 
 
 def p_reunion():
-    cv = gradient(WIDE, (110, 80, 120), (240, 170, 120))
-    castle(cv, 82, 70, color=(70, 50, 80), windows=False)
-    tile_fill(cv, "Tiles/Garden/gdn_grass.png", frames=4, y0=80)
-    cv = glow(cv, 128, 80, 160, (255, 220, 160), 0.45)
-    xs = [(26, "pip"), (58, "lumi"), (90, "king"), (128, "clear"), (164, "tok"), (198, "bara"), (232, "embun")]
+    cv = gradient(P, (110, 80, 120), (240, 170, 120))
+    castle(cv, 76, 37, color=(70, 50, 80), windows=False)
+    tile_fill(cv, "Tiles/Garden/gdn_grass.png", frames=4, y0=74)
+    cv = glow(cv, 112, 74, 150, (255, 220, 160), 0.45)
+    xs = [(22, "pip"), (52, "lumi"), (82, "king"), (112, "clear"), (142, "tok"), (172, "bara"), (202, "embun")]
     for x, c in xs:
-        put(cv, slime(c, flip=x > 128, alpha=0.9 if c == "clear" else 1.0), x, 114)
-    return frame_border(vignette(cv, 0.3))
+        put(cv, slime(c, flip=x > 112, alpha=0.9 if c == "clear" else 1.0), x, 108)
+    put(cv, crown_img(), 82, 76)
+    return vignette(cv, 0.3)
 
 
 def p_rebuild():
-    cv = gradient(WIDE, (120, 150, 200), (200, 210, 230))
-    tile_fill(cv, "Tiles/Castle/cst_floor.png", frames=2, y0=72)
+    cv = gradient(P, (120, 150, 200), (200, 210, 230))
+    tile_fill(cv, "Tiles/Castle/cst_floor.png", frames=2, y0=64)
     crate = frame(load("Props/Dungeon/prop_crate.png"))
     barrel = frame(load("Props/Dungeon/prop_barrel.png"))
-    put(cv, crate, 44, 104); put(cv, barrel, 210, 104)
-    for x, c in ((90, "lumi"), (170, "pip")):  # toples jadi lentera
-        cv = glow(cv, x, 84, 30, AURA[c], 0.6)
-        put(cv, jar_with(c), x, 104)
-    put(cv, slime("clear"), 130, 114)
-    put(cv, slime("tok", anim="move", d="side", i=2), 66, 116)
-    return frame_border(vignette(cv, 0.25))
+    put(cv, crate, 30, 96); put(cv, barrel, 196, 96)
+    for x, c in ((78, "lumi"), (150, "pip")):  # toples jadi lentera
+        cv = glow(cv, x, 76, 28, AURA[c], 0.6)
+        put(cv, jar_with(c), x, 96)
+    put(cv, slime("clear"), 114, 108)
+    put(cv, slime("tok", anim="move", d="side", i=2), 52, 110)
+    return vignette(cv, 0.25)
 
 
 PANELS = {
@@ -323,14 +334,13 @@ def main():
         im.save(os.path.join(OUT, name + ".png"))
         imgs.append((name, im))
         print(name, im.size)
-    # pratinjau 3x
-    sc = 3
-    W = 2 * (256 * sc + 12) + 12
+    # pratinjau 3x, 2 kolom
+    sc, gap = 3, 12
+    cw, ch = P[0] * sc, P[1] * sc
     rows = (len(imgs) + 1) // 2
-    pv = Image.new("RGBA", (W, rows * (168 * sc + 12) + 12), (24, 24, 32, 255))
+    pv = Image.new("RGBA", (2 * (cw + gap) + gap, rows * (ch + gap) + gap), (24, 24, 32, 255))
     for k, (_, im) in enumerate(imgs):
-        big = im.resize((im.width * sc, im.height * sc), Image.NEAREST)
-        pv.alpha_composite(big, (12 + (k % 2) * (256 * sc + 12), 12 + (k // 2) * (168 * sc + 12)))
+        pv.alpha_composite(im.resize((cw, ch), Image.NEAREST), (gap + (k % 2) * (cw + gap), gap + (k // 2) * (ch + gap)))
     pv.save(os.path.join(ROOT, "art", "sprites", "_preview_story.png"))
 
 

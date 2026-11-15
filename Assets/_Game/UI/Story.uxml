@@ -1,35 +1,48 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <!-- Cutscene + dialog. Layout di sini, tampilan di Story.uss. Nama elemen dipakai StoryPlayer.cs. -->
+    <!-- Cutscene + dialog gaya intro RPG 16-bit (Zelda SNES): gambar berbingkai tetap di atas, kotak teks tetap di bawah.
+         Teks TIDAK pernah menumpuk/scroll: tiap baris cerita menggantikan isi kotak. Tampilan di Story.uss, logika StoryPlayer.cs. -->
     <Style src="Story.uss" />
     <ui:VisualElement name="story-root" class="story-root story--hidden">
         <ui:VisualElement name="backdrop" class="backdrop" />
 
-        <ui:VisualElement name="layout-left" class="layout layout-left">
-            <ui:VisualElement name="left-image" class="story-image left-image" />
-            <ui:VisualElement name="left-lines" class="lines left-lines" />
-        </ui:VisualElement>
-
-        <ui:VisualElement name="layout-top" class="layout layout-top">
-            <ui:VisualElement name="top-image" class="story-image top-image" />
-            <ui:VisualElement name="top-lines" class="lines top-lines" />
-        </ui:VisualElement>
-
-        <ui:VisualElement name="layout-only" class="layout layout-only">
-            <ui:VisualElement name="only-image" class="story-image only-image" />
-            <ui:VisualElement name="only-lines" class="lines only-lines" />
-        </ui:VisualElement>
-
-        <ui:VisualElement name="layout-dialogue" class="layout layout-dialogue">
-            <ui:VisualElement class="dialogue-box">
-                <ui:VisualElement name="portrait" class="portrait" />
-                <ui:VisualElement class="dialogue-col">
-                    <ui:Label name="speaker" class="speaker" />
-                    <ui:Label name="dialogue-text" class="dialogue-text" />
+        <!-- halaman bergambar (layout ImageLeft / ImageTop / ImageOnly memakai susunan yang sama) -->
+        <ui:VisualElement name="layout-cine" class="layout layout-cine">
+            <ui:VisualElement name="cine-frame" class="cine-frame">
+                <ui:VisualElement class="frame-outer" />
+                <ui:VisualElement class="frame-inner" />
+                <ui:VisualElement name="cine-image" class="cine-image" />
+                <ui:VisualElement class="rivet rivet--tl" />
+                <ui:VisualElement class="rivet rivet--tr" />
+                <ui:VisualElement class="rivet rivet--bl" />
+                <ui:VisualElement class="rivet rivet--br" />
+            </ui:VisualElement>
+            <ui:VisualElement name="cine-box" class="text-box cine-box">
+                <ui:Label name="cine-speaker" class="speaker-tab" />
+                <ui:Label name="cine-text" class="box-text" />
+                <ui:VisualElement name="cine-next" class="next-arrow next--hidden">
+                    <ui:VisualElement class="next-a" /><ui:VisualElement class="next-b" /><ui:VisualElement class="next-c" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <ui:Label name="next" text="v" class="next-indicator" />
-        <ui:Label name="skip-hint" text="E / Space: next    Esc: skip" class="skip-hint" />
+        <!-- dialog di atas permainan (game tetap terlihat) -->
+        <ui:VisualElement name="layout-dialogue" class="layout layout-dialogue">
+            <ui:VisualElement name="dialogue-box" class="text-box dialogue-box">
+                <ui:VisualElement name="portrait" class="portrait" />
+                <ui:VisualElement class="dialogue-col">
+                    <ui:Label name="speaker" class="speaker-tab speaker-tab--dialogue" />
+                    <ui:Label name="dialogue-text" class="box-text" />
+                </ui:VisualElement>
+                <ui:VisualElement name="dialogue-next" class="next-arrow next--hidden">
+                    <ui:VisualElement class="next-a" /><ui:VisualElement class="next-b" /><ui:VisualElement class="next-c" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- garis hitam sinematik (LevelIntro) -->
+        <ui:VisualElement name="bar-top" class="cine-bar cine-bar--top" picking-mode="Ignore" />
+        <ui:VisualElement name="bar-bottom" class="cine-bar cine-bar--bottom" picking-mode="Ignore" />
+        <ui:VisualElement name="fade" class="story-fade" picking-mode="Ignore" />
+        <ui:Label name="skip-hint" text="ESC  SKIP" class="skip-hint" />
     </ui:VisualElement>
 </ui:UXML>

@@ -37,6 +37,13 @@ namespace GooNapped
         private int sel;
 
         public bool IsPaused => paused;
+        // Pemain tidak membaca input saat pause, dan juga 1 frame setelah lanjut: tombol Space/E yang dipakai memilih
+        // "Resume" jangan ikut membelah/makan (dulu tembus ke PlayerBrain).
+        public static bool BlocksInput => anyPaused || Time.frameCount <= resumedFrame + 1;
+        private static bool anyPaused;
+        private static int resumedFrame = -10;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() { anyPaused = false; resumedFrame = -10; }
 
         private void OnEnable()
         {
@@ -59,7 +66,7 @@ namespace GooNapped
 
         private void Update()
         {
-            if (StoryPlayer.IsPlaying || leaving) return;   // Esc dipakai untuk melewati cerita; saat transisi input diabaikan
+            if (StoryPlayer.IsPlaying || LevelIntro.Running || leaving) return;   // Esc dipakai untuk melewati cerita / pembuka level   // Esc dipakai untuk melewati cerita; saat transisi input diabaikan
             if (paused && options != null && options.IsOpen)
             {
                 options.HandleInput();   // Esc di sini = kembali ke daftar pause
@@ -73,7 +80,9 @@ namespace GooNapped
         public void SetPaused(bool on)
         {
             if (on == paused && overlay != null && overlay.ClassListContains("mm-hidden") == !on) return;
+            if (paused && !on) resumedFrame = Time.frameCount;
             paused = on;
+            anyPaused = on;
             Time.timeScale = on ? 0f : 1f;
             AudioListener.pause = on;
             if (overlay == null) return;

@@ -46,6 +46,13 @@ namespace GooNapped
             if (restart) t = 0f;
         }
 
+        // Ada clip untuk animasi ini? (mis. "search" hanya dimiliki musuh tertentu)
+        public bool Has(string a)
+        {
+            foreach (var c in clips) if (c.anim == a) return true;
+            return false;
+        }
+
         Clip Find(string a, string d)
         {
             foreach (var c in clips) if (c.anim == a && c.dir == d) return c;

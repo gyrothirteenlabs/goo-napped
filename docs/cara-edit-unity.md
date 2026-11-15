@@ -184,3 +184,10 @@ Di folder build dev ada dua file .bat:
 - `main_dengan_log.bat`: main biasa dengan log.
 
 Kalau ada bug di build: kirim `goo-napped_log.txt` (dan kalau perlu `Player.log` di `%USERPROFILE%\AppData\LocalLow\DefaultCompany\My project\`).
+
+## 13. Pembuka level sinematik (LevelIntro)
+- Tiap level v2 + tutorial punya objek `LevelIntro` (dibangun ulang oleh GooNapped > Blockout). Diputar saat level dimasuki lewat alur game (menu, cerita, markas, level sebelumnya), **tidak** saat Retry / ulang dari checkpoint. Esc = lewati.
+- Level biasa: kamera menyorot ventilasi tujuan + kalimat objektif (`LevelCatalog.Objective`), lalu kembali ke slime + kalimat pembuka (`LevelCatalog` kolom `intro`). Ubah teksnya di `Scripts/Runtime/Core/LevelCatalog.cs`.
+- Tutorial: daftar sorotan kamera + dialog di `LevelBlockout.V2_L00_Tutorial` (`intro`, `introAfter`, `introDrop`, `introWalk`), lalu bangun ulang lewat GooNapped > Blockout > Tutorial (L00). Bisa juga diedit langsung di Inspector objek `LevelIntro` (tapi tertimpa saat blockout dibangun ulang).
+- Coba di editor tanpa lewat menu: centang `Play When Opened Directly` di `LevelIntro`, lalu Play. **Matikan lagi** sebelum commit/menjalankan test.
+- Selama pembuka: HUD disembunyikan, ada garis hitam atas-bawah, penjaga tidak bisa melihat pemain, tip tutorial ditahan.

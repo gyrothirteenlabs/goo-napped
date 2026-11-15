@@ -102,13 +102,17 @@ Keputusan user 13 Nov: desainer belum sempat, jadi AI membuat **fondasi** art le
 - Desainer boleh menimpa file mana pun (nama file sama = langsung terpakai). Dipasang otomatis oleh `LevelBlockout`: karpet (`cst_carpet`) di bagian dalam ruangan/koridor kastil (tidak menutup lantai berderit, lumpur, celah, exit), kandelabra (kastil, puncak) dan rak ramuan (penjara) di depan tembok (tanpa collider/cahaya), mesin penyadap di tembok atas toples raja (L11), jalan tanah (`gdn_dirt`) di taman dari spawn ke ventilasi tujuan.
 
 ## Witch Eye (model tim, 15 Nov 2026)
-- Sumber: `art/blender/witcheye_v01.blend` (salinan dari file desainer, file asli tidak diubah). Render lewat template: nama `witcheye`, mode warna flat, `pose:1-1`, tinggi 1.2 m, diangkat 0.35 m (melayang). Hasil `art/sprites/witcheye/` → `Sprites/Enemies/WitchEye/`, dipasang di `WitchEye_Placeholder.prefab` (idle/move pakai pose yang sama).
-- Perbaikan teknis dari file asli: objek belum masuk koleksi MODEL_Body/MODEL_Face dan tidak di-parent ke `Model_Root` (arah side/back tidak berputar); model tidak di tengah dan setengah bola mata di bawah lantai; iris + pupil terbenam di bola mata (hanya menonjol 2 cm/0.4 cm, tidak terlihat di 48 px) → dimajukan 7–8.5 cm, monokel ikut maju; kaca monokel padat menutupi iris → tidak dirender (pindah ke koleksi `WIP_tidak_dirender`); tengkorak melayang tanpa material (`WIP_Tengkorak`) → tidak dirender, tidak dihapus; path output mengarah ke komputer lain → relatif `//../`; salinan add-on di dalam file versi lama → diperbarui.
-- Layer face = iris + pupil. Warna, bentuk, topi, monokel tetap desain tim.
+- Sumber: `art/blender/witcheye_v02.blend` (salinan file desainer; file asli di Desktop tidak diubah). Desain tetap milik tim: bentuk, warna mata, topi, monokel, tengkorak pendamping.
+- Yang diubah AI hanya teknis + keterbacaan: objek dimasukkan ke koleksi MODEL_Body/MODEL_Face dan di-parent ke `Model_Root` (dulu arah side/back tidak berputar); posisi ditengahkan pada bola mata dan dibuat melayang; path output dibuat relatif; salinan add-on di file diperbarui; tengkorak (`Skull`) diberi material tulang `WE_Bone` dan lubang mata/hidungnya ditutup muka gelap `WE_BoneDark` (dulu bolong, jadi di 48 px terbaca gumpalan krem); tengkorak keluar dari Edit Mode.
+- Layer face = kaca monokel (di Unity memakai `Enemy_Glow_Unlit`, jadi lensa menyala dalam gelap).
+- Animasi (pivot `WE_Body` dan `WE_Skull`, kunci per frame): `idle` 1-8 (tengkorak mengorbit, mata miring), `move` 11-16 (condong ke depan, tengkorak tertinggal), `search` 21-28 (menoleh kiri-kanan sambil menunduk; dipakai Guard saat mencari/memeriksa kalau clip `search` ada). Melayang naik-turun tetap dari Guard (hoverParts).
+- Render: nama `witcheye`, mode warna flat, tinggi 1.2 m, `Model_Root` z -0.3. Hasil `art/sprites/witcheye/` → `Sprites/Enemies/WitchEye/`, dipasang di `WitchEye_Placeholder.prefab` (dipakai L06, L09, sandbox ProtoEnemies).
+- Bahan review desainer: `docs/review/witcheye/` (lembar sprite, GIF tiap animasi, screenshot di tiap level, gambar model).
 
 ## Strip cerita sementara (AI, 15 Nov 2026)
-- `art/tools/gen_story_strips.py` merakit panel Intro (5) dan Ending (4) dari sprite game yang ada → `Assets/_Game/Art/Story/strip_*.png` (lebar 256×120, tinggi 120×168), pratinjau `art/sprites/_preview_story.png`. Siluet Alkemis = sementara.
-- Teks di `Data/Story/Story_Intro.asset` dan `Story_Ending.asset` (bahasa Inggris). Tim tinggal mengganti gambar (nama file sama) atau isi Inspector.
+- `art/tools/gen_story_strips.py` merakit panel Intro (5) dan Ending (4) dari sprite game → `Assets/_Game/Art/Story/strip_*.png`. Semua panel **224x112** (tampil 2x di bingkai cutscene). Pratinjau `art/sprites/_preview_story.png`. Siluet Alkemis = sementara.
+- Tampilan cutscene gaya intro RPG 16-bit (Zelda SNES): gambar berbingkai tetap + kotak teks tetap, font Pixelify Sans, tiap baris mengganti isi kotak (tidak menumpuk/scroll), baris panjang dipecah per kalimat. `UI/Story.uxml/uss`, `StoryPlayer`.
+- Teks di `Data/Story/Story_Intro.asset` dan `Story_Ending.asset` (bahasa Inggris). Tim tinggal mengganti gambar (nama file sama, ukuran 224x112) atau isi Inspector.
 
 ## Workflow
 - Modeling → skill `slime-model`. Render → template + add-on (model baru) atau `art/tools/render_slime.py` (slime_v06).

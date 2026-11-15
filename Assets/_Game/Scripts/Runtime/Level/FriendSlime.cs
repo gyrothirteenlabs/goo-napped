@@ -22,15 +22,27 @@ namespace GooNapped
         [SerializeField, Range(0.5f, 1.2f)] private float speedShare = 0.9f;
         [Tooltip("Jarak panggil (F) untuk mengajak teman yang sedang menunggu.")]
         [SerializeField] private float callRadius = 2.5f;
+        [Header("Tampilan (sama dengan slime pemain)")]
+        [Tooltip("Frame sprite per arah (front/side/back). Clip disalin dari Slime_Player.")]
+        [SerializeField] private SlimeSpriteAnimator anim;
+        [Tooltip("Goyang jeli + busur lompatan.")]
+        [SerializeField] private SlimeJelly jelly;
+        [Tooltip("Jarak tempuh satu lompatan (unit). Pemain ±0.85 per lompatan.")]
+        [SerializeField] private float hopLength = 0.8f;
+        [Tooltip("Tinggi busur lompatan (unit). Pemain 0.1.")]
+        [SerializeField] private float hopArc = 0.1f;
 
         // Semua teman di level (dipakai penjaga dan HUD).
         public static readonly List<FriendSlime> All = new List<FriendSlime>();
 
         private readonly List<Vector2> trail = new List<Vector2>();   // titik pivot pemain, lama -> baru
-        private Transform visual;
-        private Vector3 visualBase;
-        private float bob, saveTimer = -1f;
+        private float saveTimer = -1f;
         private bool moved;
+        // arah hadap (seperti SlimePiece.Facing) dan jarak tempuh dalam lompatan yang sedang berjalan
+        private Vector2Int facing = Vector2Int.down;
+        private Vector2 lastPos;
+        private float hopDist;
+        private bool hopping;
 
         public RecipeData Recipe => recipe;
         // Toples asal (untuk checkpoint).
@@ -52,12 +64,24 @@ namespace GooNapped
             rb.bodyType = RigidbodyType2D.Kinematic;   // trigger ventilasi/exit butuh Rigidbody2D
             rb.useFullKinematicContacts = true;         // kinematic tanpa ini tidak menyentuh trigger statis (exit)
             rb.gravityScale = 0f;
-            if (bodyRenderer != null)
-            {
-                visual = bodyRenderer.transform.parent != transform && bodyRenderer.transform.parent != null
-                    ? bodyRenderer.transform.parent : bodyRenderer.transform;
-                visualBase = visual.localPosition;
-            }
+            if (anim == null) anim = GetComponentInChildren<SlimeSpriteAnimator>(true);
+            if (jelly == null) jelly = GetComponentInChildren<SlimeJelly>(true);
+            lastPos = transform.position;
+        }
+
+        // Hadap ke arah tertentu (dipakai juga saat keluar toples: menghadap penyelamatnya).
+        public void FaceTowards(Vector2 dir)
+        {
+            if (dir.sqrMagnitude < 1e-6f) return;
+            facing = DirOf(dir, facing);
+        }
+
+        // Sumbu dominan, dengan sedikit histeresis supaya arah tidak berkedip saat bergerak diagonal.
+        private static Vector2Int DirOf(Vector2 d, Vector2Int current)
+        {
+            float ax = Mathf.Abs(d.x), ay = Mathf.Abs(d.y);
+            bool side = current.x != 0 ? ax * 1.25f >= ay : ax > ay * 1.25f;
+            return side ? new Vector2Int(d.x > 0 ? 1 : -1, 0) : new Vector2Int(0, d.y > 0 ? 1 : -1);
         }
 
         private void OnEnable() { if (!All.Contains(this)) All.Add(this); }
@@ -311,20 +335,54 @@ namespace GooNapped
             return len + Vector2.Distance(p, Leader.transform.position);
         }
 
-        // Melompat kecil saat berjalan, gemetar saat menunggu ketakutan.
+        // Tampilan: sprite per arah sesuai arah gerak (diam = menghadap pemimpin), lompatan jeli seperti slime pemain
+        // (busur rendah + memanjang saat naik + gepeng saat mendarat), napas saat diam, gemetar saat menunggu ketakutan.
+        // Fase lompatan dihitung dari JARAK tempuh, jadi irama lompat ikut kecepatan dan berhenti saat teman berhenti.
         private void Animate()
         {
-            if (visual == null || State == Mode.Hidden) return;
-            if (moved)
+            Vector2 pos = transform.position;
+            Vector2 delta = pos - lastPos;
+            lastPos = pos;
+            if (State == Mode.Hidden) return;
+            float size = Mathf.Max(0.3f, transform.localScale.y);
+
+            if (moved && delta.sqrMagnitude > 1e-8f)
             {
-                bob += Time.deltaTime * 9f;
-                visual.localPosition = visualBase + Vector3.up * (0.06f * Mathf.Abs(Mathf.Sin(bob)));
+                facing = DirOf(delta, facing);
+                if (!hopping) { hopping = true; hopDist = 0f; jelly?.Kick(2f); }   // lepas landas
+                hopDist += delta.magnitude;
+                float len = hopLength * Mathf.Sqrt(size);
+                if (hopDist >= len) { hopDist -= len; jelly?.Kick(-3.5f); }      // mendarat, langsung lompat lagi
+                float k = Mathf.Clamp01(hopDist / len);
+                if (jelly != null)
+                {
+                    jelly.Lift = hopArc / Mathf.Sqrt(size) * 4f * k * (1f - k);
+                    jelly.Target = k < 0.5f ? Mathf.Lerp(0.14f, 0f, k * 2f) : Mathf.Lerp(0f, 0.05f, (k - 0.5f) * 2f);
+                }
             }
-            else if (State == Mode.Waiting)
+            else
             {
-                visual.localPosition = visualBase + Vector3.right * (0.012f * Mathf.Sin(Time.time * 40f));
+                if (hopping) { hopping = false; jelly?.Kick(-2.5f); }   // berhenti: mendarat
+                if (State == Mode.Following && Leader != null)
+                {
+                    var toLeader = (Vector2)Leader.transform.position - pos;
+                    if (toLeader.sqrMagnitude > 0.04f) facing = DirOf(toLeader, facing);
+                }
+                if (jelly != null)
+                {
+                    jelly.Lift = Mathf.MoveTowards(jelly.Lift, 0f, Time.deltaTime * 1.5f);
+                    jelly.Target = State == Mode.Waiting
+                        ? 0.04f * Mathf.Sin(Time.time * 38f)                        // gemetar ketakutan
+                        : 0.025f * Mathf.Sin(Time.time * 1.3f * Mathf.PI * 2f);    // napas
+                }
             }
-            else visual.localPosition = Vector3.Lerp(visual.localPosition, visualBase, Time.deltaTime * 12f);
+
+            if (anim == null) return;
+            string dir = facing.x != 0 ? "side" : (facing.y > 0 ? "back" : "front");
+            bool left = facing.x != 0 ? facing.x < 0 : anim.faceLeft;
+            // sama dengan pemain: saat melompat pakai frame diam pertama (bentuk lompatan dari SlimeJelly)
+            anim.forcedPhase = hopping ? 0f : -1f;
+            anim.Play("idle", dir, left);
         }
     }
 }

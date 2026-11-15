@@ -59,8 +59,17 @@ namespace GooNapped
             jars = FindObjectsByType<Jar>(FindObjectsSortMode.None);
         }
 
+        private bool hiddenForIntro;
+
         private void Update()
         {
+            // pembuka level sinematik: HUD disembunyikan (transisi lendir UiFx di root tetap tampil)
+            if (LevelIntro.Running != hiddenForIntro)
+            {
+                hiddenForIntro = LevelIntro.Running;
+                foreach (var e in new VisualElement[] { card, recipes, controls })
+                    if (e != null) e.style.visibility = hiddenForIntro ? Visibility.Hidden : Visibility.Visible;
+            }
             if ((timer -= Time.unscaledDeltaTime) > 0f) return;
             timer = refreshInterval;
             Refresh();

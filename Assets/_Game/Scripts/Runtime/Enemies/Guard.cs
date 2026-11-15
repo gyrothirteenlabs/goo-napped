@@ -453,6 +453,7 @@ namespace GooNapped
             }
 
             var sight = Evaluate();
+            if (LevelIntro.Running) sight = default;   // pembuka level sinematik: pemain belum bisa dikendalikan, jangan terlihat
             SeesTarget = sight.valid && sight.cone;
             Senses = sight.valid && !sight.cone;
             InLight = sight.valid && sight.light;
@@ -903,7 +904,9 @@ namespace GooNapped
         private void UpdateVisuals()
         {
             string dir = Mathf.Abs(forward.x) > Mathf.Abs(forward.y) ? "side" : (forward.y > 0 ? "back" : "front");
-            anim.Play(moving ? "move" : "idle", dir, forward.x < 0);
+            // musuh yang punya clip "search" (Witch Eye: menoleh memeriksa) memakainya saat mencari/memeriksa di tempat
+            string a = moving ? "move" : (IsSearching && anim.Has("search") ? "search" : "idle");
+            anim.Play(a, dir, forward.x < 0);
             if (cone != null) cone.Draw(Eye, forward, viewRange, viewAngle, Suspicion, Clip, Body, awarenessRadius);
         }
 
