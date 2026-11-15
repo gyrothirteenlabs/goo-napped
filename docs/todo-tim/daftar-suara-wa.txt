@@ -1,0 +1,58 @@
+*🔊 DAFTAR SUARA GOO-NAPPED* (16 Nov)
+Untuk yang cari / bikin suara. Kirim file dengan *nama persis* seperti di bawah, nanti aku yang pasang ke game.
+Versi lengkap (durasi, kata kunci cari, status): docs/todo-tim/daftar-suara.md
+
+*ATURAN*
+- WAV 44.1 kHz 16-bit. SFX *mono*, musik & ambience *stereo*
+- Musik loop 60–120 dtk, ambience 30–60 dtk, sambungan *mulus*
+- Suara yang sering diulang (lompat, langkah) bikin 3 variasi: _01 _02 _03
+- *Wajib catat sumber + lisensi* tiap file di LISENSI.txt (nama file, link, pembuat, lisensi)
+- Boleh: CC0, CC-BY, royalty-free, buatan sendiri. *Jangan*: CC-BY-NC/ND, aset berbayar yang tidak boleh dibagikan, potongan lagu/game lain
+- Mood: dunia gelap & tegang, slime tetap lucu (suara slime lembut, kenyal, imut)
+- Cari di: freesound.org (filter CC0/Attribution), kenney.nl, opengameart.org, pixabay sound effects, Sonniss GDC bundle
+
+*P1 = WAJIB · P2 = kalau sempat*
+
+*🎵 MUSIK*
+P1: mus_menu, mus_garden (taman L01–03), mus_dungeon (penjara + lab, tutorial, L04–06), mus_castle (kastil atas L07–10), mus_summit (final L11), mus_chase (saat dikejar), mus_hub (markas, tenang)
+P1 stinger (bukan loop): mus_win (level selesai 2–4 dtk), mus_caught (tertangkap 1–3 dtk)
+P2: mus_intro (cerita pembuka, sedih-misterius), mus_ending (cerita penutup, ceria)
+
+*🌫 AMBIENCE (loop)*
+P1: amb_garden (jangkrik, angin), amb_dungeon (tetes air, gema), amb_lab (dengung mesin, gelembung), amb_castle (ruang besar, jam, perapian), amb_summit (angin + mesin sedot)
+P2: amb_vent (dalam ventilasi), sfx_torch_loop (api obor)
+
+*🟢 SLIME PEMAIN*
+P1: sfx_slime_hop_01..03, sfx_slime_hop_big_01..03 (badan besar, berat), sfx_slime_drop (jatuh dari pipa di awal tutorial), sfx_eat, sfx_split, sfx_merge, sfx_vomit, sfx_switch (pindah kendali), sfx_hide_in, sfx_hide_out, sfx_mud, sfx_wash
+P2: sfx_slime_land, sfx_squeeze (lewat celah)
+
+*💙 TEMAN*
+P1: sfx_jar_swap (tiruan masuk toples), sfx_friend_free (keluar toples), sfx_friend_follow, sfx_friend_wait (cicit pendek), sfx_friend_saved (masuk ventilasi)
+P2: sfx_friend_hop_01..03 (lompat kecil), vo_<tokoh>_blip (blip bicara per tokoh: narrator, dot, pip, bolu, tok, lumi, ayah, ibu, adik, nenek, raja, alkemis)
+
+*👁 PENJAGA UMUM*
+P1: sfx_suspicious (curiga ?), sfx_alert (ketahuan !), sfx_call (panggil penjaga lain), sfx_caught, sfx_heartbeat (loop, penjaga dekat), sfx_inspect (periksa tempat sembunyi)
+P2: sfx_lost (kehilangan jejak)
+
+*👹 PER MUSUH (P1)*
+- Golem: sfx_golem_step_01..03
+- Anjing Lendir: sfx_hound_sniff, sfx_hound_bark
+- Monster Gerbang: sfx_gate_growl, sfx_gate_beam (loop sorot)
+- Familiar Api: sfx_familiar_fire (loop)
+- Mata Penyihir: sfx_eye_hover (loop), sfx_eye_scan (memeriksa / menoleh), P2: sfx_skull_rattle (tengkorak gemeretak)
+- Zirah Hampa: sfx_armor_step, sfx_armor_listen
+- Pelayan Tudung: sfx_butler_step, sfx_butler_lid
+- Lukisan Bermata: sfx_portrait_eyes
+- Alkemis: sfx_alch_step, sfx_alch_whisper (loop), sfx_alch_rage, sfx_alch_sealed
+
+*🏰 DUNIA & PUZZLE (P1)*
+sfx_alarm (loop sirene), sfx_door_open, sfx_door_close, sfx_lever, sfx_plate_down, sfx_plate_up, sfx_vase_break, sfx_creak (lantai), sfx_crate_push, sfx_lamp_out, sfx_vent_in, sfx_vent_out, sfx_vent_travel, sfx_checkpoint, sfx_valve_turn, sfx_kingjar_open, sfx_royal_seal
+
+*✨ KEKUATAN TEMAN (P1)*
+sfx_power_thump (Dentum), sfx_power_snuff (Padam), sfx_power_decoy + sfx_power_shatter (Umpan Kristal), sfx_power_mist (Kabut)
+
+*🖥 UI, CERITA & SINEMATIK*
+P1: ui_move, ui_select, ui_back, ui_dialog_next, ui_text_blip (ketik huruf di kotak cerita)
+P2: ui_locked, ui_slider, ui_pause_open, ui_pause_close, ui_goo_drip (transisi lendir), ui_slash (transisi miring), ui_title_stamp (kartu judul), ui_tip_show, ui_tip_done (tip tutorial), ui_page_fade (ganti gambar cerita), sfx_cine_whoosh (kamera sinematik)
+
+Total ± 95 file. Kalau waktu mepet, urutannya: musik area + mus_chase → suara slime → penjaga umum → toples & teman → UI dasar → sisanya.
