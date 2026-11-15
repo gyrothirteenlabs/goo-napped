@@ -76,6 +76,7 @@ P3
 
 ━━━━━━━━━━━━━━━
 *🔊 SOUND DESIGN*
+👉 Daftar suara lengkap + nama file + kata kunci cari: docs/todo-tim/daftar-suara.md (versi WA: daftar-suara-wa.txt)
 Format: WAV 44.1 kHz 16-bit. SFX mono, musik/ambience stereo + loop mulus. Nama file: sfx_xxx / mus_xxx / amb_xxx. Catat sumber + lisensi tiap file (wajib, repo publik).
 P1 — MUSIK
 - Main menu, stealth per area (taman, bawah tanah, kastil atas, puncak), musik kejar, markas (tenang), Intro/Ending
