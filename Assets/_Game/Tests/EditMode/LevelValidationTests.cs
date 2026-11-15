@@ -18,7 +18,8 @@ namespace GooNapped.Tests
 
         static IEnumerable<string> LevelPaths()
         {
-            foreach (var name in GameFlow.Levels)
+            // tutorial ikut dicek (tidak ada di GameFlow.Levels karena tidak muncul di Select Level)
+            foreach (var name in new[] { GameFlow.Tutorial }.Concat(GameFlow.Levels))
             {
                 var guid = AssetDatabase.FindAssets(name + " t:Scene").FirstOrDefault(g =>
                     System.IO.Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(g)) == name);
@@ -93,7 +94,8 @@ namespace GooNapped.Tests
             if (!sandbox)
             {
                 int i = GameFlow.IndexOf(name);
-                string want = i >= 0 && i + 1 < GameFlow.Levels.Length ? GameFlow.Levels[i + 1] : GameFlow.Ending;
+                string want = name == GameFlow.Tutorial ? GameFlow.Levels[0]
+                    : i >= 0 && i + 1 < GameFlow.Levels.Length ? GameFlow.Levels[i + 1] : GameFlow.Ending;
                 if (next != want) p.Add($"LevelGoal.nextScene = '{next}', seharusnya '{want}' (urutan GameFlow.Levels).");
                 // Build Settings = keputusan tim (dicek AlurGame_SemuaSceneAdaDiBuild); di sini cukup scene-nya ada di project
                 if (GameFlow.FindScenePath(next) == null) p.Add($"Scene berikutnya '{next}' tidak ada di Assets/_Game/Scenes.");

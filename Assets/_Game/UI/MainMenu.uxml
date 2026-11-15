@@ -1,8 +1,19 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <!-- Main menu PLACEHOLDER. Layout di sini, tampilan di MainMenu.uss. Isi menu dan level dibuat MainMenuController.cs lewat nama elemen. -->
     <Style src="MainMenu.uss" />
+    <Style src="Options.uss" />
     <ui:VisualElement name="root" class="mm-root" picking-mode="Ignore">
         <ui:VisualElement class="mm-shade-left" picking-mode="Ignore" />
+        <ui:VisualElement class="mm-slab-accent" picking-mode="Ignore" />
+        <ui:VisualElement class="mm-slab-accent2" picking-mode="Ignore" />
+        <!-- obor dinding di pinggiran besi (cahaya berkedip dari MainMenuController) -->
+        <ui:VisualElement name="torch-glow" class="mm-torch-glow" picking-mode="Ignore" />
+        <ui:VisualElement name="torch" class="mm-torch" picking-mode="Ignore">
+            <ui:VisualElement class="mm-torch-stick" picking-mode="Ignore" />
+            <ui:VisualElement class="mm-torch-bracket" picking-mode="Ignore" />
+            <ui:VisualElement name="torch-flame" class="mm-torch-flame" picking-mode="Ignore" />
+            <ui:VisualElement name="torch-core" class="mm-torch-core" picking-mode="Ignore" />
+        </ui:VisualElement>
         <ui:VisualElement class="mm-shade-top" picking-mode="Ignore" />
         <ui:VisualElement class="mm-shade-bottom" picking-mode="Ignore" />
 
@@ -16,15 +27,67 @@
             <ui:Label name="progress" class="mm-progress" picking-mode="Ignore" />
         </ui:VisualElement>
 
-        <ui:VisualElement name="level-panel" class="mm-levels mm-hidden">
-            <ui:Label text="SELECT LEVEL" class="mm-panel-title" picking-mode="Ignore" />
-            <ui:VisualElement name="level-grid" class="mm-level-grid" />
-            <ui:VisualElement name="level-actions" class="mm-level-actions" />
+        <!-- Select Level (Rev 1 dari Figma "Goo-napped UI - Select Level"): daftar + jalur progres kiri, preview level kanan -->
+        <ui:VisualElement name="level-panel" class="lv-panel mm-hidden" picking-mode="Ignore">
+            <ui:VisualElement class="lv-dim" picking-mode="Ignore" />
+            <ui:VisualElement class="lv-title-wrap" picking-mode="Ignore">
+                <ui:VisualElement class="lv-title-shadow" picking-mode="Ignore" />
+                <ui:VisualElement class="lv-title-bg" picking-mode="Ignore" />
+                <ui:Label text="SELECT LEVEL" class="lv-title" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement name="level-grid" class="lv-list" />
+            <ui:VisualElement name="level-detail" class="lv-detail" picking-mode="Ignore">
+                <ui:VisualElement class="lv-head" picking-mode="Ignore">
+                    <ui:VisualElement class="lv-num-wrap" picking-mode="Ignore">
+                        <ui:Label name="lv-num-shadow" text="01" class="lv-num lv-num--shadow" picking-mode="Ignore" />
+                        <ui:Label name="lv-num" text="01" class="lv-num" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="lv-head-text" picking-mode="Ignore">
+                        <ui:Label name="lv-name" text="THE GATE" class="lv-name" picking-mode="Ignore" />
+                        <ui:Label name="lv-area" text="CASTLE GROUNDS" class="lv-area" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <!-- preview level: bisa diklik. Hover = bingkai kuning, braket sudut menyala, ikon play samar -->
+                <ui:VisualElement name="lv-preview" class="lv-preview">
+                    <ui:VisualElement class="lv-bracket lv-bracket--tl" picking-mode="Ignore" />
+                    <ui:VisualElement class="lv-bracket lv-bracket--tr" picking-mode="Ignore" />
+                    <ui:VisualElement class="lv-bracket lv-bracket--bl" picking-mode="Ignore" />
+                    <ui:VisualElement class="lv-bracket lv-bracket--br" picking-mode="Ignore" />
+                    <ui:VisualElement name="lv-shot" class="lv-shot" picking-mode="Ignore">
+                        <ui:Label name="lv-shot-empty" text="" class="lv-shot-empty" picking-mode="Ignore" />
+                        <ui:VisualElement class="lv-shot-vignette" picking-mode="Ignore" />
+                        <ui:VisualElement class="lv-play-icon" picking-mode="Ignore">
+                            <ui:VisualElement class="lv-play-tri" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label name="lv-info" text="" class="lv-info" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement name="level-actions" class="lv-actions" />
         </ui:VisualElement>
 
-        <ui:VisualElement name="confirm" class="mm-confirm mm-hidden">
-            <ui:Label name="confirm-text" class="mm-confirm-text" />
-            <ui:VisualElement name="confirm-actions" class="mm-confirm-actions" />
+        <!-- popup konfirmasi (Figma "Menu Flow > New Game"): latar meredup + kartu miring yang "dicap" masuk -->
+        <ui:VisualElement name="confirm" class="mm-confirm-layer mm-hidden">
+            <ui:VisualElement class="mm-confirm-dim" picking-mode="Ignore" />
+            <ui:VisualElement name="confirm-card" class="mm-confirm">
+                <ui:VisualElement class="mm-confirm-strip" picking-mode="Ignore" />
+                <ui:Label name="confirm-title" text="START OVER?" class="mm-confirm-title" picking-mode="Ignore" />
+                <ui:Label name="confirm-text" class="mm-confirm-text" picking-mode="Ignore" />
+                <ui:VisualElement name="confirm-summary" class="mm-confirm-summary" picking-mode="Ignore">
+                    <ui:VisualElement class="mm-confirm-stat" picking-mode="Ignore">
+                        <ui:Label text="LEVELS OPEN" class="mm-confirm-lbl" picking-mode="Ignore" />
+                        <ui:Label name="confirm-levels" text="1 / 11" class="mm-confirm-val mm-confirm-val--gold" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="mm-confirm-stat" picking-mode="Ignore">
+                        <ui:Label text="FRIENDS SAVED" class="mm-confirm-lbl" picking-mode="Ignore" />
+                        <ui:VisualElement class="mm-confirm-friends" picking-mode="Ignore">
+                            <ui:Label name="confirm-friends" text="0" class="mm-confirm-val mm-confirm-val--teal" picking-mode="Ignore" />
+                            <ui:VisualElement name="confirm-gems" class="mm-confirm-gems" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="confirm-actions" class="mm-confirm-actions" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <ui:Label name="hint" class="mm-hint" picking-mode="Ignore" />

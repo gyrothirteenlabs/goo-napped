@@ -25,7 +25,7 @@ namespace GooNapped.Tests
         const float BotTimeScale = 3f;
         const float Interact = 0.8f;   // sedikit di bawah interactRadius 0.85 (PlayerBrain)
 
-        static IEnumerable<string> Levels() => GameFlow.Levels;
+        static IEnumerable<string> Levels() => new[] { GameFlow.Tutorial }.Concat(GameFlow.Levels);   // tutorial ikut dites bot
 
         private int savedUnlock;
         private bool hadUnlock;
@@ -485,7 +485,7 @@ namespace GooNapped.Tests
         }
 
         [UnityTest, Timeout(120000)]
-        public IEnumerator Alur_IntroKeLevelPertama() => StoryLeadsTo(GameFlow.Intro, GameFlow.Levels[0]);
+        public IEnumerator Alur_IntroKeLevelPertama() => StoryLeadsTo(GameFlow.Intro, GameFlow.AfterIntro(GameFlow.Levels[0]));   // tutorial dulu kalau ada
 
         [UnityTest, Timeout(120000)]
         public IEnumerator Alur_EndingKeMenuUtama() => StoryLeadsTo(GameFlow.Ending, GameFlow.MainMenu);

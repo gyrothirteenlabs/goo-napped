@@ -1,15 +1,43 @@
-/* Main menu (PLACEHOLDER, 12 Nov). Warna dari art/palette.hex (USULAN). Tampilan final: tim desainer.
+/* Main menu v2 (14 Nov): gaya pixel, menu miring bertingkat (ref: menu P5/P3R + pause Dishonored dari tim).
+   Font: Pixelify Sans (OFL, Assets/ThirdParty/Fonts/PixelifySans). Semua sudut tajam (tanpa border-radius),
+   bayangan = offset keras tanpa blur supaya terasa pixel. Warna dari art/palette.hex (USULAN).
    Nama kelas dipakai MainMenuController.cs, jangan diganti tanpa mengubah kode.
    Resolusi acuan 960x540 (MainMenuPanelSettings). */
 
-.mm-root { flex-grow: 1; color: rgb(185, 192, 204); }
+.mm-root {
+    flex-grow: 1;
+    color: rgb(186, 178, 164);
+    -unity-font-definition: url("/Assets/ThirdParty/Fonts/PixelifySans/PixelifySans.ttf");
+    overflow: hidden;
+}
 
-/* bayangan supaya teks terbaca di atas adegan */
-.mm-shade-left { position: absolute; left: 0; top: 0; bottom: 0; width: 46%; background-color: rgba(11, 15, 26, 0.72); }
-.mm-shade-top { position: absolute; left: 0; right: 0; top: 0; height: 18%; background-color: rgba(11, 15, 26, 0.45); }
-.mm-shade-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 12%; background-color: rgba(11, 15, 26, 0.55); }
+/* ---------- latar: lempengan miring bertumpuk ---------- */
+.mm-shade-left {
+    position: absolute; left: -120px; top: -80px; bottom: -80px; width: 560px;
+    background-color: rgba(10, 9, 12, 0.88);
+    rotate: 8deg;
+}
+/* garis aksen merah di tepi lempengan (slash ala P5) */
+.mm-slab-accent {
+    position: absolute; left: 418px; top: -80px; bottom: -80px; width: 10px;
+    background-color: rgb(122, 24, 36);
+    rotate: 8deg;
+}
+.mm-slab-accent2 {
+    position: absolute; left: 436px; top: -80px; bottom: -80px; width: 4px;
+    background-color: rgb(86, 140, 130);
+    rotate: 8deg;
+    opacity: 0.7;
+}
+.mm-shade-top { position: absolute; left: 0; right: 0; top: 0; height: 6px; background-color: rgb(10, 9, 12); }
+.mm-shade-bottom {
+    position: absolute; left: -40px; right: -40px; bottom: -30px; height: 70px;
+    background-color: rgba(10, 9, 12, 0.9);
+    rotate: -2deg;
+}
 
-.mm-title-block { position: absolute; left: 40px; top: 30px; }
+/* ---------- judul ---------- */
+.mm-title-block { position: absolute; left: 44px; top: 26px; rotate: -3deg; }
 /* logo sementara (art/tools/gen_logo.py), gambar asli 252x48 diperbesar 2x tanpa blur */
 .mm-logo {
     width: 504px; height: 96px;
@@ -17,76 +45,228 @@
     -unity-background-scale-mode: scale-to-fit;
 }
 .mm-title {
-    font-size: 64px;
-    -unity-font-style: bold;
-    color: rgb(191, 240, 226);
-    text-shadow: 3px 3px 0 rgb(31, 111, 122);
-    letter-spacing: 3px;
-    margin: 0; padding: 0;
+    font-size: 64px; -unity-font-style: bold;
+    color: rgb(226, 214, 184);
+    text-shadow: 4px 4px 0 rgb(46, 82, 76);
+    letter-spacing: 3px; margin: 0; padding: 0;
 }
-.mm-subtitle { font-size: 14px; color: rgb(138, 146, 160); margin: 2px 0 0 4px; padding: 0; }
+/* subtitle: lebih besar, tebal, dan diluruskan lagi (teks miring kecil jadi buram di pixel font) */
+.mm-subtitle {
+    align-self: flex-start;
+    font-size: 16px; -unity-font-style: bold;
+    color: rgb(10, 9, 12);
+    background-color: rgb(201, 160, 82);
+    border-bottom-width: 3px; border-bottom-color: rgb(194, 86, 31);
+    letter-spacing: 1px;
+    padding: 3px 12px 2px 12px; margin: 8px 0 0 12px;
+    rotate: 3deg;
+}
 
-.mm-main { position: absolute; left: 48px; bottom: 96px; }
+/* ---------- menu utama: bertingkat & miring ---------- */
+.mm-main { position: absolute; left: 70px; top: 176px; rotate: -6deg; }
 .mm-items { flex-direction: column; }
-.mm-progress { font-size: 12px; color: rgb(93, 100, 114); margin: 14px 0 0 26px; }
+.mm-progress {
+    align-self: flex-start;
+    font-size: 13px; color: rgb(186, 178, 164);
+    background-color: rgba(10, 9, 12, 0.9);
+    border-left-width: 4px; border-left-color: rgb(86, 140, 130);
+    padding: 2px 10px; margin: 16px 0 0 40px;
+}
 
-/* item menu */
-.mm-item { flex-direction: row; align-items: center; height: 40px; }
-.mm-caret { width: 22px; font-size: 18px; color: rgb(255, 200, 97); opacity: 0; transition-property: opacity, translate; transition-duration: 0.15s; }
+.mm-item { flex-direction: row; align-items: center; height: 48px; margin: 0; }
+/* geser tiap baris supaya menu "tangga" seperti referensi */
+.mm-row-0 { margin-left: 0; }
+.mm-row-1 { margin-left: 26px; }
+.mm-row-2 { margin-left: 10px; }
+.mm-row-3 { margin-left: 38px; }
+.mm-row-4 { margin-left: 18px; }
+.mm-row-5 { margin-left: 44px; }
+
+/* penanda pilihan = belah ketupat pixel */
+.mm-caret {
+    width: 12px; height: 12px; margin-right: 14px;
+    background-color: rgb(201, 160, 82);
+    rotate: 45deg;
+    opacity: 0;
+    transition-property: opacity, translate; transition-duration: 0.12s;
+}
+.mm-item-wrap { justify-content: center; }
+/* pita sorot di belakang label (muncul saat dipilih) */
+.mm-slash {
+    position: absolute; left: -14px; right: -18px; top: 6px; bottom: 4px;
+    background-color: rgb(122, 24, 36);
+    rotate: -3deg;
+    opacity: 0; scale: 0.2 1;
+    transform-origin: left;
+    transition-property: opacity, scale; transition-duration: 0.12s;
+}
+.mm-slash-back {
+    position: absolute; left: -8px; right: -26px; top: 12px; bottom: -2px;
+    background-color: rgb(10, 9, 12);
+    rotate: 2deg;
+    opacity: 0;
+    transition-property: opacity; transition-duration: 0.12s;
+}
 .mm-item-label {
-    font-size: 24px;
-    color: rgb(138, 146, 160);
-    transition-property: color, translate, scale;
-    transition-duration: 0.15s;
-    padding: 0; margin: 0;
+    font-size: 30px; -unity-font-style: bold;
+    color: rgb(96, 90, 86);
+    text-shadow: 3px 3px 0 rgb(10, 9, 12);
+    letter-spacing: 1px;
+    padding: 0 4px; margin: 0;
+    transition-property: color, translate, scale; transition-duration: 0.12s;
 }
-.mm-item--selected .mm-caret { opacity: 1; translate: 2px 0; }
-.mm-item--selected .mm-item-label { color: rgb(255, 240, 176); translate: 6px 0; }
-.mm-item--disabled .mm-item-label { color: rgb(58, 63, 74); }
-
-/* pilih level */
-.mm-levels {
-    position: absolute; left: 48px; right: 48px; top: 120px;
-    background-color: rgba(11, 15, 26, 0.94);
-    border-width: 1px; border-color: rgba(77, 106, 140, 0.6); border-radius: 4px;
-    padding: 18px 22px;
+.mm-item--selected .mm-caret { opacity: 1; translate: 4px 0; }
+.mm-item--selected .mm-slash { opacity: 1; scale: 1 1; }
+.mm-item--selected .mm-slash-back { opacity: 1; }
+.mm-item--selected .mm-item-label {
+    color: rgb(226, 214, 184);
+    text-shadow: 3px 3px 0 rgb(70, 14, 20);
+    translate: 10px 0; scale: 1.12 1.12;
 }
-.mm-panel-title { font-size: 14px; -unity-font-style: bold; color: rgb(77, 106, 140); letter-spacing: 2px; margin-bottom: 10px; }
-.mm-level-grid { flex-direction: row; flex-wrap: wrap; }
-.mm-level-actions { flex-direction: row; margin-top: 6px; }
-.mm-level-actions .mm-item { margin-right: 30px; height: 32px; }
-.mm-level-actions .mm-item-label { font-size: 18px; }
+.mm-item--disabled .mm-item-label { color: rgb(40, 36, 40); }
 
-.mm-card {
-    width: 24%; height: 60px; margin: 0 1% 6px 0;
-    background-color: rgba(27, 39, 64, 0.85);
-    border-width: 1px; border-color: rgba(52, 73, 111, 0.9); border-radius: 3px;
-    padding: 4px 10px;
-    transition-property: border-color, background-color, translate;
-    transition-duration: 0.12s;
+/* ---------- pilih level (Rev 1, Figma "Goo-napped UI - Select Level") ---------- */
+.lv-panel { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+/* gelapkan adegan supaya panel kanan terbaca */
+.lv-dim { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(10, 9, 12, 0.55); }
+
+/* judul tegas: stiker krem + blok bayangan merah */
+.lv-title-wrap { position: absolute; left: 30px; top: 18px; rotate: 3deg; }
+.lv-title-shadow { position: absolute; left: 8px; top: 8px; right: -8px; bottom: -8px; background-color: rgb(122, 24, 36); }
+.lv-title-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(226, 214, 184); }
+.lv-title { font-size: 38px; -unity-font-style: bold; color: rgb(10, 9, 12); letter-spacing: 3px; margin: 0; padding: 4px 18px 2px 16px; }
+
+/* daftar + jalur progres */
+.lv-list { position: absolute; left: 60px; top: 104px; width: 430px; rotate: 4deg; flex-direction: column; }
+.lv-row { height: 34px; }
+.lv-track { width: 22px; height: 34px; margin-right: 6px; align-items: center; justify-content: center; }
+.lv-track-line { position: absolute; left: 9px; width: 4px; top: 0; bottom: 0; background-color: rgb(86, 140, 130); }
+.lv-track-line--first { top: 17px; }
+.lv-track-line--current { bottom: 17px; }
+.lv-track-line--locked { top: 22px; bottom: 4px; background-color: rgb(40, 36, 40); }
+.lv-node { width: 12px; height: 12px; rotate: 45deg; background-color: rgb(86, 140, 130); }
+.lv-node--current { background-color: rgb(201, 160, 82); }
+.lv-node--locked { width: 10px; height: 10px; background-color: rgb(10, 9, 12); border-width: 2px; border-color: rgb(40, 36, 40); }
+.lv-node-ring {
+    position: absolute; width: 20px; height: 20px; rotate: 45deg;
+    background-color: rgba(201, 160, 82, 0.35);
+    transition-property: scale, opacity; transition-duration: 0.5s;
 }
-.mm-card-num { font-size: 12px; color: rgb(93, 100, 114); margin: 0; padding: 0; }
-.mm-card-name { font-size: 16px; color: rgb(185, 192, 204); margin: 2px 0 0 0; padding: 0; }
-.mm-card-area { font-size: 10px; color: rgb(93, 100, 114); margin: 1px 0 0 0; padding: 0; }
-.mm-card--selected { border-width: 2px; border-color: rgb(255, 200, 97); background-color: rgba(51, 33, 26, 0.9); translate: 0 -2px; }
-.mm-card--selected .mm-card-name { color: rgb(255, 240, 176); }
-.mm-card--locked { background-color: rgba(18, 26, 43, 0.85); border-color: rgba(38, 54, 90, 0.7); }
-.mm-card--locked .mm-card-name { color: rgb(58, 63, 74); }
-.mm-card--locked.mm-card--selected { border-color: rgb(110, 21, 34); background-color: rgba(18, 26, 43, 0.9); }
+.lv-node-ring--dim { scale: 0.6 0.6; opacity: 0; }
 
-/* konfirmasi */
+.lv-row .mm-item-wrap { flex-direction: row; align-items: center; }
+.lv-row .mm-caret { display: none; }
+.lv-num { font-size: 16px; -unity-font-style: bold; color: rgb(96, 90, 86); margin: 0; padding: 0; }
+.lv-row .lv-num { width: 30px; margin-top: 3px; }
+.lv-row .mm-item-label { font-size: 21px; color: rgb(186, 178, 164); text-shadow: 2px 2px 0 rgb(10, 9, 12); }
+.lv-row--cleared .mm-item-label { color: rgb(140, 132, 122); }
+.lv-row--cleared .lv-num { color: rgb(46, 82, 76); }
+.mm-item--selected .lv-num { color: rgb(201, 160, 82); }
+.lv-row.mm-item--selected .mm-item-label { color: rgb(226, 214, 184); }
+
+/* terkunci: teks glitch (huruf diacak dari kode) + bayangan merah/teal bergeser + garis scan */
+.lv-glitch { justify-content: center; }
+.lv-glitch .mm-item-label { color: rgb(62, 56, 54); text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+.lv-glitch-copy { position: absolute; left: 0; top: 0; font-size: 21px; -unity-font-style: bold; margin: 0; padding: 0; }
+.lv-glitch-copy--red { color: rgba(122, 24, 36, 0.8); translate: -2px 0; }
+.lv-glitch-copy--teal { color: rgba(86, 140, 130, 0.55); translate: 2px 0; }
+.lv-scanline { position: absolute; left: -4px; right: -6px; top: 13px; height: 2px; background-color: rgba(122, 24, 36, 0.7); }
+.lv-row.mm-item--disabled .lv-num { color: rgb(40, 36, 40); }
+.lv-row.mm-item--disabled .mm-slash { background-color: rgb(40, 36, 40); }
+.lv-row.mm-item--disabled.mm-item--selected .lv-glitch .mm-item-label { color: rgb(96, 90, 86); }
+
+/* panel kanan */
+.lv-detail { position: absolute; left: 520px; top: 44px; width: 410px; }
+.lv-head { flex-direction: row; align-items: flex-start; rotate: -4deg; }
+.lv-num-wrap { width: 176px; height: 112px; }
+.lv-detail .lv-num { position: absolute; left: 0; top: -14px; font-size: 110px; color: rgb(226, 214, 184); }
+.lv-detail .lv-num--shadow { left: 6px; top: -8px; color: rgb(122, 24, 36); }
+.lv-head-text { margin-top: 24px; }
+.lv-name { font-size: 34px; -unity-font-style: bold; color: rgb(226, 214, 184); text-shadow: 3px 3px 0 rgb(10, 9, 12); letter-spacing: 1px; margin: 0; padding: 0; }
+.lv-area { align-self: flex-start; font-size: 14px; -unity-font-style: bold; color: rgb(10, 9, 12); background-color: rgb(86, 140, 130); letter-spacing: 1px; padding: 2px 10px; margin: 4px 0 0 4px; }
+
+/* preview: area klik. Hover = bingkai kuning, braket menyala, ikon play samar */
+.lv-preview { width: 400px; height: 234px; margin: 4px 0 0 4px; }
+.lv-shot {
+    position: absolute; left: 8px; top: 8px; right: 8px; bottom: 8px;
+    background-color: rgb(28, 26, 30);
+    border-width: 3px; border-color: rgb(226, 214, 184);
+    -unity-background-scale-mode: scale-and-crop;
+    rotate: -2deg;
+    align-items: center; justify-content: center;
+    transition-property: border-color; transition-duration: 0.12s;
+}
+.lv-shot-empty { position: absolute; left: 12px; bottom: 8px; font-size: 12px; color: rgba(186, 178, 164, 0.5); margin: 0; padding: 0; }
+.lv-shot-vignette { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(10, 9, 12, 0.3); transition-property: background-color; transition-duration: 0.12s; }
+.lv-play-icon {
+    width: 60px; height: 60px;
+    background-color: rgba(10, 9, 12, 0.4);
+    align-items: center; justify-content: center;
+    opacity: 0; scale: 0.8 0.8;
+    transition-property: opacity, scale; transition-duration: 0.15s;
+}
+.lv-play-tri {
+    width: 0; height: 0; margin-left: 6px;
+    border-left-width: 22px; border-top-width: 14px; border-bottom-width: 14px;
+    border-left-color: rgba(226, 214, 184, 0.55); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0);
+}
+.lv-bracket { position: absolute; width: 20px; height: 20px; border-color: rgb(96, 90, 86); transition-property: border-color; transition-duration: 0.12s; }
+.lv-bracket--tl { left: 0; top: 0; border-left-width: 4px; border-top-width: 4px; }
+.lv-bracket--tr { right: 0; top: 0; border-right-width: 4px; border-top-width: 4px; }
+.lv-bracket--bl { left: 0; bottom: 0; border-left-width: 4px; border-bottom-width: 4px; }
+.lv-bracket--br { right: 0; bottom: 0; border-right-width: 4px; border-bottom-width: 4px; }
+.lv-preview:hover .lv-shot { border-color: rgb(201, 160, 82); }
+.lv-preview:hover .lv-bracket { border-color: rgb(201, 160, 82); }
+.lv-preview:hover .lv-shot-vignette { background-color: rgba(10, 9, 12, 0.12); }
+.lv-preview:hover .lv-play-icon { opacity: 1; scale: 1 1; }
+.lv-preview:active .lv-shot { translate: 2px 2px; }
+.lv-preview--locked:hover .lv-shot, .lv-preview--locked:hover .lv-bracket { border-color: rgb(70, 14, 20); }
+.lv-preview--locked:hover .lv-play-icon { opacity: 0; }
+
+.lv-info { font-size: 14px; -unity-font-style: bold; color: rgb(140, 132, 122); letter-spacing: 1px; margin: 4px 0 0 14px; padding: 0; }
+.lv-info--locked { color: rgb(70, 14, 20); }
+
+.lv-actions { position: absolute; left: 40px; bottom: 6px; flex-direction: row; }
+.lv-actions .mm-item { margin-right: 30px; height: 34px; }
+.lv-actions .mm-item-label { font-size: 18px; }
+
+/* ---------- konfirmasi (Figma "Menu Flow > New Game") ---------- */
+.mm-confirm-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 0; align-items: center; justify-content: center; }
+.mm-confirm-dim { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(5, 7, 12, 0.72); }
 .mm-confirm {
-    position: absolute; left: 30%; right: 30%; top: 38%;
-    background-color: rgba(11, 15, 26, 0.95);
-    border-width: 1px; border-color: rgb(194, 37, 58); border-radius: 4px;
-    padding: 18px 22px; align-items: center;
+    width: 460px;
+    background-color: rgb(10, 9, 12);
+    border-width: 3px; border-color: rgb(122, 24, 36);
+    padding: 34px 26px 18px 34px;
+    rotate: -2deg;
 }
-.mm-confirm-text { font-size: 18px; color: rgb(255, 240, 176); white-space: normal; -unity-text-align: middle-center; margin-bottom: 10px; }
+.mm-confirm-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background-color: rgb(122, 24, 36); }
+.mm-confirm-title {
+    position: absolute; left: 24px; top: -24px;
+    font-size: 28px; -unity-font-style: bold; letter-spacing: 2px;
+    color: rgb(226, 214, 184); background-color: rgb(122, 24, 36);
+    padding: 2px 14px; margin: 0;
+    rotate: 2deg;
+}
+.mm-confirm-text { font-size: 20px; color: rgb(226, 214, 184); white-space: normal; margin: 0 0 10px 0; padding: 0; }
+.mm-confirm-summary { flex-direction: row; border-top-width: 2px; border-top-color: rgb(40, 36, 40); padding-top: 10px; margin-bottom: 18px; }
+.mm-confirm-stat { margin-right: 46px; }
+.mm-confirm-lbl { font-size: 11px; -unity-font-style: bold; letter-spacing: 1px; color: rgb(140, 132, 122); margin: 0; padding: 0; }
+.mm-confirm-val { font-size: 26px; -unity-font-style: bold; margin: 2px 0 0 0; padding: 0; }
+.mm-confirm-val--gold { color: rgb(201, 160, 82); }
+.mm-confirm-val--teal { color: rgb(86, 140, 130); }
+.mm-confirm-friends { flex-direction: row; align-items: center; }
+.mm-confirm-gems { flex-direction: row; margin-left: 12px; }
+.mm-confirm-gem { width: 10px; height: 10px; margin-right: 8px; background-color: rgb(86, 140, 130); rotate: 45deg; }
 .mm-confirm-actions { flex-direction: row; }
-.mm-confirm-actions .mm-item { margin: 0 16px; height: 32px; }
-.mm-confirm-actions .mm-item-label { font-size: 20px; }
+.mm-confirm-actions .mm-item { margin: 0 48px 0 20px; height: 36px; }
+.mm-confirm-actions .mm-item-label { font-size: 24px; }
 
-.mm-hint { position: absolute; right: 24px; bottom: 16px; font-size: 12px; color: rgb(93, 100, 114); }
+/* ---------- lain-lain ---------- */
+.mm-hint {
+    position: absolute; right: 22px; bottom: 12px;
+    font-size: 13px; color: rgb(140, 132, 122);
+}
 
 .mm-hidden { display: none; }
 
@@ -94,7 +274,61 @@
     position: absolute; left: 0; right: 0; top: 0; bottom: 0;
     background-color: rgb(5, 7, 12);
     opacity: 1;
-    transition-property: opacity;
-    transition-duration: 0.6s;
+    transition-property: opacity; transition-duration: 0.6s;
 }
 .mm-fade--clear { opacity: 0; }
+
+
+/* ================= TEKSTUR DUNGEON (Figma "HUD & Dungeon" > Menu - tekstur pixel dungeon) =================
+   Tekstur dari GooNapped > UI > Generate Dungeon Textures (Art/UI/Generated, placeholder sampai ada art tim).
+   Slab = bata pixel samar, pinggiran = batang besi berpaku kuningan, pita = kain sobek, stiker = kertas tua, obor = cahaya. */
+.mm-shade-left {
+    background-color: rgb(16, 13, 15);
+    background-image: url("../Art/UI/Generated/ui_brick.png");
+    background-repeat: repeat; background-size: 80px 40px;
+}
+.mm-slab-accent {
+    left: 412px; width: 16px;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("../Art/UI/Generated/ui_iron.png");
+    background-repeat: repeat-y; background-size: 16px 40px;
+}
+.mm-slab-accent2 { display: none; }
+/* pita item terpilih = kain sobek (9-slice: ujung kanan sobek tidak ikut melar) */
+.mm-slash {
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("../Art/UI/Generated/ui_ribbon.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    -unity-slice-left: 2; -unity-slice-right: 12; -unity-slice-top: 0; -unity-slice-bottom: 0;
+    right: -26px;
+}
+.mm-slash-back { background-color: rgba(6, 5, 7, 0.9); }
+.lv-row.mm-item--disabled .mm-slash { background-color: rgba(0, 0, 0, 0); -unity-background-image-tint-color: rgb(90, 84, 84); }
+/* stiker judul & subtitle = kertas tua */
+.lv-title-bg {
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("../Art/UI/Generated/ui_paper.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    -unity-slice-left: 3; -unity-slice-right: 3; -unity-slice-top: 3; -unity-slice-bottom: 3;
+}
+.lv-title { color: rgb(26, 18, 16); }
+.mm-subtitle {
+    color: rgb(26, 18, 16);
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("../Art/UI/Generated/ui_paper.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    -unity-slice-left: 3; -unity-slice-right: 3; -unity-slice-top: 3; -unity-slice-bottom: 3;
+    border-bottom-color: rgb(122, 24, 36);
+}
+/* obor dinding + cahayanya (berkedip dari MainMenuController) */
+.mm-torch-glow {
+    position: absolute; left: 380px; top: 70px; width: 240px; height: 240px;
+    background-image: url("../Art/UI/Generated/ui_glow.png");
+    -unity-background-image-tint-color: rgba(224, 122, 46, 0.35);
+    -unity-background-scale-mode: stretch-to-fill;
+}
+.mm-torch { position: absolute; left: 494px; top: 164px; width: 12px; height: 40px; }
+.mm-torch-stick { position: absolute; left: 3px; top: 14px; width: 6px; height: 26px; background-color: rgb(107, 70, 48); }
+.mm-torch-bracket { position: absolute; left: -2px; top: 22px; width: 16px; height: 4px; background-color: rgb(62, 56, 54); }
+.mm-torch-flame { position: absolute; left: 0; top: 2px; width: 12px; height: 14px; background-color: rgb(224, 122, 46); }
+.mm-torch-core { position: absolute; left: 3px; top: -4px; width: 6px; height: 10px; background-color: rgb(255, 200, 97); }

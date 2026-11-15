@@ -19,24 +19,37 @@ namespace GooNapped
         [SerializeField, TextArea] private string controlsText =
             "WASD move · E eat/use · Space split/merge · Shift switch · C hide · F call friend · Q spit · R retry · Esc pause";
 
-        private VisualElement traits, tags, recipes;
-        private Label pieces, carried, blob, toast, banner, controls;
+        private VisualElement recipes, card, slime, bodyImg, faceImg, glow, auraDot, sizePips, piecePips, friendBox, effects;
+        private Label massLabel, auraLabel, friendCount, goalLabel, blob, toast, banner, controls;
         private Jar[] jars = new Jar[0];
         private float timer;
+        private Texture2D shownBody, shownFace;
 
         private void OnEnable()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
-            traits = root.Q("traits");
-            tags = root.Q("tags");
             recipes = root.Q("recipes");
-            pieces = root.Q<Label>("pieces");
-            carried = root.Q<Label>("carried");
+            card = root.Q("slime-card");
+            slime = root.Q("sc-slime");
+            bodyImg = root.Q("sc-body");
+            faceImg = root.Q("sc-face");
+            glow = root.Q("sc-glow");
+            auraDot = root.Q("sc-aura-dot");
+            sizePips = root.Q("sc-size");
+            piecePips = root.Q("sc-pieces");
+            friendBox = root.Q("sc-friend");
+            effects = root.Q("sc-effects");
+            massLabel = root.Q<Label>("sc-mass");
+            auraLabel = root.Q<Label>("sc-aura");
+            friendCount = root.Q<Label>("sc-friend-count");
+            goalLabel = root.Q<Label>("sc-goal");
             blob = root.Q<Label>("blob");
             toast = root.Q<Label>("toast");
             banner = root.Q<Label>("banner");
             controls = root.Q<Label>("controls");
             if (controls != null) controls.text = controlsText;
+            // datang dari menu / retry: buka layar dengan transisi yang sama (lendir surut / lembar miring)
+            root.schedule.Execute(() => UiFx.RevealIfPending(root)).StartingIn(30);
         }
 
         private void Start()
@@ -55,32 +68,31 @@ namespace GooNapped
 
         private void Refresh()
         {
-            if (traits == null || brain == null) return;
+            if (card == null || brain == null) return;
             var a = brain.Active;
-            traits.Clear();
-            tags.Clear();
-            if (a != null)
-            {
-                var st = a.Body.State;
-                traits.Add(TextChip("Size " + st.Mass + "/" + SlimeBodyState.MaxMass));
-                traits.Add(AuraChip(st.Aura));
-                foreach (var t in st.Traits) if (t.kind != TraitKind.Color) traits.Add(TextChip(TraitNames.Of(t)));
-                if (!a.IsHidden && LightExposure.At(a.Center) >= 0.35f) tags.Add(Tag("LIT", "tag--light"));
-                if (st.EmitsLight) tags.Add(Tag("GLOWING", "tag--glow"));
-                if (st.SmellRadius > 0f) tags.Add(Tag("SMELLY", "tag--smell"));
-                if (a.IsMuddy) tags.Add(Tag("MUDDY", "tag--smell"));
-                if (st.SpeedMultiplier < 0.85f) tags.Add(Tag("SLOW", "tag--slow"));
-                if (st.StepNoiseRadius > 0f) tags.Add(Tag("NOISY", "tag--slow"));
-                if (a.IsHidden) tags.Add(Tag("HIDDEN", "tag--hidden"));
-            }
+            if (a != null) RefreshSlimeCard(a);
 
             recipes.Clear();
             foreach (var j in jars)
                 if (j != null && j.IsPeeked && j.Recipe != null) recipes.Add(JarCard(j, a));
 
             int req = goal != null ? goal.Required : 0;
-            pieces.text = "Pieces " + brain.Pieces.Count + "/" + brain.MaxPieces;
-            carried.text = req > 0 ? "Friends safe " + (goal != null ? goal.Saved : 0) + "/" + req : "Reach the vent";
+            int saved = goal != null ? goal.Saved : 0;
+            // potongan: belah ketupat per potongan, yang dikendalikan berwarna kuningan
+            piecePips.Clear();
+            for (int i = 0; i < brain.MaxPieces; i++)
+            {
+                var p = Pip("sc-pip--piece");
+                if (i < brain.Pieces.Count) p.AddToClassList(brain.Pieces[i] == a ? "sc-pip--active" : "sc-pip--on");
+                piecePips.Add(p);
+            }
+            // teman yang sedang ikut (dipanggil F)
+            int following = 0;
+            foreach (var f in FriendSlime.All) if (f != null && f.State == FriendSlime.Mode.Following) following++;
+            friendCount.text = following.ToString();
+            friendBox.EnableInClassList("sc-friend--active", following > 0);
+            goalLabel.text = req > 0 ? "FRIENDS SAFE  " + saved + " / " + req : "REACH THE VENT";
+            goalLabel.EnableInClassList("sc-goal--done", req > 0 && saved >= req);
             blob.text = FriendStatus();
             if (a != null && a.HidingIn != null && Vent.Of(a.HidingIn) != null)
             {
@@ -98,6 +110,80 @@ namespace GooNapped
             banner.EnableInClassList("banner--win", win);
             banner.EnableInClassList("banner--fail", fail);
             banner.text = win ? (req > 0 ? "FRIENDS SAFE!" : "MADE IT!") : fail ? goal.FailReason.ToUpperInvariant() : "";
+        }
+
+        // Kartu slime: potret (ikut warna aura & besar sesuai massa), nama aura, pip ukuran, efek tubuh.
+        private void RefreshSlimeCard(SlimePiece a)
+        {
+            var st = a.Body.State;
+            var auraColor = TraitNames.AuraColor(st.Aura);
+
+            // potret dari sprite slime sendiri, diwarnai seperti material aura sekarang
+            var anim = a.GetComponentInChildren<SlimeSpriteAnimator>();
+            var frames = SlimePortrait.IdleFront(a);
+            var mat = anim != null && anim.bodyRenderer != null ? anim.bodyRenderer.sharedMaterial : null;
+            var bodyTex = SlimePortrait.Body(frames.body, mat);
+            var faceTex = SlimePortrait.Face(frames.face);
+            if (bodyTex != shownBody) { shownBody = bodyTex; bodyImg.style.backgroundImage = bodyTex != null ? new StyleBackground(bodyTex) : new StyleBackground(StyleKeyword.None); }
+            if (faceTex != shownFace) { shownFace = faceTex; faceImg.style.backgroundImage = faceTex != null ? new StyleBackground(faceTex) : new StyleBackground(StyleKeyword.None); }
+            float k = SlimeBodyState.MaxMass > 1 ? (st.Mass - 1) / (float)(SlimeBodyState.MaxMass - 1) : 1f;
+            float s = Mathf.Lerp(0.75f, 1.2f, Mathf.Clamp01(k));   // ukuran 1 = kecil, ukuran maks = memenuhi bingkai
+            slime.style.scale = new Scale(new Vector2(s, s));
+            glow.style.backgroundColor = auraColor;
+            massLabel.text = st.Mass + "/" + SlimeBodyState.MaxMass;
+
+            auraDot.style.backgroundColor = auraColor;
+            auraLabel.text = TraitNames.Aura(st.Aura).ToUpperInvariant() + " AURA";
+
+            sizePips.Clear();
+            for (int i = 0; i < SlimeBodyState.MaxMass; i++)
+            {
+                var p = Pip(null);
+                if (i < st.Mass) p.AddToClassList("sc-pip--on");
+                sizePips.Add(p);
+            }
+
+            // efek: titik kecil warna slime + nama efek
+            var names = new List<string>();
+            void AddFx(string n) { n = n.ToUpperInvariant(); if (!names.Contains(n)) names.Add(n); }
+            if (!a.IsHidden && LightExposure.At(a.Center) >= 0.35f) AddFx("lit");
+            if (st.EmitsLight) AddFx("glowing");
+            if (st.SmellRadius > 0f) AddFx("smelly");
+            if (a.IsMuddy) AddFx("muddy");
+            if (st.SpeedMultiplier < 0.85f) AddFx("slow");
+            if (st.StepNoiseRadius > 0f) AddFx("noisy");
+            if (a.IsHidden) AddFx("hidden");
+            foreach (var t in st.Traits) if (t.kind != TraitKind.Color) AddFx(TraitNames.Of(t));
+            effects.Clear();
+            if (names.Count == 0)
+            {
+                var none = Fx("NO EFFECT", auraColor);
+                none.AddToClassList("sc-fx--none");
+                effects.Add(none);
+            }
+            else foreach (var n in names) effects.Add(Fx(n, auraColor));
+        }
+
+        private static VisualElement Pip(string extra)
+        {
+            var p = new VisualElement { pickingMode = PickingMode.Ignore };
+            p.AddToClassList("sc-pip");
+            if (extra != null) p.AddToClassList(extra);
+            return p;
+        }
+
+        private static VisualElement Fx(string name, Color dotColor)
+        {
+            var fx = new VisualElement { pickingMode = PickingMode.Ignore };
+            fx.AddToClassList("sc-fx");
+            var dot = new VisualElement { pickingMode = PickingMode.Ignore };
+            dot.AddToClassList("sc-fx-dot");
+            dot.style.backgroundColor = dotColor;
+            fx.Add(dot);
+            var l = new Label(name) { pickingMode = PickingMode.Ignore };
+            l.AddToClassList("sc-fx-name");
+            fx.Add(l);
+            return fx;
         }
 
         // Teman yang sedang di luar toples: mengikuti / menunggu / sembunyi.

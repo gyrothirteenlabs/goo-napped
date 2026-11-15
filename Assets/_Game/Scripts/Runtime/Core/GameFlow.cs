@@ -14,6 +14,9 @@ namespace GooNapped
         public const string MainMenu = "MainMenu";
         public const string Intro = "Intro";
         public const string Ending = "Ending";
+        // Stage tutorial: diputar otomatis setelah Intro pada New Game, lalu lanjut ke level pertama (tanpa markas).
+        // Tidak masuk daftar Levels (tidak muncul di Select Level / progres). Dibangun GooNapped > Blockout > Tutorial (L00).
+        public const string Tutorial = "L00_Tutorial";
         // Markas di jaringan ventilasi: muncul di antara level (desain-v2 bagian 12).
         public const string Hub = "Markas";
         // Level yang dituju setelah markas.
@@ -82,10 +85,15 @@ namespace GooNapped
 
         public static void LoadMainMenu() => Load(MainMenu);
 
+        // Tujuan setelah cerita pembuka: tutorial dulu (kalau scene-nya ada), baru level pertama.
+        public static string AfterIntro(string next) =>
+            next == Levels[0] && SceneExists(Tutorial) ? Tutorial : next;
+
         // Setelah level selesai: ke markas dulu kalau tujuan berikutnya level lain; dari markas lanjut ke level itu.
         // Level terakhir (berikutnya Ending) dan scene di luar alur langsung ke tujuan.
         public static void LoadAfterLevel(string current, string next)
         {
+            if (current == Tutorial) { Load(!string.IsNullOrEmpty(next) ? next : Levels[0]); return; }   // tutorial langsung ke level pertama
             if (current == Hub)
             {
                 string go = !string.IsNullOrEmpty(PendingNext) ? PendingNext : (!string.IsNullOrEmpty(next) ? next : MainMenu);

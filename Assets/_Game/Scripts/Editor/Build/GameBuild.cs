@@ -26,7 +26,7 @@ namespace GooNapped.EditorTools
             var list = new List<string>();
             foreach (var s in EditorBuildSettings.scenes)
                 if (s.enabled && File.Exists(s.path) && !list.Contains(s.path)) list.Add(s.path);
-            var need = new List<string> { "Boot", GameFlow.MainMenu, GameFlow.Intro, GameFlow.Hub };
+            var need = new List<string> { "Boot", GameFlow.MainMenu, GameFlow.Intro, GameFlow.Tutorial, GameFlow.Hub };
             need.AddRange(GameFlow.Levels);
             need.Add(GameFlow.Ending);
             foreach (var n in need)

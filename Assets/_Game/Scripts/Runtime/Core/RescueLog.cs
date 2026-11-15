@@ -10,6 +10,10 @@ namespace GooNapped
         public static bool IsRescued(RecipeData friend) =>
             friend != null && PlayerPrefs.GetString(Key, "").Contains("[" + friend.name + "]");
 
+        // Cek lewat nama aset (mis. "Friend_Pip"), dipakai menu tanpa memuat RecipeData.
+        public static bool IsRescued(string friendAssetName) =>
+            !string.IsNullOrEmpty(friendAssetName) && PlayerPrefs.GetString(Key, "").Contains("[" + friendAssetName + "]");
+
         public static void Add(RecipeData friend)
         {
             if (friend == null || IsRescued(friend)) return;

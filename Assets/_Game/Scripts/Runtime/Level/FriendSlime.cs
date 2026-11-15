@@ -148,7 +148,10 @@ namespace GooNapped
             Leader = null;
             trail.Clear();
             saveTimer = 0.25f;
-            if (recipe != null) { FriendPowers.Unlock(recipe.Power); RescueLog.Add(recipe); }   // auranya pulih di ventilasi: kekuatannya bisa dipakai
+            // auranya pulih di ventilasi: kekuatannya bisa dipakai. Teman di stage tutorial hanya latihan:
+            // tidak dicatat (kalau dicatat, Pip L04 dianggap sudah selamat, ikut duduk di markas, dan dihitung di menu).
+            bool tutorial = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == GameFlow.Tutorial;
+            if (recipe != null && !tutorial) { FriendPowers.Unlock(recipe.Power); RescueLog.Add(recipe); }
             AudioDirector.Play(AudioDirector.Sfx.Merge, Center, 0.7f);
             var goal = FindFirstObjectByType<LevelGoal>();
             if (goal != null) goal.NotifySaved(this);
