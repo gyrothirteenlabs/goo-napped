@@ -30,6 +30,10 @@ namespace GooNapped.EditorTools
             public Sprite[] wallProps; // dekor berdiri di depan tembok, tanpa collider/cahaya: kandelabra (kastil, puncak), rak ramuan (penjara)
             public TileBase[] path;    // taman: jalan tanah dari spawn ke ventilasi tujuan
             public Sprite machine;     // puncak: mesin penyadap 96 px di tembok belakang toples raja
+            // perabot penghalang (peta 't', gen_level_props.py): 0 sendiri, 1 menempel tembok atas, 2-4 deretan kiri/tengah/kanan
+            public Sprite[] block;
+            public Sprite pillar;      // peta 'I': pilar / patung / tabung (sel 96 px)
+            public Sprite[] clutter;   // serakan lantai tanpa collider (pinggir ruangan, jarang)
         }
 
         static readonly Dictionary<string, Set> cache = new Dictionary<string, Set>();
@@ -39,7 +43,7 @@ namespace GooNapped.EditorTools
             if (string.IsNullOrEmpty(area)) return null;
             if (cache.TryGetValue(area, out var s) && s.wall != null) return s;
             s = area == "garden" ? Build("Garden", "gdn_grass", "gdn_hedge", "gdn_decor", 0.10f)
-              : area == "dungeon" ? Build("Dungeon", "dng_floor", "dng_wall", "dng_decor", 0.12f)
+              : area == "dungeon" || area == "lab" ? Build("Dungeon", "dng_floor", "dng_wall", "dng_decor", 0.12f)
               : area == "castle" ? Build("Castle", "cst_floor", "cst_wall", "cst_decor", 0.08f)
               : area == "summit" ? Build("Summit", "smt_floor", "smt_wall", "smt_decor", 0.10f)
               : null;
@@ -69,7 +73,19 @@ namespace GooNapped.EditorTools
             if (area == "castle" || area == "summit")
                 s.wallProps = First(Spr + "Props/Castle/prop_candelabra.png");
             if (area == "dungeon")
-                s.wallProps = First(Spr + "Props/Dungeon/prop_shelf.png");
+                s.wallProps = Concat(First(Spr + "Props/Dungeon/prop_shelf.png"), First(Spr + "Props/Dungeon/prop_chains.png"));
+            if (area == "lab")
+                s.wallProps = Concat(First(Spr + "Props/Dungeon/prop_shelf.png"), First(Spr + "Props/Dungeon/prop_pipes.png"));
+            // perabot penghalang, pilar, serakan (gen_level_props.py)
+            string folder = area == "garden" ? "Garden" : area == "castle" ? "Castle" : area == "summit" ? "Summit" : "Dungeon";
+            string key = area == "garden" ? "gdn" : area == "castle" ? "cst" : area == "summit" ? "smt" : area == "lab" ? "lab" : "dng";
+            string pillar = area == "garden" ? "prop_statue_c96" : area == "castle" ? "prop_column_c96" : area == "summit" ? "prop_auracolumn_c96" : area == "lab" ? "prop_tank_c96" : "prop_pillar_c96";
+            s.block = Frames(Spr + "Props/" + folder + "/prop_" + key + "_block.png");
+            if (s.block.Length < 5) s.block = null;
+            var pl = First(Spr + "Props/" + folder + "/" + pillar + ".png");
+            s.pillar = pl.Length > 0 ? pl[0] : null;
+            var cl = Frames(Spr + "Props/" + folder + "/prop_" + key + "_clutter.png");
+            s.clutter = cl.Length > 0 ? cl : null;
             if (area == "summit")
             {
                 var m = First(Spr + "Props/Summit/prop_drainmachine_c96.png");
@@ -115,6 +131,32 @@ namespace GooNapped.EditorTools
             EditorUtility.SetDirty(rt);
             s.wall = rt;
             return s;
+        }
+
+        // Sel perabot penghalang ('t', 'I') di Tilemap Walls: tanpa gambar (gambarnya SpriteRenderer terpisah supaya ikut
+        // urutan sumbu Y dengan aktor), collider sel penuh. Jadi NavGrid, garis pandang penjaga, cahaya, dan bayangan
+        // memperlakukannya seperti tembok.
+        public static TileBase BlockTile()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/_Game/Art/Tiles/Area")) AssetDatabase.CreateFolder("Assets/_Game/Art/Tiles", "Area");
+            return SimpleTile("block_collider", null, Tile.ColliderType.Grid);
+        }
+
+        static Sprite[] Concat(Sprite[] a, Sprite[] b)
+        {
+            var r = new Sprite[a.Length + b.Length];
+            a.CopyTo(r, 0); b.CopyTo(r, a.Length);
+            return r;
+        }
+
+        // Varian perabot 't': deretan horizontal = kiri/tengah/kanan, sendiri di bawah tembok = varian tembok, selain itu sendiri.
+        public static Sprite BlockLook(Set s, bool left, bool right, bool wallAbove)
+        {
+            if (s == null || s.block == null) return null;
+            if (left && right) return s.block[3];
+            if (right) return s.block[2];
+            if (left) return s.block[4];
+            return s.block[wallAbove ? 1 : 0];
         }
 
         static Tile SimpleTile(string name, Sprite sprite, Tile.ColliderType collider)
