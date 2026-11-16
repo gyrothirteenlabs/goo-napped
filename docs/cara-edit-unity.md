@@ -26,6 +26,7 @@ Resep langkah demi langkah untuk pekerjaan yang paling sering. Detail sistem: [a
    | `T` / `P` | tempat sembunyi: tong (muat 1) / peti (muat 2) |
    | `m` / `=` | lumpur (jejak bau) / genangan (mencuci lumpur) |
    | `q` / `c` / `B` | vas rapuh / lantai berderit / peti dorong |
+   | `t` / `I` | perabot penghalang (meja, bangku, kuali, bak bunga, konsol; deretan `ttt` = meja panjang) / pilar, patung, tabung. Seperti tembok: menghalangi jalan, pandangan penjaga, dan cahaya lentera (bayangannya bisa dipakai menyelinap). Gambar otomatis per area |
    | `z` | tempat istirahat penjaga terdekat (memasang `GuardShift`: tugas 12 dtk, istirahat 8 dtk; ubah di Inspector) |
    | `p` / `@` | Lukisan Bermata / Monster Gerbang (diam; arah pandang dasar = `Facing` di Inspector) |
    | `3`/`4` `5`/`6` `7`/`8` `9`/`0` | titik awal/akhir Zirah Hampa, Mata Penyihir, Pelayan Tudung, Alkemis |

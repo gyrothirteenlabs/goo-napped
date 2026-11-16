@@ -101,6 +101,13 @@ Keputusan user 13 Nov: desainer belum sempat, jadi AI membuat **fondasi** art le
 - Unity: `Editor/Level/AreaArt.cs`. `LevelBlockout.Config.area` = `garden` (L01–L03), `dungeon` (L04–L06, Markas), `castle` (L07–L10), `summit` (L11). Tempat sembunyi berganti tampilan per area (taman = semak, kastil = lemari untuk P, tudung saji/panci/tirai untuk T). Tembok = RuleTile (atas/muka otomatis), dekor acak tetap di Grid/Decor, pohon di dalam massa pagar tanaman. Sprite props prefab: GooNapped > Art > Pasang sprite props fondasi.
 - Desainer boleh menimpa file mana pun (nama file sama = langsung terpakai). Dipasang otomatis oleh `LevelBlockout`: karpet (`cst_carpet`) di bagian dalam ruangan/koridor kastil (tidak menutup lantai berderit, lumpur, celah, exit), kandelabra (kastil, puncak) dan rak ramuan (penjara) di depan tembok (tanpa collider/cahaya), mesin penyadap di tembok atas toples raja (L11), jalan tanah (`gdn_dirt`) di taman dari spawn ke ventilasi tujuan.
 
+## Props level tambahan (AI, 16 Nov 2026, SEMENTARA)
+- Generator: `art/tools/gen_level_props.py` (memakai palet + helper `gen_area_art.py`, tidak menimpa sprite lama). Pratinjau `art/sprites/_preview_props_level.png`, perbandingan sebelum/sesudah per level di `docs/review/level-props/`.
+- `prop_<area>_block.png` (5 frame: sendiri, menempel tembok atas, deretan kiri/tengah/kanan) = perabot penghalang peta `t`. Area `gdn`, `dng`, `lab` (L06), `cst`, `smt`.
+- Pilar peta `I` (sel 96): `prop_statue_c96` (taman), `prop_pillar_c96` (penjara), `prop_tank_c96` (lab), `prop_column_c96` (kastil), `prop_auracolumn_c96` (puncak).
+- `prop_<area>_clutter.png` (4 frame) = serakan lantai tanpa collider, dipasang jarang di pinggir ruangan. `prop_chains` (penjara) dan `prop_pipes` (lab) = dekor tembok, ikut `wallProps`.
+- Aturan: serakan/dekor tidak boleh mirip tempat sembunyi (tong, peti, panci, semak, lemari, tirai, tudung saji) atau musuh (zirah, lukisan), supaya pemain tidak tertipu.
+
 ## Witch Eye (model tim, 15 Nov 2026)
 - Sumber: `art/blender/witcheye_v02.blend` (salinan file desainer; file asli di Desktop tidak diubah). Desain tetap milik tim: bentuk, warna mata, topi, monokel, tengkorak pendamping.
 - Yang diubah AI hanya teknis + keterbacaan: objek dimasukkan ke koleksi MODEL_Body/MODEL_Face dan di-parent ke `Model_Root` (dulu arah side/back tidak berputar); posisi ditengahkan pada bola mata dan dibuat melayang; path output dibuat relatif; salinan add-on di file diperbarui; tengkorak (`Skull`) diberi material tulang `WE_Bone` dan lubang mata/hidungnya ditutup muka gelap `WE_BoneDark` (dulu bolong, jadi di 48 px terbaca gumpalan krem); tengkorak keluar dari Edit Mode.
