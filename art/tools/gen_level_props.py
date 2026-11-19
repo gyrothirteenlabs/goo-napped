@@ -334,39 +334,81 @@ def castle():
 
 # ================================================================ PUNCAK
 def summit():
+    # Remake 19 Nov: menara alkemis medieval (dulu konsol/generator/pipa sci-fi).
     out = os.path.join(PROPS, "Summit")
-    SMM, SML, SG, SGD = A.SM_METAL, A.SM_METAL_L, A.SM_GLOW, A.SM_GLOW_D
+    SG, SGD = A.SM_GLOW, A.SM_GLOW_D
+    ST, STL = A.SM_STONE, A.SM_STONE_L
+    BR, BRL, BRD = A.SM_BRASS, A.SM_BRASS_L, A.SM_BRASS_D
+    LIQ = (150, 100, 230, 220)
 
     cv = sheet(5, 241)
-    # 0 konsol aura
-    slab(cv, 0, 8, 40, 14, 12, 18, SMM[1], SMM[0], SML)
-    cv.rect(12, 16, 24, 8, hexc("15121c"), 1.3)
-    for x in range(14, 34, 5): cv.rect(x, 18, 3, 4, SG if x % 2 else SGD, 1.4)
-    for (cx, c) in [(16, hexc("c2253a")), (24, SG), (32, hexc("3fd1a0"))]: cv.ellipse(cx, 34, 2.5, 2.5, c, 1.3)
-    # 1 generator menempel tembok
+    # 0 meja alkimia sendiri: alembik kaca (cairan ungu) di atas tungku kecil + lilin
+    slab(cv, 0, 6, 42, 14, 16, 5, WOOD[1], WOOD_D, WOOD_L)
+    legs(cv, 0, (8, 37), 35, 46, WOOD_D)
+    cv.rect(17, 22, 10, 6, A.SM_METAL[1], 1.6); cv.px(21, 26, hexc("ff8a3a"), 1.7); cv.px(22, 26, hexc("ffc861"), 1.7)   # tungku
+    cv.ellipse(22, 16, 6, 6, GLASS, 1.8); cv.ellipse(22, 18, 5, 3.5, LIQ, 1.85)
+    cv.rect(21, 6, 3, 5, GLASS_EDGE, 1.9); cv.rect(23, 6, 9, 2, GLASS_EDGE, 1.9); cv.rect(31, 7, 2, 8, GLASS_EDGE, 1.85)  # leher + pipa
+    cv.ellipse(19, 14, 1.2, 1.5, GLASS_HI, 2.0)
+    cv.rect(35, 18, 3, 7, A.SM_WAX, 1.7); cv.px(36, 16, A.SM_FLAME, 1.8); cv.px(36, 17, hexc("f08a2e"), 1.8)
+    # 1 rak buku tinggi menempel tembok
     ox = C
-    cv.rect(ox + 8, 8, 32, 38, SMM[1], 1.2); cv.rect(ox + 8, 8, 32, 2, SML, 1.35)
-    cv.ellipse(ox + 24, 24, 10, 10, SML, 1.5); cv.ellipse(ox + 24, 24, 8, 8, hexc("1b1626"), 1.3)
-    for i in range(3): cv.ellipse(ox + 24, 24, 6 - i * 2, 6 - i * 2, SGD if i % 2 == 0 else SG, 1.35 + i * 0.05)
-    cv.rect(ox + 12, 38, 24, 4, A.SM_PURPLE[1], 1.3)
-    # 2-4 saluran pipa aura di lantai
-    for f, (x0, x1) in zip((2, 3, 4), ((6, C), (0, C), (0, 42))):
+    cv.rect(ox + 5, 2, 38, 44, WOOD[2], 1.0); cv.rect(ox + 5, 2, 38, 3, WOOD_L, 1.3)
+    BOOKS = [hexc("5a2430"), hexc("2c3a5a"), hexc("4a3a28"), hexc("3f2a52"), hexc("6b5a3a"), hexc("2f4a3a")]
+    for sy in (6, 19, 32):
+        cv.rect(ox + 8, sy, 32, 11, hexc("17141c"), 0.8)
+        x = 9
+        while x < 39:
+            w = 2 + int(cv.rng.integers(3)); hh = 7 + int(cv.rng.integers(4))
+            if cv.rng.random() < 0.12:   # botol ramuan di sela buku
+                cv.rect(ox + x, sy + 11 - 6, 3, 6, LIQ, 1.25); cv.rect(ox + x + 1, sy + 11 - 8, 1, 2, hexc("8a8478"), 1.3)
+            else:
+                cv.rect(ox + x, sy + 11 - hh, w, hh, BOOKS[int(cv.rng.integers(len(BOOKS)))], 1.2)
+            x += w + (1 if cv.rng.random() < 0.15 else 0)
+        cv.rect(ox + 7, sy + 11, 34, 2, WOOD_L, 1.3)
+    # 2-4 meja kerja alkemis panjang: labu, tengkorak berlilin, gulungan, lumpang, kristal
+    for f, (x0, x1) in zip((2, 3, 4), ((5, C), (0, C), (0, 43))):
         ox = f * C
-        for (y, hh) in ((20, 8), (30, 8)):
-            cv.rect(ox + x0, y, x1 - x0, hh, SMM[1], 1.4); cv.rect(ox + x0, y, x1 - x0, 1, SML, 1.5)
-            cv.rect(ox + x0, y + hh // 2, x1 - x0, 1, SG, 1.45)
-        for bx in range(x0 + (4 if f == 2 else 0), x1, 16): cv.rect(ox + bx, 18, 4, 22, SML, 1.6)
-        cv.rect(ox + x0, 40, x1 - x0, 4, SMM[0], 1.0)
+        slab(cv, ox, x0, x1, 10, 22, 5, WOOD[1], WOOD_D, WOOD_L)
+        cv.rect(ox + x0, 37, x1 - x0, 2, WOOD_D, 1.0)
+        if f != 3: legs(cv, ox, (x0 + 2,) if f == 2 else (x1 - 5,), 37, 46, WOOD_D)
+        else: legs(cv, ox, (22,), 39, 46, WOOD_D)
+    ox = 2 * C   # labu bundar cairan ungu + botol tinggi
+    cv.ellipse(ox + 20, 20, 5, 5, GLASS, 1.6); cv.ellipse(ox + 20, 22, 4, 3, LIQ, 1.65); cv.rect(ox + 19, 12, 3, 5, GLASS_EDGE, 1.7)
+    cv.rect(ox + 32, 13, 4, 11, GLASS_EDGE, 1.6); cv.rect(ox + 32, 17, 4, 7, (90, 200, 140, 220), 1.65)
+    ox = 3 * C   # tengkorak berlilin + gulungan
+    cv.ellipse(ox + 16, 21, 5, 4.5, hexc("cfc6b0"), 1.7); cv.px(ox + 14, 21, hexc("2a2230"), 1.75); cv.px(ox + 18, 21, hexc("2a2230"), 1.75)
+    cv.rect(ox + 14, 24, 5, 2, hexc("b8af98"), 1.7); cv.rect(ox + 15, 11, 3, 7, A.SM_WAX, 1.8); cv.px(ox + 16, 9, A.SM_FLAME, 1.9); cv.px(ox + 16, 10, hexc("f08a2e"), 1.9)
+    cv.rect(ox + 15, 17, 1, 3, A.SM_WAX, 1.75)
+    cv.rect(ox + 26, 18, 14, 6, PAPER, 1.6); cv.rect(ox + 25, 17, 2, 8, hexc("b8a888"), 1.65); cv.rect(ox + 39, 17, 2, 8, hexc("b8a888"), 1.65)
+    for y in (19, 21): cv.rect(ox + 28, y, 9, 1, hexc("6e6a60"), 1.62)
+    ox = 4 * C   # lumpang + serpih kristal aura
+    cv.ellipse(ox + 14, 22, 5, 3, STL, 1.7); cv.ellipse(ox + 14, 21, 3, 1.5, ST[2], 1.6); cv.rect(ox + 16, 14, 2, 7, WOOD_L, 1.8)
+    for (cx, h) in [(27, 9), (31, 12), (34, 7)]:
+        for i in range(h):
+            w = max(1, int((h - i) / h * 2.5))
+            cv.rect(ox + cx - w // 2, 26 - i, w, 1, SG if i % 3 else SGD, 1.7 + i * 0.03)
     cv.outline(OUT)
     save(cv, out, "prop_smt_block")
 
-    # tiang pipa aura (96)
+    # tiang batu menara (96) dengan sangkar besi berisi kristal aura ungu di puncaknya
     cv = Canvas(96, 96, 242)
-    cv.rect(30, 82, 36, 12, SMM[0], 1.2); cv.rect(30, 82, 36, 2, SML, 1.3)
-    cv.rect(36, 10, 24, 72, SMM[1], 1.3)
-    cv.rect(44, 10, 8, 72, SGD, 1.35); cv.rect(46, 10, 4, 72, SG, 1.4)
-    for y in (18, 40, 62): cv.rect(34, y, 28, 5, SML, 1.6); cv.rect(34, y, 28, 1, hexc("6a728a"), 1.65)
-    cv.rect(32, 4, 32, 6, SMM[2], 1.5); cv.rect(32, 4, 32, 1, SML, 1.6)
+    cv.rect(30, 84, 36, 10, ST[1], 1.2); cv.rect(30, 84, 36, 2, STL, 1.3)
+    for y in range(32, 84, 8):
+        off = 0 if (y // 8) % 2 == 0 else 6
+        cv.rect(34, y, 28, 8, A.SM_MORTAR, 1.0)
+        for bx in range(34 - off, 62, 12):
+            x0, x1 = max(34, bx) + 1, min(62, bx + 12) - 1
+            if x1 > x0:
+                cv.rect(x0, y + 1, x1 - x0, 6, ST[(y // 8 + bx) % 4], 1.3); cv.rect(x0, y + 1, x1 - x0, 1, STL, 1.35)
+    cv.rect(30, 26, 36, 6, ST[3], 1.5); cv.rect(30, 26, 36, 1, STL, 1.6)          # kepala tiang
+    for i in range(16):                                                       # kristal
+        w = max(1, int((16 - abs(i - 8) * 1.6) / 2))
+        cv.rect(48 - w, 24 - i, 2 * w, 1, SG if i % 4 else SGD, 1.8 + 0.4 * (1 - abs(i - 8) / 8))
+    cv.rect(46, 12, 2, 8, hexc("e2d4ff"), 2.1)
+    for x in (39, 47, 56):                                                    # sangkar besi
+        cv.rect(x, 6, 2, 20, A.SM_METAL[1], 1.9)
+    cv.rect(38, 5, 21, 2, A.SM_METAL_L, 2.0); cv.rect(38, 25, 21, 2, A.SM_METAL_L, 1.9)
+    cv.rect(47, 1, 2, 4, A.SM_METAL_L, 2.0)
     cv.outline(OUT)
     save_big(cv, out, "prop_auracolumn_c96")
 
