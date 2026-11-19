@@ -19,12 +19,16 @@ namespace GooNapped
 
         public int Reversed { get { int n = 0; foreach (var v in valves) if (v != null && v.IsReversed) n++; return n; } }
         public int Total => valves.Count;
+        public bool JarOpen => opened;
 
         private IEnumerator Start()
         {
             valves.AddRange(FindObjectsByType<AuraValve>(FindObjectsSortMode.None));
             foreach (var v in valves) v.Reversed += OnValve;
             yield return new WaitForSeconds(0.6f);
+            // Raja baru bicara setelah pembuka sinematik selesai. Dulu dialognya (menghentikan waktu) muncul di tengah
+            // pembuka, jadi kamera sinematik ikut berhenti dan dua dialog bertumpuk.
+            while (LevelIntro.Running) yield return null;
             if (Reversed == 0)
                 StoryPlayer.Say("The King", "Little clear one... the Gloam drinks our auras through this machine. Turn its three valves back!");
             else if (Reversed >= Total) OpenJar(false);

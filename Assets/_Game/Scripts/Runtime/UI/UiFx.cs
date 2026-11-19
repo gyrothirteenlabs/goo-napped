@@ -349,7 +349,8 @@ namespace GooNapped
                 card.number = (i + 1).ToString("00");
                 card.title = info.name.ToUpperInvariant();
                 card.area = LevelCatalog.Area(i).ToUpperInvariant();
-                card.info = !info.rescue || n == 0 ? "SNEAK THROUGH  ·  REACH THE VENT"
+                card.info = i == LevelCatalog.Count - 1 ? "FINAL  ·  TURN THE AURA VALVES"
+                    : !info.rescue || n == 0 ? "SNEAK THROUGH  ·  REACH THE VENT"
                     : left <= 0 ? "RESCUE  ·  EVERYONE IS SAFE"
                     : "RESCUE  ·  " + left + (left == 1 ? " FRIEND" : " FRIENDS") + " INSIDE";
             }

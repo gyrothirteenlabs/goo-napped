@@ -34,6 +34,13 @@ namespace GooNapped
         {
             if (once && played) return;
             played = true;
+            StartCoroutine(PlayAfterIntro());
+        }
+
+        // Jangan menyela pembuka level sinematik (LevelIntro): tunggu sampai selesai.
+        private System.Collections.IEnumerator PlayAfterIntro()
+        {
+            while (LevelIntro.Running) yield return null;
             StoryPlayer.Play(sequence, () => onFinished?.Invoke());
         }
     }
