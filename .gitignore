@@ -121,3 +121,7 @@ InitTestScene*.unity*
 # Screenshot dari Unity MCP / editor (bukan aset game)
 /[Aa]ssets/[Ss]creenshots/
 /[Aa]ssets/[Ss]creenshots.meta
+
+# Zip aset dari luar (itch dll) sebelum diperiksa lisensinya: TIDAK masuk repo. Lihat docs/panduan-aset-luar.md
+/art/incoming/
+__pycache__/

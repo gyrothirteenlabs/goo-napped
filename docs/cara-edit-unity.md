@@ -181,8 +181,11 @@ Nama game (sementara **Goo-napped**, versi `0.2.0-jam`), nama tim, dan ikon dipa
 Build ini **tidak mengubah Build Settings**: daftar scene = scene aktif di Build Settings + semua scene alur (menu, Intro, Markas, L01..L11, Ending) ditambahkan otomatis. Kalau build lewat File > Build Profiles biasa, level v2 tidak ikut dan setelah Intro layarnya hitam (sekarang kembali ke menu + error di log).
 
 Di folder build dev ada dua file .bat:
-- `smoke_test.bat`: game jalan sendiri (menu -> Intro sampai pindah sendiri ke L01 -> tiap level + Markas + Ending), screenshot tiap scene ke `smoke_shots/`, hasil `SMOKE OK/GAGAL` di log, lalu keluar.
+- `smoke_test.bat`: game jalan sendiri lewat alur asli (menu -> Intro sampai pindah sendiri ke tutorial -> tutorial + tiap level -> Markas -> Ending). Di tiap level: pembuka sinematik diputar dan selesai, kontrol kembali, zoom/Pixel Perfect Camera/kamera ikut pemain normal, tampilan slime normal (tanpa sprite dobel), slime bisa bergerak. Screenshot tiap scene + `<level>_main` ke `smoke_shots/`, hasil `SMOKE OK/GAGAL` di log, lalu keluar (exit code 1 kalau ada yang gagal). Total ±124 cek.
+- Untuk upload ke itch: zip folder `Builds/Windows` **tanpa** folder `*_BurstDebugInformation_DoNotShip`.
 - `main_dengan_log.bat`: main biasa dengan log.
+
+Aset dari luar (zip itch dll): lihat `docs/panduan-aset-luar.md`.
 
 Kalau ada bug di build: kirim `goo-napped_log.txt` (dan kalau perlu `Player.log` di `%USERPROFILE%\AppData\LocalLow\DefaultCompany\My project\`).
 

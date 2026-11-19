@@ -14,7 +14,7 @@ namespace GooNapped
     //   3. Kamera kembali ke slime. Slime masuk (jatuh dari pipa), melompat beberapa langkah sendiri, menengok kiri-kanan.
     //   4. Dialog penutup, lalu kontrol diberikan (tip tutorial baru muncul setelah ini).
     // Hanya diputar saat level dimasuki lewat alur game (GameFlow.Load: menu, cerita, markas, level sebelumnya).
-    // Tidak saat Retry / ulang dari checkpoint, tidak di test yang memuat scene langsung, tidak di smoke test build.
+    // Tidak saat Retry / ulang dari checkpoint, tidak di test yang memuat scene langsung. Smoke test build (-gnSmoke) ikut memutarnya.
     // Esc = lewati. Selama berjalan: penjaga tidak bisa melihat pemain (Guard), pause & tip tutorial ditahan.
     // Dipasang LevelBlockout: level biasa memakai teks LevelCatalog (objektif di titik tujuan + kalimat pembuka),
     // tutorial memakai daftar shot sendiri (LevelBlockout.V2_L00_Tutorial).
@@ -73,7 +73,7 @@ namespace GooNapped
 
         private bool ShouldPlay()
         {
-            if (Suppressed || Array.IndexOf(Environment.GetCommandLineArgs(), "-gnSmoke") >= 0) return false;
+            if (Suppressed) return false;   // smoke test build (-gnSmoke) SENGAJA ikut memutar pembuka: bug 19 Nov ada di jalur ini
             if (GameFlow.ConsumeArrival(gameObject.scene.name)) return true;
             return Application.isEditor && playWhenOpenedDirectly;
         }
