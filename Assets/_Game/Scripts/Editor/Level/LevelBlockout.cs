@@ -1351,7 +1351,7 @@ namespace GooNapped.EditorTools
                                 var data = Load<IngredientData>(D + "Ingredients/Essence_" + id + ".asset");
                                 var p = Spawn(P + "Props/IngredientPickup.prefab", ingRoot, pos, "Essence_" + id);
                                 Set(p.GetComponent<IngredientPickup>(), "ingredient", q => q.objectReferenceValue = data);
-                                p.GetComponent<SpriteRenderer>().color = data.PlaceholderTint;
+                                p.GetComponent<IngredientPickup>().ApplyLook();   // sprite khas bahan langsung terlihat di scene
                             }
                             break;
                     }
