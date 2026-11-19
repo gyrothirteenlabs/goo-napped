@@ -15,6 +15,7 @@ namespace GooNapped
     {
         [SerializeField] private PlayerBrain brain;
         [SerializeField] private LevelGoal goal;
+        private FinalSequence final;   // L11: objektif = katup aura lalu segel Alkemis (bukan ventilasi)
         [SerializeField, Range(0.02f, 0.5f)] private float refreshInterval = 0.1f;
         [SerializeField, TextArea] private string controlsText =
             "WASD move · E eat/use · Space split/merge · Shift switch · C hide · F call friend · Q spit · R retry · Esc pause";
@@ -56,6 +57,7 @@ namespace GooNapped
         {
             if (brain == null) brain = FindFirstObjectByType<PlayerBrain>();
             if (goal == null) goal = FindFirstObjectByType<LevelGoal>();
+            if (final == null) final = FindFirstObjectByType<FinalSequence>();
             jars = FindObjectsByType<Jar>(FindObjectsSortMode.None);
         }
 
@@ -100,8 +102,16 @@ namespace GooNapped
             foreach (var f in FriendSlime.All) if (f != null && f.State == FriendSlime.Mode.Following) following++;
             friendCount.text = following.ToString();
             friendBox.EnableInClassList("sc-friend--active", following > 0);
-            goalLabel.text = req > 0 ? "FRIENDS SAFE  " + saved + " / " + req : "REACH THE VENT";
-            goalLabel.EnableInClassList("sc-goal--done", req > 0 && saved >= req);
+            if (final != null)
+            {
+                goalLabel.text = final.JarOpen ? "LURE THE GLOAM INTO THE JAR" : "AURA VALVES  " + final.Reversed + " / " + final.Total;
+                goalLabel.EnableInClassList("sc-goal--done", final.JarOpen);
+            }
+            else
+            {
+                goalLabel.text = req > 0 ? "FRIENDS SAFE  " + saved + " / " + req : "REACH THE VENT";
+                goalLabel.EnableInClassList("sc-goal--done", req > 0 && saved >= req);
+            }
             blob.text = FriendStatus();
             if (a != null && a.HidingIn != null && Vent.Of(a.HidingIn) != null)
             {

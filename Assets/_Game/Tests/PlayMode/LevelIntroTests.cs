@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
@@ -73,7 +74,7 @@ namespace GooNapped.Tests
             if (ppc != null) Assert.IsTrue(ppc.enabled, "Pixel Perfect Camera tidak dinyalakan lagi.");
             Assert.That(cam.orthographicSize, Is.EqualTo(2.25f).Within(0.05f), "Zoom kamera tidak kembali normal.");
             var piece = brain.Active;
-            Assert.IsTrue(piece.GetComponentsInChildren<SpriteRenderer>().Any(r => r.enabled), "Slime tidak terlihat setelah pembuka.");
+            AssertSlimeNormal(piece);
             Assert.Greater(((Vector2)piece.transform.position - start).x, 1f, "Slime tidak melompat masuk sendiri.");
             Assert.IsFalse(Object.FindObjectsByType<Guard>(FindObjectsSortMode.None).Any(g => g.IsChasing), "Penjaga mengejar selama pembuka.");
             // tip WASD muncul setelah pembuka
@@ -89,17 +90,17 @@ namespace GooNapped.Tests
             Assert.IsFalse(LevelIntro.Running, "Pembuka diputar lagi setelah Retry.");
         }
 
-        [UnityTest, Timeout(60000)]
-        public IEnumerator LevelBiasa_PembukaObjektif_BisaDilewati()
+        [UnityTest, Timeout(120000)]
+        public IEnumerator LevelBiasa_PembukaObjektif_BisaDilewati([ValueSource(nameof(AllLevels))] string level)
         {
-            yield return LoadViaFlow(GameFlow.Levels[0]);
+            yield return LoadViaFlow(level);
             float t = 0f;
             while (!LevelIntro.Running && t < 3f) { t += Time.unscaledDeltaTime; yield return null; }
             Assert.IsTrue(LevelIntro.Running, "Pembuka level tidak diputar.");
             t = 0f;
             while (!StoryPlayer.IsPlaying && t < 5f) { t += Time.unscaledDeltaTime; yield return null; }
-            yield return new WaitForSeconds(0.8f);
-            Shot("L01_objective");
+            yield return new WaitForSecondsRealtime(0.8f);
+            if (level == GameFlow.Levels[0]) Shot("L01_objective");
             int lines = 0;
             bool wasPlaying = false;
             t = 0f;
@@ -109,11 +110,37 @@ namespace GooNapped.Tests
                 wasPlaying = StoryPlayer.IsPlaying;
                 if (StoryPlayer.IsPlaying) StoryPlayer.Next();
                 t += Time.unscaledDeltaTime;
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSecondsRealtime(0.1f);
             }
-            Assert.IsFalse(LevelIntro.Running, "Pembuka level tidak selesai.");
+            Assert.IsFalse(LevelIntro.Running, "Pembuka level tidak selesai. timeScale=" + Time.timeScale + " dialog=" + StoryPlayer.IsPlaying);
             Assert.AreEqual(2, lines, "Pembuka level biasa = objektif + kalimat pembuka.");
-            Assert.IsTrue(Object.FindFirstObjectByType<PlayerBrain>().enabled, "Kontrol tidak dikembalikan.");
+            var brain = Object.FindFirstObjectByType<PlayerBrain>();
+            Assert.IsTrue(brain.enabled, "Kontrol tidak dikembalikan.");
+            AssertSlimeNormal(brain.Active);
+            var cam = Camera.main;
+            var ppc = cam.GetComponent("PixelPerfectCamera") as Behaviour;
+            if (ppc != null) Assert.IsTrue(ppc.enabled, "Pixel Perfect Camera tidak dinyalakan lagi.");
+            Assert.That(cam.orthographicSize, Is.EqualTo(2.25f).Within(0.05f), "Zoom kamera tidak kembali normal.");
+            var follow = cam.GetComponent<CameraFollow>();
+            if (follow != null) Assert.IsTrue(follow.enabled, "Kamera tidak mengikuti pemain lagi.");
+            yield return new WaitForSecondsRealtime(0.3f);
+            Shot(level + "_after_intro");   // QA visual: slime + props setelah pembuka (Temp/intro_shots)
+            yield return null;
+            yield return null;
+        }
+
+        static IEnumerable<string> AllLevels() => GameFlow.Levels;
+
+        // Tampilan slime sama seperti prefab: badan + wajah menyala, renderer yang sengaja mati (Disguise sisa v1) tetap mati.
+        // Bug 19 Nov: pembuka menyalakan SEMUA renderer, jadi batu samaran menempel di slime.
+        static void AssertSlimeNormal(SlimePiece piece)
+        {
+            Assert.IsNotNull(piece, "Tidak ada slime aktif.");
+            foreach (var r in piece.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                if (r.name == "Disguise") Assert.IsFalse(r.enabled, "Sprite Disguise menyala setelah pembuka (slime terlihat dobel).");
+                if (r.name == "Body" || r.name == "Face") Assert.IsTrue(r.enabled, r.name + " slime tidak terlihat setelah pembuka.");
+            }
         }
     }
 }

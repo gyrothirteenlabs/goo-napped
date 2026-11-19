@@ -100,7 +100,7 @@ namespace GooNapped
 
             var list = BuildShots();
             bool drop = entry == Entry.Drop && piece != null;
-            if (drop) SetVisible(piece, false);
+            if (drop) Hide(piece);
             SetCam(list.Count > 0 ? list[0].focus : PlayerFocus(), list.Count > 0 ? list[0].zoom : 1f);
             yield return StoryPlayer.FadeScreen(0f, 0.5f);
 
@@ -116,7 +116,7 @@ namespace GooNapped
 
             if (piece != null)
             {
-                if (drop) { SetVisible(piece, true); if (!skip) yield return Drop(); }
+                if (drop) { Show(); if (!skip) yield return Drop(); }
                 if (!skip && walkIn.sqrMagnitude > 0.01f) yield return Walk(walkIn);
                 if (!skip && lookAround) yield return LookAround();
             }
@@ -151,7 +151,7 @@ namespace GooNapped
             if (ppc != null && ppcWasOn) ppc.enabled = true;
             if (piece != null)
             {
-                SetVisible(piece, true);
+                Show();
                 piece.Motor.enabled = true;
                 piece.Motor.Stop();
                 if (piece.Jelly != null) { piece.Jelly.Lift = 0f; piece.Jelly.Target = 0f; }
@@ -226,9 +226,21 @@ namespace GooNapped
 
         // ---------------- slime ----------------
 
-        private static void SetVisible(SlimePiece p, bool on)
+        // Sembunyikan slime sebelum jatuh dari pipa. Hanya renderer yang MEMANG menyala yang dimatikan dan dicatat, lalu
+        // hanya itu yang dinyalakan lagi: slime punya renderer yang sengaja mati (mis. "Disguise" sisa v1). Dulu semua
+        // renderer dinyalakan saat pembuka selesai, jadi batu samaran ikut tampil menempel di slime.
+        private readonly List<SpriteRenderer> hidden = new List<SpriteRenderer>();
+
+        private void Hide(SlimePiece p)
         {
-            foreach (var r in p.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = on;
+            foreach (var r in p.GetComponentsInChildren<SpriteRenderer>(true))
+                if (r.enabled) { r.enabled = false; hidden.Add(r); }
+        }
+
+        private void Show()
+        {
+            foreach (var r in hidden) if (r != null) r.enabled = true;
+            hidden.Clear();
         }
 
         // Jatuh dari pipa di langit-langit: badan memanjang saat jatuh, gepeng saat mendarat.

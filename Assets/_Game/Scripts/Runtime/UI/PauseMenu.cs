@@ -250,7 +250,8 @@ namespace GooNapped
             cardName.text = info.name.ToUpperInvariant();
             cardArea.text = LevelCatalog.Area(i).ToUpperInvariant();
             string text;
-            if (!info.rescue || info.friends.Length == 0) text = "SNEAK  ·  REACH THE VENT";
+            if (i == LevelCatalog.Count - 1) text = "FINAL  ·  TURN THE AURA VALVES";
+            else if (!info.rescue || info.friends.Length == 0) text = "SNEAK  ·  REACH THE VENT";
             else
             {
                 var left = new List<string>();
