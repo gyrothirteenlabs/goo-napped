@@ -125,7 +125,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 28ffd06326e162142b108d4beb8630b5
+      spriteID: 24cdfcf930b034e4c86aab688eb22b24
       internalID: 1968154780
       vertices: []
       indices: 
@@ -147,8 +147,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5b5e9dde97ce63647aac1a002495aadc
+      spriteID: 6b15dfcf4587d894aa4ec69b9ddb8613
       internalID: -1912529023
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: prop_torch_2
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e0545490c7f49f4ea33a1f30cb8f8d0
+      internalID: 788939131
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: prop_torch_3
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c165d184c49d8624fb15808b4a1d6769
+      internalID: 1173737911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: prop_torch_4
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bf522bc28d65ca34f9d1bc9885a6b1bf
+      internalID: -2083969268
       vertices: []
       indices: 
       edges: []
@@ -171,6 +237,9 @@ TextureImporter:
     nameFileIdTable:
       prop_torch_0: 1968154780
       prop_torch_1: -1912529023
+      prop_torch_2: 788939131
+      prop_torch_3: 1173737911
+      prop_torch_4: -2083969268
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

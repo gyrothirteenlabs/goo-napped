@@ -30,7 +30,11 @@ namespace GooNapped
             float now = Time.unscaledTime;
             bool stale = forceRefresh || (lights.Length > 0 && lights[0] == null) || nextRefresh - now > 5f;
             if (!stale && now < nextRefresh) return;
-            lights = Object.FindObjectsByType<Light2D>(FindObjectsSortMode.None);
+            // cahaya dekorasi (DecorLight, lilin di sprite) murni visual: tidak dihitung sebagai cahaya berbahaya
+            var all = Object.FindObjectsByType<Light2D>(FindObjectsSortMode.None);
+            var keep = new System.Collections.Generic.List<Light2D>(all.Length);
+            foreach (var l in all) if (l != null && l.GetComponent<DecorLight>() == null) keep.Add(l);
+            lights = keep.ToArray();
             nextRefresh = now + 2f;
             forceRefresh = false;
         }

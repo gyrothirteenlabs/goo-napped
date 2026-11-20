@@ -127,7 +127,7 @@ namespace GooNapped.EditorTools
                 /* 0 */ new Tip(1, 1, 6, 6, "WASD", "to move", 0.6f),
                 /* 1 */ new Tip(8, 1, 7, 6, "C", "to hide · again to come out"),
                 /* 2 */ new Tip(16, 1, 8, 6, "", "light = danger · guards see you there"),
-                /* 3 */ new Tip(25, 1, 7, 6, "E", "to eat essence"),
+                /* 3 */ new Tip(25, 1, 7, 6, "E", "to eat essence · gives an aura + a side effect"),
                 /* 4 */ new Tip(25, 1, 7, 6, "SPACE", "to split", 0f, 3),
                 /* 5 */ new Tip(25, 1, 7, 6, "SHIFT", "to switch piece", 0f, 4),
                 /* 6 */ new Tip(25, 1, 7, 6, "SPACE", "next to your other half to merge", 0f, 5),
@@ -1497,6 +1497,10 @@ namespace GooNapped.EditorTools
                         msr.sprite = art.machine;
                         msr.sharedMaterial = envMat;
                     }
+
+            // cahaya lilin dekorasi: tiap api lilin yang tergambar di sprite perabot/dekor/tile diberi Light2D kecil berkedip
+            // (DecorLight, tidak dihitung "cahaya = bahaya"). Lihat Editor/Level/CandleLights.cs.
+            if (art != null) CandleLights.Place(PropRoot());
 
             if (hasFinal)
             {
