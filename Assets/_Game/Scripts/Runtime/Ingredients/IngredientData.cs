@@ -33,9 +33,9 @@ namespace GooNapped
         [SerializeField] private Material bodyMaterial;
         [Tooltip("Warna khas bahan (UI, dan warna pickup kalau belum ada sprite).")]
         [SerializeField] private Color placeholderTint = Color.white;
-        [Tooltip("Gambar bahan di level (art/tools/gen_essences.py: essence_<id> frame 0). Kosong = bulatan diwarnai.")]
+        [Tooltip("Gambar bahan di level: gelembung aura (art/tools/gen_essences.py: essence_<id> frame 0). Kosong = bulatan diwarnai.")]
         [SerializeField] private Sprite pickupSprite;
-        [Tooltip("Bagian yang menyala (frame 1), dipakai renderer glow kalau bahan ini menyala (emitsLight).")]
+        [Tooltip("Lapisan glow unlit (frame 1): tepi gelembung + kilau untuk semua esens, isi menyala untuk esens emitsLight.")]
         [SerializeField] private Sprite pickupGlow;
 
         public string Id => id;

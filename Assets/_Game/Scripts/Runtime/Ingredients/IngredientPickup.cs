@@ -3,9 +3,10 @@ using UnityEngine;
 namespace GooNapped
 {
     // Bahan yang tergeletak di level. Butuh Collider2D (trigger) supaya terdeteksi SlimeController.
-    // Tampilan: sprite khas bahan (IngredientData.PickupSprite) yang melayang pelan, bayangan di lantai, dan lapisan
-    // glow unlit untuk bahan yang menyala (Pendar, Bara) sehingga tetap terlihat dalam gelap. Tanpa sprite: bulatan
-    // diwarnai PlaceholderTint (perilaku lama).
+    // Tampilan: gelembung aura (IngredientData.PickupSprite, art/tools/gen_essences.py) yang melayang pelan, bayangan di
+    // lantai, dan lapisan glow unlit (PickupGlow) untuk SEMUA esens: tepi gelembung + kilau tipis supaya tetap terlihat
+    // dan terbaca "bisa diambil" di ruangan gelap. Esens yang menyala (Pendar, Bara) punya isi gelembung yang ikut
+    // menyala di sprite glow-nya. Tanpa sprite: bulatan diwarnai PlaceholderTint (perilaku lama).
     [RequireComponent(typeof(Collider2D))]
     public class IngredientPickup : MonoBehaviour
     {
@@ -58,7 +59,7 @@ namespace GooNapped
             if (glowRenderer != null)
             {
                 glowRenderer.sprite = ingredient.PickupGlow;
-                glowRenderer.enabled = art && ingredient.EmitsLight && ingredient.PickupGlow != null;
+                glowRenderer.enabled = art && ingredient.PickupGlow != null;
             }
         }
 

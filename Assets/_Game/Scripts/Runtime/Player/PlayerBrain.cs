@@ -204,7 +204,8 @@ namespace GooNapped
             if (pickup != null)
             {
                 if (!a.Body.State.CanEat) { Say("Too full. Split (Space) or spit one out (Q) first."); return true; }
-                if (a.TryEat()) return true;
+                var food = pickup.Ingredient;
+                if (a.TryEat()) { Say(EssenceInfo.EatenMessage(food), 3.5f); return true; }
             }
 
             var jar = FindNear<Jar>(a, interactRadius);

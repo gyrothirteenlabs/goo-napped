@@ -60,6 +60,16 @@
             <ui:VisualElement name="recipes" class="recipes" picking-mode="Ignore" />
         </ui:VisualElement>
         <ui:VisualElement class="spacer" picking-mode="Ignore" />
+        <!-- kartu esens: muncul saat slime dekat esens. Isi dari EssenceInfo (nama, aura, cocok toples siapa, efek samping) -->
+        <ui:VisualElement name="essence-card" class="panel essence-card essence-card--hidden" picking-mode="Ignore">
+            <ui:VisualElement class="ec-head" picking-mode="Ignore">
+                <ui:VisualElement name="ec-dot" class="ec-dot" picking-mode="Ignore" />
+                <ui:Label name="ec-name" class="ec-name" picking-mode="Ignore" />
+                <ui:Label name="ec-key" class="ec-key" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="ec-aura" class="ec-line ec-aura" picking-mode="Ignore" />
+            <ui:VisualElement name="ec-effects" class="ec-effects" picking-mode="Ignore" />
+        </ui:VisualElement>
         <ui:Label name="toast" class="toast" />
         <ui:VisualElement class="bottom-row" picking-mode="Ignore">
             <ui:VisualElement class="spacer-h" picking-mode="Ignore" />
