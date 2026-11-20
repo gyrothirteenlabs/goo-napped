@@ -64,6 +64,9 @@ namespace GooNapped.EditorTools
                     "@echo off\r\nrem Muat semua scene otomatis lalu keluar. Hasil: goo-napped_log.txt (baris SMOKE).\r\n" +
                     "start /wait \"\" \"%~dp0" + Exe + "\" -gnSmoke -gnLog -screen-fullscreen 0 -screen-width 1280 -screen-height 720\r\n" +
                     "findstr /C:\"SMOKE\" \"%~dp0goo-napped_log.txt\"\r\npause\r\n");
+                // kredit aset pihak ketiga (CC BY wajib dicantumkan) ikut di sebelah .exe
+                string credits = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "CREDITS.txt"));
+                if (File.Exists(credits)) File.Copy(credits, Path.Combine(dir, "CREDITS.txt"), true);
                 File.WriteAllText(Path.Combine(dir, "main_dengan_log.bat"),
                     "@echo off\r\nrem Main biasa + log lengkap ke goo-napped_log.txt (F1 di game = lihat log).\r\n" +
                     "start \"\" \"%~dp0" + Exe + "\" -gnLog\r\n");

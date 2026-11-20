@@ -2,9 +2,11 @@ using UnityEngine;
 
 namespace GooNapped
 {
-    // Satu per level (di prefab LevelSystems): BGM + ambience loop, dan efek suara posisional.
-    // Klip sekarang PLACEHOLDER hasil sintesis (Editor/Audio/ProtoAudioGenerator.cs); tim audio tinggal mengganti
-    // klip di Inspector komponen ini, kode tidak perlu diubah.
+    // Satu per level (di prefab LevelSystems): efek suara posisional, plus BGM + ambience loop CADANGAN.
+    // Musik per scene diatur MusicDirector (Resources/SceneMusic). Kalau scene ada di tabel itu, loop di sini tidak
+    // diputar; loop di sini hanya untuk scene di luar tabel (sandbox).
+    // Klip: sebagian dari Freesound (lihat Assets/_Game/Audio/LISENSI.md), sisanya PLACEHOLDER sintesis
+    // (Editor/Audio/ProtoAudioGenerator.cs). Tim audio tinggal mengganti klip di Inspector, kode tidak perlu diubah.
     public class AudioDirector : MonoBehaviour
     {
         public enum Sfx { SlimeStep, GolemStep, Eat, Split, Merge, Disguise, Reveal, Switch, Alert, Caught, Vomit, Splat, UiClick }
@@ -17,6 +19,8 @@ namespace GooNapped
 
         [Header("Efek (urut sesuai enum Sfx)")]
         [SerializeField] private AudioClip slimeStep;
+        [Tooltip("Variasi langkah/lompat slime (opsional). Kalau diisi, tiap langkah memilih acak dari daftar ini.")]
+        [SerializeField] private AudioClip[] slimeStepVariants = new AudioClip[0];
         [SerializeField] private AudioClip golemStep;
         [SerializeField] private AudioClip eat;
         [SerializeField] private AudioClip split;
@@ -51,8 +55,9 @@ namespace GooNapped
                 go.transform.SetParent(transform, false);
                 pool[i] = Configure3D(go.AddComponent<AudioSource>());
             }
-            musicSource = Loop(music, "Music");
-            ambienceSource = Loop(ambience, "Ambience");
+            bool table = MusicDirector.Covers(gameObject.scene.name);
+            musicSource = table ? null : Loop(music, "Music");
+            ambienceSource = table ? null : Loop(ambience, "Ambience");
             ApplyVolumes();
             GameSettings.Changed += ApplyVolumes;
         }
@@ -112,7 +117,13 @@ namespace GooNapped
         {
             switch (s)
             {
-                case Sfx.SlimeStep: return slimeStep;
+                case Sfx.SlimeStep:
+                    if (slimeStepVariants != null && slimeStepVariants.Length > 0)
+                    {
+                        var v = slimeStepVariants[Random.Range(0, slimeStepVariants.Length)];
+                        if (v != null) return v;
+                    }
+                    return slimeStep;
                 case Sfx.GolemStep: return golemStep;
                 case Sfx.Eat: return eat;
                 case Sfx.Split: return split;

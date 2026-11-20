@@ -8,4 +8,5 @@ Aturan (repo publik, Game Off):
 
 | Folder | Sumber | Lisensi | Dipakai untuk |
 |---|---|---|---|
-| (kosong) | | | |
+| `Assets/_Game/Audio` (mus_menu, mus_dungeon, mus_summit, mus_hub, amb_garden, sfx_slime_hop_01/02, sfx_split) | freesound.org (zip tim, 20 Nov 2026) | CC0 + CC BY 4.0 (mus_menu, mus_summit) | Musik, ambience, SFX. Detail per file: `Assets/_Game/Audio/LISENSI.md`, kredit pemain: `CREDITS.txt` |
+| `Fonts/PixelifySans` | Google Fonts | OFL 1.1 | Font UI |

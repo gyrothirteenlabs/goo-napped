@@ -1,0 +1,29 @@
+Goo-napped (working title) - GitHub Game Off 2026 "SHIFT"
+
+Third-party assets
+==================
+
+Music & sound (freesound.org)
+-----------------------------
+"Mystical Music Box" by viramiller
+  https://freesound.org/s/742116/  - License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+  Used as: main menu + intro music. Converted to OGG, volume normalized.
+
+"Time Travel" by victor_natas
+  https://freesound.org/s/657346/  - License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+  Used as: final level music. Converted to OGG, volume normalized.
+
+"Melodic Loop - Waiting in mystery dark room with electronic music box" by tusic99
+  https://freesound.org/s/648900/  - License: CC0
+"Mysterious Merchant" by code_box
+  https://freesound.org/s/505166/  - License: CC0
+"Lake Night" by christmaskrumble666
+  https://freesound.org/s/744098/  - License: CC0
+"Slime Jump 1" and "Slime Jump 2" by qubodup
+  https://freesound.org/s/751341/ , https://freesound.org/s/751342/  - License: CC0
+"Slime attack or movement" by wubitog
+  https://freesound.org/s/188384/  - License: CC0
+
+Font
+----
+Pixelify Sans - SIL Open Font License 1.1 (see Assets/ThirdParty/Fonts/PixelifySans/OFL.txt)

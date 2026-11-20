@@ -180,9 +180,12 @@ MonoBehaviour:
   ambience: {fileID: 8300000, guid: 8220a6914e23e1747bbd3815fec23b22, type: 3}
   ambienceVolume: 0.5
   slimeStep: {fileID: 8300000, guid: 78a275291152cbe4383a1fe0912a0329, type: 3}
+  slimeStepVariants:
+  - {fileID: 8300000, guid: 6d746d2fa182a2843b58a557fae7da72, type: 3}
+  - {fileID: 8300000, guid: a5ea6d2834e146c47ac6a1d604b58907, type: 3}
   golemStep: {fileID: 8300000, guid: b93814cdb65734441b040e71d8c39223, type: 3}
   eat: {fileID: 8300000, guid: 59946781ba9550c4c95f4b542b17d4f6, type: 3}
-  split: {fileID: 8300000, guid: d3cc093867d28774b99084a6024ae34d, type: 3}
+  split: {fileID: 8300000, guid: 08bc20a99954b664e8f843a2ceb75b1b, type: 3}
   merge: {fileID: 8300000, guid: fa68e9035fe187f47b5d016dca4269ce, type: 3}
   disguise: {fileID: 8300000, guid: b211e55aabde9cf4fb77b17b151b84e2, type: 3}
   reveal: {fileID: 8300000, guid: 0a7f7a409a45c804583c7ea781d8fbac, type: 3}

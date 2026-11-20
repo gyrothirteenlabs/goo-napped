@@ -18,6 +18,8 @@ Diperbarui 16 Nov 2026. Versi ringkas untuk WA: `daftar-suara-wa.txt`. Setelah f
 | Lisensi | **Wajib catat sumber + lisensi tiap file** (repo publik, aturan Game Off). Boleh: CC0, CC-BY, royalty-free yang boleh diredistribusi, buatan sendiri. **Jangan**: CC-BY-NC/ND, aset berbayar yang melarang dibagikan, potongan lagu/game lain |
 | Mood | Dunia **gelap dan tegang**, slime tetap **lucu**: suara slime lembut, kenyal, imut. Dunia berat, dingin, bergema |
 
+**Sudah dipasang (20 Nov 2026):** lihat `Assets/_Game/Audio/LISENSI.md`. Musik per scene diatur di `Assets/_Game/Resources/SceneMusic.asset` (ganti klip di Inspector).
+
 **Tempat cari (aman lisensinya):** freesound.org (filter License: CC0 / Attribution), kenney.nl (CC0), opengameart.org (cek lisensi tiap file), Sonniss GDC Game Audio Bundle (royalty-free), itch.io "free sfx" (cek lisensi), pixabay.com/sound-effects.
 
 **Cara kirim:** taruh di Google Drive / chat dengan nama file sesuai tabel + satu file `LISENSI.txt` berisi: nama file, link sumber, pembuat, lisensi. Atau langsung di repo: `Assets/_Game/Audio/Music` (mus_, amb_) dan `Assets/_Game/Audio/SFX` (sfx_, ui_, vo_).
@@ -28,15 +30,15 @@ Diperbarui 16 Nov 2026. Versi ringkas untuk WA: `daftar-suara-wa.txt`. Setelah f
 
 | Nama file | Dipakai di | Rasa / catatan | Kata kunci cari | Status | Prio |
 |---|---|---|---|---|---|
-| `mus_menu` | Main menu | Misterius, pelan, motif tema utama | dark fantasy menu loop, mysterious music box | ⬜ | P1 |
-| `mus_garden` | Taman kastil (L01–L03) | Malam, tegang ringan, sedikit lucu | stealth sneaking loop night, sneaky pizzicato | 🟡 | P1 |
-| `mus_dungeon` | Penjara + lab (L00 tutorial, L04–L06) | Lebih gelap, dengung, tetes | dungeon stealth loop dark ambient | ⬜ | P1 |
-| `mus_castle` | Kastil atas (L07–L10) | Megah tapi suram (harpsichord/organ pelan) | gothic castle harpsichord loop | ⬜ | P1 |
-| `mus_summit` | Puncak (L11, final) | Paling tegang, ritmis | boss tension loop dark | ⬜ | P1 |
+| `mus_menu` | Main menu (sementara: Mystical Music Box, viramiller, CC BY; juga dipakai Intro) | Misterius, pelan, motif tema utama | dark fantasy menu loop, mysterious music box | ✅ | P1 |
+| `mus_garden` | Taman kastil (L01–L03) (sementara pakai mus_dungeon) | Malam, tegang ringan, sedikit lucu | stealth sneaking loop night, sneaky pizzicato | 🟡 | P1 |
+| `mus_dungeon` | Penjara + lab (L00 tutorial, L04–L06) (sementara: tusic99, CC0; juga dipakai L01–L10) | Lebih gelap, dengung, tetes | dungeon stealth loop dark ambient | ✅ | P1 |
+| `mus_castle` | Kastil atas (L07–L10) (sementara pakai mus_dungeon) | Megah tapi suram (harpsichord/organ pelan) | gothic castle harpsichord loop | 🟡 | P1 |
+| `mus_summit` | Puncak (L11, final) (sementara: Time Travel, victor_natas, CC BY) | Paling tegang, ritmis | boss tension loop dark | ✅ | P1 |
 | `mus_chase` | Saat dikejar (lapisan di atas musik area) | Tempo naik, perkusi. Idealnya key sama dengan musik area | chase music loop tense percussion | ⬜ | P1 |
-| `mus_hub` | Markas di ventilasi | Hangat, tenang, aman | cozy safe room loop, calm lullaby | ⬜ | P1 |
-| `mus_intro` | Strip cerita pembuka | Sedih-misterius, pelan (± 60 dtk, loop) | sad fantasy story theme music box | ⬜ | P2 |
-| `mus_ending` | Strip cerita penutup | Lega, ceria, hangat | happy ending fantasy theme | ⬜ | P2 |
+| `mus_hub` | Markas di ventilasi (sementara: Mysterious Merchant, code_box, CC0 (kurang hangat)) | Hangat, tenang, aman | cozy safe room loop, calm lullaby | 🟡 | P1 |
+| `mus_intro` | Strip cerita pembuka (sementara pakai mus_menu) | Sedih-misterius, pelan (± 60 dtk, loop) | sad fantasy story theme music box | 🟡 | P2 |
+| `mus_ending` | Strip cerita penutup (sementara pakai mus_hub (belum ceria)) | Lega, ceria, hangat | happy ending fantasy theme | 🟡 | P2 |
 | `mus_win` | Stinger level selesai | 2–4 dtk, **bukan loop** | victory jingle short cute | ⬜ | P1 |
 | `mus_caught` | Stinger tertangkap | 1–3 dtk, kalah tapi tetap lucu | fail stinger cartoon short | ⬜ | P1 |
 
@@ -44,7 +46,7 @@ Diperbarui 16 Nov 2026. Versi ringkas untuk WA: `daftar-suara-wa.txt`. Setelah f
 
 | Nama file | Dipakai di | Isi | Kata kunci cari | Status | Prio |
 |---|---|---|---|---|---|
-| `amb_garden` | Taman malam | Angin, jangkrik, daun | night garden crickets wind loop | ⬜ | P1 |
+| `amb_garden` | Taman malam (Lake Night, christmaskrumble666, CC0) | Angin, jangkrik, daun | night garden crickets wind loop | ✅ | P1 |
 | `amb_dungeon` | Penjara | Tetes air, gema, rantai jauh | dungeon dripping water ambience | 🟡 | P1 |
 | `amb_lab` | Lab penyadap | Dengung mesin, gelembung, desis pipa | laboratory machine hum bubbles | ⬜ | P1 |
 | `amb_castle` | Aula / ruang makan / galeri | Ruang besar bergema, jam dinding, api perapian | castle hall room tone clock fireplace | ⬜ | P1 |
@@ -56,12 +58,12 @@ Diperbarui 16 Nov 2026. Versi ringkas untuk WA: `daftar-suara-wa.txt`. Setelah f
 
 | Nama file | Kapan bunyi | Rasa | Kata kunci cari | Status | Prio |
 |---|---|---|---|---|---|
-| `sfx_slime_hop_01..03` | Tiap lompatan (massa 1–2) | Lembut, kenyal, imut | slime squish small, jelly bounce | 🟡 | P1 |
+| `sfx_slime_hop_01..03` | Tiap lompatan (massa 1–2) (01–02 ada: qubodup, CC0; 03 belum) | Lembut, kenyal, imut | slime squish small, jelly bounce | ✅ | P1 |
 | `sfx_slime_hop_big_01..03` | Massa 3–4 ("dug", terdengar penjaga) | Lebih berat, basah | heavy slime step, wet thud | ⬜ | P1 |
 | `sfx_slime_land` | Mendarat setelah lompat | Squish kecil | slime land splat soft | ⬜ | P2 |
 | `sfx_slime_drop` | **Baru:** jatuh dari pipa di awal tutorial | Jatuh + "plop" besar | slime fall splat, goo drop plop | ⬜ | P1 |
 | `sfx_eat` | Makan esens (E) | Seruput + kristal larut | slurp gulp magic crystal | 🟡 | P1 |
-| `sfx_split` | Belah (Space) | Lendir terbelah | slime split stretch tear | 🟡 | P1 |
+| `sfx_split` | Belah (Space) (wubitog, CC0) | Lendir terbelah | slime split stretch tear | ✅ | P1 |
 | `sfx_merge` | Gabung | Lendir menyatu | slime merge squelch | 🟡 | P1 |
 | `sfx_vomit` | Muntah esens (Q) | Lucu, tidak menjijikkan | cartoon spit out, blorp | 🟡 | P1 |
 | `sfx_switch` | Shift pindah kendali | Whoosh pendek | short magic whoosh swap | 🟡 | P1 |
