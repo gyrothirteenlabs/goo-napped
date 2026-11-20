@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 619723909, guid: f0a05f23340ec2c438b8141613e57ece, type: 3}
+  m_Sprite: {fileID: -51138091, guid: 48fee8ad7a6d8ba4c9b4f89942415a29, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -143,7 +143,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.Lever
   doors: []
   spriteRenderer: {fileID: 3960372718158300075}
-  offSprite: {fileID: 619723909, guid: f0a05f23340ec2c438b8141613e57ece, type: 3}
-  onSprite: {fileID: -1985079561, guid: f0a05f23340ec2c438b8141613e57ece, type: 3}
+  offSprite: {fileID: -51138091, guid: 48fee8ad7a6d8ba4c9b4f89942415a29, type: 3}
+  onSprite: {fileID: 709836937, guid: 48fee8ad7a6d8ba4c9b4f89942415a29, type: 3}
   noiseRadius: 3
   cooldown: 0.6

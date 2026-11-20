@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 
 import gen_area_art as A
-from gen_area_art import C, Canvas, hexc, sheet, save, save_big, OUT, WOOD, WOOD_D, WOOD_L, WOOD_OUT, IRON, IRON_L
+from gen_area_art import C, Canvas, hexc, sheet, save, save_big, OUT, WOOD, WOOD_D, WOOD_L, WOOD_OUT, IRON, IRON_L, cyl, disc, arc
 
 PROPS = os.path.join(A.SPR, "Props")
 STONE = [hexc("6a7080"), hexc("5d6372"), hexc("767c8c")]
@@ -75,14 +75,17 @@ def dungeon():
 
     # pilar batu + rantai (96)
     cv = Canvas(96, 96, 202)
-    cv.rect(30, 84, 36, 10, A.ST_FACE[0], 1.2); cv.rect(30, 84, 36, 2, A.ST_FACE_HI, 1.3)
+    # 20 Nov: alas & kepala punya PERMUKAAN ATAS (tampak 3/4), dulu hanya garis 2 px
+    cv.rect(30, 79, 36, 5, A.ST_TRIM[1], 1.3); cv.rect(30, 79, 36, 1, A.ST_FACE_HI, 1.35)
+    cv.rect(30, 84, 36, 10, A.ST_FACE[0], 1.2); cv.rect(30, 84, 36, 1, A.ST_FACE_HI, 1.25)
     for y in range(22, 84, 8):
         off = 0 if (y // 8) % 2 == 0 else 6
         cv.rect(34, y, 28, 8, A.ST_MORTAR, 1.0)
         for bx in range(34 - off, 62, 12):
             x0, x1 = max(34, bx) + 1, min(62, bx + 12) - 1
             if x1 > x0: cv.rect(x0, y + 1, x1 - x0, 6, A.ST_FACE[(y // 8 + bx) % 3], 1.3); cv.rect(x0, y + 1, x1 - x0, 1, A.ST_FACE_HI, 1.35)
-    cv.rect(30, 12, 36, 10, A.ST_TRIM[0], 1.5); cv.rect(30, 12, 36, 2, A.ST_TRIM[1], 1.6)
+    cv.rect(30, 7, 36, 7, A.ST_TRIM[1], 1.6); cv.rect(30, 7, 36, 1, A.ST_FACE_HI, 1.65)    # permukaan atas kepala
+    cv.rect(30, 14, 36, 8, A.ST_TRIM[0], 1.5); cv.rect(30, 14, 36, 1, A.ST_FACE_HI, 1.55)
     for x in range(40, 56, 3): cv.px(x, 30 + abs(x - 48) // 2, IRON_L, 1.6); cv.px(x + 1, 31 + abs(x - 48) // 2, IRON, 1.6)
     cv.ellipse(48, 40, 3, 3, IRON_L, 1.6); cv.ellipse(48, 40, 1.5, 1.5, A.ST_MORTAR, 1.5)
     m = np.zeros((96, 96), bool); m[22:84, 34:62] = True
@@ -137,10 +140,11 @@ def lab():
     cv.rect(ox + 5, 30, 38, 4, WOOD[0], 1.3); cv.rect(ox + 5, 30, 38, 1, WOOD_L, 1.4); legs(cv, ox, (6, 39), 34, 46, WOOD_D)
     for i, cx in enumerate((12, 24, 36)):
         h = 18 - (i % 2) * 4
-        cv.rect(ox + cx - 4, 30 - h, 8, h, GLASS, 1.1)
-        cv.rect(ox + cx - 4, 30 - h // 2, 8, h // 2, LAB_LIQ if i != 1 else (160, 110, 220, 200), 1.15)
-        cv.rect(ox + cx - 4, 30 - h, 1, h, GLASS_EDGE, 1.3); cv.rect(ox + cx + 3, 30 - h, 1, h, GLASS_EDGE, 1.3)
-        cv.rect(ox + cx - 5, 29 - h, 10, 2, IRON_L, 1.5)
+        liq = LAB_LIQ if i != 1 else (160, 110, 220, 200)
+        cyl(cv, ox + cx, 30 - h, 29, 4, GLASS, 1.1, edge=GLASS_EDGE)                       # tabung (dasar melengkung)
+        cyl(cv, ox + cx, 30 - h // 2, 29, 3, liq, 1.15)                                    # cairan
+        cv.ellipse(ox + cx, 30 - h // 2, 3, 1.2, tuple(min(255, v + 50) for v in liq[:3]) + (230,), 1.2)   # permukaan cairan
+        disc(cv, ox + cx, 29 - h, 5, 1, IRON_L, IRON, ht=1.5)                             # tutup
     # 2-4 meja kerja panjang: labu, buku, lumpang
     for f, (x0, x1) in zip((2, 3, 4), ((5, C), (0, C), (0, 43))):
         ox = f * C
@@ -162,18 +166,20 @@ def lab():
     cv.outline(OUT)
     save(cv, out, "prop_lab_block")
 
-    # tabung spesimen besar (96): cairan hijau + bayangan slime di dalam
+    # tabung spesimen besar (96): cairan hijau + bayangan slime di dalam. 20 Nov: tampak 3/4 (dulu persegi tampak
+    # depan): alas & tutup = cakram, badan kaca silinder dengan dasar melengkung, permukaan cairan = elips.
     cv = Canvas(96, 96, 212)
-    cv.rect(28, 82, 40, 12, IRON, 1.3); cv.rect(28, 82, 40, 2, IRON_L, 1.4)
-    cv.rect(30, 8, 36, 8, IRON, 1.5); cv.rect(30, 8, 36, 2, IRON_L, 1.6); cv.rect(44, 2, 8, 6, IRON_L, 1.6)
-    cv.rect(32, 16, 32, 66, GLASS, 1.0)
-    cv.rect(32, 34, 32, 48, LAB_LIQ, 1.05)
-    cv.rect(32, 34, 32, 1, LAB_GLOW, 1.1)
-    cv.ellipse(48, 66, 9, 7, (30, 90, 60, 230), 1.1)        # sosok slime samar (sedang disadap)
-    cv.px(45, 64, (200, 240, 210, 255), 1.15); cv.px(51, 64, (200, 240, 210, 255), 1.15)
-    for (x, y) in [(38, 44), (56, 52), (42, 72), (54, 40)]: cv.ellipse(x, y, 1.5, 1.5, (160, 240, 190, 200), 1.12)
-    cv.rect(32, 16, 1, 66, GLASS_EDGE, 1.3); cv.rect(63, 16, 1, 66, GLASS_EDGE, 1.3)
-    cv.rect(36, 20, 2, 40, GLASS_HI, 1.25)
+    disc(cv, 48, 80, 21, 6, IRON_L, IRON, rim=hexc("7a8292"), ht=1.3)                     # alas
+    cyl(cv, 48, 16, 79, 16, GLASS, 1.0, edge=GLASS_EDGE)                                  # badan kaca
+    cyl(cv, 48, 36, 79, 15, LAB_LIQ, 1.05)                                                # cairan
+    cv.ellipse(48, 36, 15, 6, (110, 220, 150, 210), 1.1)                                   # permukaan cairan (elips)
+    arc(cv, 48, 36, 15, 6, LAB_GLOW, 1.12, front=True)
+    cv.ellipse(48, 64, 9, 7, (30, 90, 60, 230), 1.1)        # sosok slime samar (sedang disadap)
+    cv.px(45, 62, (200, 240, 210, 255), 1.15); cv.px(51, 62, (200, 240, 210, 255), 1.15)
+    for (x, y) in [(38, 50), (56, 56), (42, 74), (54, 46)]: cv.ellipse(x, y, 1.5, 1.5, (160, 240, 190, 200), 1.12)
+    for y in range(20, 70): cv.px(37, y, GLASS_HI, 1.25); cv.px(38, y, GLASS_HI, 1.25)
+    disc(cv, 48, 11, 18, 5, IRON_L, IRON, rim=hexc("7a8292"), ht=1.5)                    # tutup
+    disc(cv, 48, 5, 5, 2, IRON_L, IRON, ht=1.6)                                           # sambungan pipa
     cv.outline(OUT, region=cv.col[:, :, 3] == 255)
     save_big(cv, out, "prop_tank_c96")
 
@@ -238,7 +244,8 @@ def garden():
 
     # patung slime raja di alas (96), berlumut
     cv = Canvas(96, 96, 222)
-    cv.rect(26, 74, 44, 20, STONE[1], 1.2); cv.rect(26, 74, 44, 3, STONE_L, 1.35); cv.rect(30, 80, 36, 1, STONE_D, 1.2)
+    cv.rect(26, 69, 44, 6, STONE[2], 1.35); cv.rect(26, 69, 44, 1, STONE_L, 1.4)        # permukaan atas alas (3/4)
+    cv.rect(26, 75, 44, 19, STONE[1], 1.2); cv.rect(30, 80, 36, 1, STONE_D, 1.2)
     cv.rect(31, 84, 34, 6, STONE[0], 1.25)
     for y in range(36, 74):
         for x in range(26, 70):
@@ -320,13 +327,15 @@ def castle():
 
     # tiang marmer + kepala emas (96)
     cv = Canvas(96, 96, 232)
-    cv.rect(30, 84, 36, 10, MARBLE[1], 1.2); cv.rect(30, 84, 36, 2, MARBLE[2], 1.3); cv.rect(28, 90, 40, 4, MARBLE_D, 1.1)
+    cv.rect(30, 79, 36, 5, MARBLE[2], 1.3); cv.rect(30, 79, 36, 1, hexc("ddd8cf"), 1.35)   # permukaan atas alas (3/4)
+    cv.rect(30, 84, 36, 10, MARBLE[1], 1.2); cv.rect(28, 90, 40, 4, MARBLE_D, 1.1)
     for x in range(35, 61):
         k = (x - 35) / 25
         shade = MARBLE[2] if 0.15 < k < 0.4 else MARBLE[0] if k < 0.8 else MARBLE[1]
         cv.rect(x, 20, 1, 64, shade, 1.2 + 0.6 * np.sin(k * np.pi))
     for x in (39, 45, 51, 57): cv.rect(x, 22, 1, 60, MARBLE_D, 1.25)
-    cv.rect(30, 12, 36, 8, A.CS_GOLD, 1.6); cv.rect(30, 12, 36, 2, A.CS_GOLD_L, 1.7); cv.rect(33, 20, 30, 2, A.CS_GOLD_D, 1.5)
+    cv.rect(30, 7, 36, 6, A.CS_GOLD_L, 1.7); cv.rect(30, 7, 36, 1, hexc("e2c27e"), 1.75)   # permukaan atas kepala (3/4)
+    cv.rect(30, 13, 36, 7, A.CS_GOLD, 1.6); cv.rect(33, 20, 30, 2, A.CS_GOLD_D, 1.5)
     cv.rect(31, 82, 34, 2, A.CS_GOLD_D, 1.4)
     cv.outline(OUT)
     save_big(cv, out, "prop_column_c96")
@@ -392,7 +401,7 @@ def summit():
 
     # tiang batu menara (96) dengan sangkar besi berisi kristal aura ungu di puncaknya
     cv = Canvas(96, 96, 242)
-    cv.rect(30, 84, 36, 10, ST[1], 1.2); cv.rect(30, 84, 36, 2, STL, 1.3)
+    cv.rect(30, 79, 36, 5, STL, 1.3); cv.rect(30, 84, 36, 10, ST[1], 1.2)                  # alas: atas (3/4) + muka
     for y in range(32, 84, 8):
         off = 0 if (y // 8) % 2 == 0 else 6
         cv.rect(34, y, 28, 8, A.SM_MORTAR, 1.0)
@@ -400,15 +409,18 @@ def summit():
             x0, x1 = max(34, bx) + 1, min(62, bx + 12) - 1
             if x1 > x0:
                 cv.rect(x0, y + 1, x1 - x0, 6, ST[(y // 8 + bx) % 4], 1.3); cv.rect(x0, y + 1, x1 - x0, 1, STL, 1.35)
-    cv.rect(30, 26, 36, 6, ST[3], 1.5); cv.rect(30, 26, 36, 1, STL, 1.6)          # kepala tiang
+    cv.rect(30, 22, 36, 5, STL, 1.6); cv.rect(30, 27, 36, 5, ST[3], 1.5)          # kepala tiang: atas (3/4) + muka
     for i in range(16):                                                       # kristal
         w = max(1, int((16 - abs(i - 8) * 1.6) / 2))
         cv.rect(48 - w, 24 - i, 2 * w, 1, SG if i % 4 else SGD, 1.8 + 0.4 * (1 - abs(i - 8) / 8))
     cv.rect(46, 12, 2, 8, hexc("e2d4ff"), 2.1)
-    for x in (39, 47, 56):                                                    # sangkar besi
-        cv.rect(x, 6, 2, 20, A.SM_METAL[1], 1.9)
-    cv.rect(38, 5, 21, 2, A.SM_METAL_L, 2.0); cv.rect(38, 25, 21, 2, A.SM_METAL_L, 1.9)
-    cv.rect(47, 1, 2, 4, A.SM_METAL_L, 2.0)
+    # sangkar besi: cincin atas & bawah = elips (3/4), jeruji depan tegas, jeruji belakang samar
+    for x in (41, 54): cv.rect(x, 7, 1, 17, A.SM_METAL[2], 1.7)
+    arc(cv, 48, 24, 10, 3.5, A.SM_METAL_L, 1.9, front=False)
+    for x in (38, 44, 51, 57): cv.rect(x, 7, 2, 18, A.SM_METAL[1], 1.9)
+    arc(cv, 48, 24, 10, 3.5, A.SM_METAL_L, 1.9, front=True); arc(cv, 48, 25, 10, 3.5, A.SM_METAL[1], 1.85, front=True)
+    disc(cv, 48, 6, 10.5, 1, A.SM_METAL_L, A.SM_METAL[1], ht=2.0)
+    cv.rect(47, 0, 2, 3, A.SM_METAL_L, 2.0)
     cv.outline(OUT)
     save_big(cv, out, "prop_auracolumn_c96")
 
