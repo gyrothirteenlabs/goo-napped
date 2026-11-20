@@ -125,8 +125,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ad79af4569d36214e93a555131674ee2
+      spriteID: 09db881808c198646b400fc422939502
       internalID: -1071001039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: prop_kingjar_c96_1
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 96
+        height: 96
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c4022b29dc392dc409cfa0240c2565e9
+      internalID: -912977111
       vertices: []
       indices: 
       edges: []
@@ -148,6 +170,7 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       prop_kingjar_c96_0: -1071001039
+      prop_kingjar_c96_1: -912977111
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

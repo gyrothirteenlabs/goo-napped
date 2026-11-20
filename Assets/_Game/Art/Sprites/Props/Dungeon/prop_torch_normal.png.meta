@@ -125,7 +125,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 33b3af44a8253e44595960016fcf3629
+      spriteID: 8b0c417cb06ab2344a3d2a4bb782b47a
       internalID: -1102458102
       vertices: []
       indices: 
@@ -147,8 +147,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 41e7e16834129fa4eafa49f87d97a021
+      spriteID: cda3186f0cb839648bcc82cd943041b7
       internalID: 1725323366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: prop_torch_normal_2
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4fc9fb5880c2af4a9a7d9b755e920d1
+      internalID: 836244269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: prop_torch_normal_3
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 765999e0ff4625645a2705f35968b3f9
+      internalID: -2042883704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: prop_torch_normal_4
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 48
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d50d408bfe715e47843865d20e7fac2
+      internalID: 1177760361
       vertices: []
       indices: 
       edges: []
@@ -169,6 +235,9 @@ TextureImporter:
     nameFileIdTable:
       prop_torch_normal_0: -1102458102
       prop_torch_normal_1: 1725323366
+      prop_torch_normal_2: 836244269
+      prop_torch_normal_3: -2042883704
+      prop_torch_normal_4: 1177760361
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

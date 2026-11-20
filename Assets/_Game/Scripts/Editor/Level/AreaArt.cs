@@ -262,8 +262,30 @@ namespace GooNapped.EditorTools
             if (vase.Length >= 2) n += SetSprites(P + "Level/FragileVase.prefab", vase[0], new[] { ("brokenSprite", vase[1]) }, 1f);
             var valve = Frames(Spr + "Props/Summit/prop_valve.png");
             if (valve.Length >= 2) n += SetSprites(P + "Level/AuraValve.prefab", valve[0], new[] { ("closedSprite", valve[0]), ("reversedSprite", valve[1]) }, 1f);
+            // obor: animasi api + kedip cahaya (TorchFlicker), frame 0/2/3/4 nyala, 1 padam
+            if (torch.Length >= 5)
+            {
+                var root = PrefabUtility.LoadPrefabContents(P + "Level/Lantern.prefab");
+                var tf = root.GetComponent<TorchFlicker>();
+                if (tf == null) tf = root.AddComponent<TorchFlicker>();
+                var so = new SerializedObject(tf);
+                var lit = so.FindProperty("litFrames");
+                lit.arraySize = 4;
+                int[] idx = { 0, 2, 3, 4 };
+                for (int i = 0; i < 4; i++) lit.GetArrayElementAtIndex(i).objectReferenceValue = torch[idx[i]];
+                so.FindProperty("outSprite").objectReferenceValue = torch[1];
+                so.ApplyModifiedPropertiesWithoutUndo();
+                PrefabUtility.SaveAsPrefabAsset(root, P + "Level/Lantern.prefab");
+                PrefabUtility.UnloadPrefabContents(root);
+                n++;
+            }
+            // tuas (off/on) dan balok dorong batu: tampak 3/4, menggantikan placeholder
+            var lever = Frames(Spr + "Props/Dungeon/prop_lever.png");
+            if (lever.Length >= 2) n += SetSprites(P + "Level/Lever.prefab", lever[0], new[] { ("offSprite", lever[0]), ("onSprite", lever[1]) }, 1f);
+            var push = Frames(Spr + "Props/Dungeon/prop_pushblock.png");
+            if (push.Length >= 1) n += SetSprites(P + "Level/PushCrate.prefab", push[0], new (string, Sprite)[0], 1f);
             var king = Frames(Spr + "Props/Summit/prop_kingjar_c96.png");
-            if (king.Length >= 1) n += SetSprites(P + "Level/KingJar.prefab", king[0], new (string, Sprite)[0], 1f);
+            if (king.Length >= 2) n += SetSprites(P + "Level/KingJar.prefab", king[0], new[] { ("closedSprite", king[0]), ("openSprite", king[1]) }, 1f);
             Debug.Log("AreaArt: sprite props fondasi dipasang di " + n + " prefab.");
         }
 

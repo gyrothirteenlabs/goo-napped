@@ -27,3 +27,5 @@ MonoBehaviour:
   sightMultiplier: 1
   bodyMaterial: {fileID: 2100000, guid: 678de0cabe5df0f499f6a1b1d094d586, type: 2}
   placeholderTint: {r: 0.5, g: 0.75, b: 1, a: 1}
+  pickupSprite: {fileID: -2044222650, guid: 4df0b9a5d135f6b4584058dd60c22bac, type: 3}
+  pickupGlow: {fileID: -1647811237, guid: 4df0b9a5d135f6b4584058dd60c22bac, type: 3}

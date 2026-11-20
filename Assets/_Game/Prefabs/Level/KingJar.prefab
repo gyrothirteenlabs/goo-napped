@@ -84,6 +84,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.KingJar
   radius: 1.1
   spriteRenderer: {fileID: 6226542474904423324}
+  closedSprite: {fileID: -1071001039, guid: aabb14933acef764d964b4af93ad80e3, type: 3}
+  openSprite: {fileID: -912977111, guid: aabb14933acef764d964b4af93ad80e3, type: 3}
 --- !u!1 &3674624353874498912
 GameObject:
   m_ObjectHideFlags: 0

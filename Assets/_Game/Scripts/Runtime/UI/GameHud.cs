@@ -9,7 +9,7 @@ namespace GooNapped
     //   kiri atas : ukuran (massa) + aura + ciri lain potongan aktif, status (lit, glowing, smelly, slow, noisy, hidden)
     //   kanan atas: kartu tiap toples yang sudah didekati: nama teman, aura, ukuran, apakah tiruanmu pas; alarm
     //   bawah     : potongan, teman selamat, status teman, petunjuk tombol
-    //   tengah    : pesan singkat, banner selesai/tertangkap
+    //   tengah    : pesan singkat, banner selesai/tertangkap, kartu esens (saat dekat esens: aura, cocok toples, efek)
     [RequireComponent(typeof(UIDocument))]
     public class GameHud : MonoBehaviour
     {
@@ -21,7 +21,10 @@ namespace GooNapped
             "WASD move · E eat/use · Space split/merge · Shift switch · C hide · F call friend · Q spit · R retry · Esc pause";
 
         private VisualElement recipes, card, slime, bodyImg, faceImg, glow, auraDot, sizePips, piecePips, friendBox, effects;
-        private Label massLabel, auraLabel, friendCount, goalLabel, blob, toast, banner, controls;
+        private VisualElement essenceCard, ecDot, ecEffects;
+        private Label massLabel, auraLabel, friendCount, goalLabel, blob, toast, banner, controls, ecName, ecKey, ecAura;
+        private IngredientData shownEssence;
+        private string shownEssenceKey;
         private Jar[] jars = new Jar[0];
         private float timer;
         private Texture2D shownBody, shownFace;
@@ -48,6 +51,12 @@ namespace GooNapped
             toast = root.Q<Label>("toast");
             banner = root.Q<Label>("banner");
             controls = root.Q<Label>("controls");
+            essenceCard = root.Q("essence-card");
+            ecDot = root.Q("ec-dot");
+            ecEffects = root.Q("ec-effects");
+            ecName = root.Q<Label>("ec-name");
+            ecKey = root.Q<Label>("ec-key");
+            ecAura = root.Q<Label>("ec-aura");
             if (controls != null) controls.text = controlsText;
             // datang dari menu / retry: buka layar dengan transisi yang sama (lendir surut / lembar miring)
             root.schedule.Execute(() => UiFx.RevealIfPending(root)).StartingIn(30);
@@ -69,7 +78,7 @@ namespace GooNapped
             if (LevelIntro.Running != hiddenForIntro)
             {
                 hiddenForIntro = LevelIntro.Running;
-                foreach (var e in new VisualElement[] { card, recipes, controls })
+                foreach (var e in new VisualElement[] { card, recipes, controls, essenceCard })
                     if (e != null) e.style.visibility = hiddenForIntro ? Visibility.Hidden : Visibility.Visible;
             }
             if ((timer -= Time.unscaledDeltaTime) > 0f) return;
@@ -119,6 +128,8 @@ namespace GooNapped
                 blob.text = sel == FriendPower.None ? "In the vent: A/D other openings · C out"
                     : "Power: " + FriendPowers.NameOf(sel) + " x" + FriendPowers.Charges(sel) + " · E use · Shift change · A/D openings";
             }
+
+            RefreshEssenceCard(a);
 
             bool hasMsg = !string.IsNullOrEmpty(brain.Message);
             toast.text = brain.Message;
@@ -181,6 +192,48 @@ namespace GooNapped
                 effects.Add(none);
             }
             else foreach (var n in names) effects.Add(Fx(n, auraColor));
+        }
+
+        // Kartu esens: slime dekat esens -> nama, tombol, aura (dan toples yang sudah diintip yang auranya cocok), efek samping.
+        // Semua teks dari EssenceInfo (disusun dari data esens), jadi selalu sama dengan efek sebenarnya.
+        private void RefreshEssenceCard(SlimePiece a)
+        {
+            if (essenceCard == null) return;
+            // tidak tampil saat dialog cerita / pause (kotak dialog menutupi bagian bawah layar)
+            bool busy = StoryPlayer.IsPlaying || Time.timeScale == 0f;
+            var pickup = a != null && a.HidingIn == null && !busy ? a.FindPickup() : null;
+            var e = pickup != null ? pickup.Ingredient : null;
+            essenceCard.EnableInClassList("essence-card--hidden", e == null);
+            if (e == null) { shownEssence = null; return; }
+
+            var st = a.Body.State;
+            string aura = EssenceInfo.AuraValue(e);
+            var match = new List<string>();
+            foreach (var j in jars)
+                if (j != null && j.IsPeeked && j.HasFriend && j.Recipe != null && aura != "" && j.Recipe.Aura == aura)
+                    match.Add(j.Recipe.FriendName);
+            string key = e.name + "|" + st.CanEat + "|" + string.Join(",", match);
+            if (e == shownEssence && key == shownEssenceKey) return;
+            shownEssence = e; shownEssenceKey = key;
+
+            var col = TraitNames.AuraColor(aura);
+            ecDot.style.backgroundColor = col;
+            essenceCard.style.borderLeftColor = col;
+            ecName.text = e.DisplayName.ToUpperInvariant();
+            ecKey.text = st.CanEat ? "E  EAT" : "FULL · Q SPIT";
+            ecAura.text = aura == "" ? "No aura · +1 size"
+                : match.Count > 0 ? EssenceInfo.AuraName(e) + " aura · matches " + string.Join(" & ", match) + "'s jar!"
+                : EssenceInfo.AuraName(e) + " aura (your last essence sets your aura) · +1 size";
+            ecAura.EnableInClassList("ec-aura--match", match.Count > 0);
+            ecEffects.Clear();
+            var fx = EssenceInfo.Effects(e);
+            if (fx.Count == 0) fx.Add("no side effect");
+            foreach (var f in fx)
+            {
+                var l = new Label("· " + f) { pickingMode = PickingMode.Ignore };
+                l.AddToClassList("ec-fx");
+                ecEffects.Add(l);
+            }
         }
 
         private static VisualElement Pip(string extra)

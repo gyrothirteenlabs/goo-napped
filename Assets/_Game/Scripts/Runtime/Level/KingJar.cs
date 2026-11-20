@@ -11,6 +11,10 @@ namespace GooNapped
         [Tooltip("Jari-jari zona toples (unit, dari pusat collider).")]
         [SerializeField] private float radius = 1.1f;
         [SerializeField] private SpriteRenderer spriteRenderer;
+        [Tooltip("Gambar toples tertutup (prop_kingjar_c96 frame 0). Kosong = sprite renderer apa adanya.")]
+        [SerializeField] private Sprite closedSprite;
+        [Tooltip("Gambar toples terbuka: tutup terlepas, mulut terbuka (frame 1).")]
+        [SerializeField] private Sprite openSprite;
 
         public static KingJar Instance { get; private set; }
         public bool IsOpen { get; private set; }
@@ -49,6 +53,8 @@ namespace GooNapped
         private void Apply()
         {
             if (spriteRenderer == null) return;
+            var s = IsOpen ? openSprite : closedSprite;
+            if (s != null) spriteRenderer.sprite = s;
             spriteRenderer.color = IsSealed ? new Color(0.55f, 0.35f, 0.75f) : IsOpen ? new Color(1f, 0.9f, 0.5f) : new Color(0.6f, 0.55f, 0.45f);
         }
     }

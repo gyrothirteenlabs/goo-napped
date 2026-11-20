@@ -31,8 +31,12 @@ namespace GooNapped
         [Header("Tampilan")]
         [Tooltip("Material palet body (Slime_*) saat bahan ini menentukan warna tubuh. Kosong = tidak mengubah.")]
         [SerializeField] private Material bodyMaterial;
-        [Tooltip("Warna sprite pickup sementara, sebelum ada art bahan.")]
+        [Tooltip("Warna khas bahan (UI, dan warna pickup kalau belum ada sprite).")]
         [SerializeField] private Color placeholderTint = Color.white;
+        [Tooltip("Gambar bahan di level: gelembung aura (art/tools/gen_essences.py: essence_<id> frame 0). Kosong = bulatan diwarnai.")]
+        [SerializeField] private Sprite pickupSprite;
+        [Tooltip("Lapisan glow unlit (frame 1): tepi gelembung + kilau untuk semua esens, isi menyala untuk esens emitsLight.")]
+        [SerializeField] private Sprite pickupGlow;
 
         public string Id => id;
         public string DisplayName => string.IsNullOrEmpty(displayName) ? id : displayName;
@@ -45,6 +49,8 @@ namespace GooNapped
         public float SightMultiplier => sightMultiplier;
         public Material BodyMaterial => bodyMaterial;
         public Color PlaceholderTint => placeholderTint;
+        public Sprite PickupSprite => pickupSprite;
+        public Sprite PickupGlow => pickupGlow;
 
         // Untuk test dan tool editor (aset biasa dibuat lewat menu Create).
         public static IngredientData Create(string id, IEnumerable<Trait> traits, float speedMultiplier = 1f,

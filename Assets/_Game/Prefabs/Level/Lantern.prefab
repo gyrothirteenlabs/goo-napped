@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1399312291757890606}
   - component: {fileID: 2037925879734831105}
   - component: {fileID: 5496262281266619332}
+  - component: {fileID: 5972838141834823098}
   m_Layer: 0
   m_Name: Lantern
   m_TagString: Untagged
@@ -254,6 +255,32 @@ MonoBehaviour:
   crackle: {fileID: 0}
   flame: {fileID: 0}
   noiseRadius: 3
+--- !u!114 &5972838141834823098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3479900456812259716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c2768aaf140e4440bbc6a72a9091a84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.TorchFlicker
+  lightSource: {fileID: 0}
+  flame: {fileID: 0}
+  litFrames:
+  - {fileID: 1968154780, guid: 7826afb5bc9ffb841bfb56fdbbed35d0, type: 3}
+  - {fileID: 788939131, guid: 7826afb5bc9ffb841bfb56fdbbed35d0, type: 3}
+  - {fileID: 1173737911, guid: 7826afb5bc9ffb841bfb56fdbbed35d0, type: 3}
+  - {fileID: -2083969268, guid: 7826afb5bc9ffb841bfb56fdbbed35d0, type: 3}
+  outSprite: {fileID: -1912529023, guid: 7826afb5bc9ffb841bfb56fdbbed35d0, type: 3}
+  framesPerSecond: 8
+  flicker: 0.15
+  gustInterval: 4
+  gustDip: 0.3
+  gustDuration: 0.6
+  minIntensity: 1.05
 --- !u!1 &8525291882969088693
 GameObject:
   m_ObjectHideFlags: 0

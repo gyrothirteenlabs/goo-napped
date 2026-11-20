@@ -133,6 +133,52 @@ def sheet(frames, seed):
     return Canvas(C * frames, C, seed)
 
 
+# ---------------------------------------------------------------- helper perspektif 3/4 (20 Nov 2026)
+# Kamera game = top-down miring (3/4): benda tegak menampilkan MUKA DEPAN + PERMUKAAN ATAS. Lingkaran mendatar
+# (mulut toples, tutup, alas, cincin) tampak sebagai ELIPS dengan ry = rx * PERSP, tepi bawah benda bulat melengkung
+# ke bawah, dan pita melingkar terlihat sebagai busur. Rasio sama dengan tong/panci yang sudah ada (13 x 5).
+PERSP = 0.4
+
+
+def cyl(cv, cx, y_top, y_bot, rx, c, ht=1.0, ry=None, edge=None):
+    """Badan silinder tegak: kolom dari elips atas (y_top) sampai tepi bawah melengkung (elips bawah di y_bot).
+    edge = warna tepi kiri/kanan + lengkung bawah (kaca)."""
+    ry = rx * PERSP if ry is None else ry
+    for x in range(int(cx - rx - 1), int(cx + rx + 2)):
+        u = (x + 0.5 - cx) / rx
+        if abs(u) > 1: continue
+        e = ry * (1 - u * u) ** 0.5
+        y1 = y_bot + e
+        for y in range(int(np.floor(y_top)), int(np.ceil(y1)) + 1):
+            if y + 0.5 > y1: break
+            last = y + 1.5 > y1
+            side = abs(u) > 1 - 1.2 / rx
+            cv.px(x, y, edge if (edge is not None and (side or last)) else c, ht + 0.3 * (1 - u * u) ** 0.5)
+
+
+def disc(cv, cx, cy, rx, h, top, side, rim=None, ht=1.2, ry=None):
+    """Cakram / silinder pendek tampak 3/4 (alas, tutup, kerah): sisi depan setinggi h di bawah permukaan atas.
+    rim = bibir depan permukaan atas yang lebih terang."""
+    ry = rx * PERSP if ry is None else ry
+    cyl(cv, cx, cy, cy + h, rx, side, ht - 0.2, ry)
+    if rim is not None:
+        cv.ellipse(cx, cy, rx, ry, rim, ht + 0.1)
+        cv.ellipse(cx, cy - 0.8, rx - 0.6, max(0.5, ry - 0.9), top, ht + 0.2)
+    else:
+        cv.ellipse(cx, cy, rx, ry, top, ht + 0.2)
+
+
+def arc(cv, cx, cy, rx, ry, c, ht=None, front=True, a=None):
+    """Busur elips: setengah depan (bawah) atau belakang (atas). a = alpha opsional."""
+    n = int(rx * 8)
+    for k in range(n + 1):
+        t = np.pi * k / n
+        x = cx + rx * np.cos(t)
+        y = cy + (ry * np.sin(t) if front else -ry * np.sin(t))
+        col = c if a is None else c[:3] + (a,)
+        cv.px(int(np.floor(x)), int(np.floor(y)), col, ht)
+
+
 # ================================================================ PENJARA
 def dungeon():
     tiles = os.path.join(SPR, "Tiles", "Dungeon")
@@ -261,16 +307,21 @@ def dungeon():
     cv.outline(WOOD_OUT)
     save(cv, props, "prop_crate")
 
-    # obor dinding (nyala, padam): api = emisif (material unlit di Unity)
-    cv = sheet(2, 23)
-    for f in range(2):
+    # obor dinding: frame 0 nyala, 1 padam, 2-4 nyala variasi (api bergoyang tertiup angin; dianimasikan TorchFlicker
+    # bersama frame 0). Frame 0-1 tidak berubah dari versi lama supaya referensi lama tetap sama.
+    cv = sheet(5, 23)
+    for f in range(5):
         ox = f * C
         cv.rect(ox + 21, 22, 6, 18, BARK[0], 1.2); cv.rect(ox + 21, 22, 2, 18, BARK[1], 1.3)
         cv.rect(ox + 18, 20, 12, 4, IRON, 1.5); cv.rect(ox + 18, 20, 12, 1, IRON_L, 1.6)
         cv.rect(ox + 20, 38, 8, 3, IRON, 1.4)
-        if f == 0:
-            for (cx, cy, rx, ry, c) in [(24, 13, 6, 8, hexc("e85d22")), (24, 14, 4, 6, hexc("f08a2e")), (24, 16, 2.5, 4, hexc("ffc861")), (24, 17, 1.2, 2, hexc("fff0b0"))]:
-                cv.ellipse(ox + cx, cy, rx, ry, c, 1.8)
+        if f != 1:
+            # variasi: (geser puncak api ke samping, tinggi tambahan) -> api condong/memanjang/memendek
+            lean, grow = {0: (0, 0), 2: (-1.5, 1), 3: (1.5, -1), 4: (0.5, 2)}[f]
+            for k, (cx, cy, rx, ry, c) in enumerate([(24, 13, 6, 8, hexc("e85d22")), (24, 14, 4, 6, hexc("f08a2e")), (24, 16, 2.5, 4, hexc("ffc861")), (24, 17, 1.2, 2, hexc("fff0b0"))]):
+                cv.ellipse(ox + cx + lean * (1 - k * 0.3), cy - grow * (1 - k * 0.25), rx, ry + grow * (1 - k * 0.3), c, 1.8)
+            if f == 4: cv.px(ox + 26, 3, hexc("f08a2e"), 1.8)          # percikan lepas
+            if f == 2: cv.px(ox + 20, 4, hexc("e85d22"), 1.8)
         else:
             cv.rect(ox + 20, 16, 8, 5, hexc("2a2622"), 1.6); cv.px(ox + 23, 12, (120, 120, 130, 120), 1.0); cv.px(ox + 25, 9, (120, 120, 130, 80), 1.0)
     cv.outline(OUT)
@@ -292,21 +343,7 @@ def dungeon():
     cv.outline(OUT)
     save(cv, props, "prop_vent")
 
-    # toples kaca kosong (untuk toples teman: isi teman dirender di atasnya oleh prefab)
-    cv = Canvas(C, C, 25)
-    glass_edge = (170, 205, 220, 255); glass = (120, 160, 185, 70); glass_hi = (220, 240, 250, 200)
-    cv.rect(13, 6, 22, 5, WOOD[0], 1.4); cv.rect(13, 6, 22, 1, WOOD_L, 1.5)       # tutup gabus
-    cv.rect(15, 11, 18, 3, glass_edge, 1.2)                                       # leher
-    cv.ellipse(24, 28, 14, 15, glass, 0.6, 0.6)
-    for y in range(13, 44):
-        for x in range(9, 40):
-            d = ((x + 0.5 - 24) / 14) ** 2 + ((y + 0.5 - 28) / 15) ** 2
-            if 0.82 < d <= 1.0: cv.px(x, y, glass_edge, 1.0)
-    for y in range(18, 34): cv.px(14, y, glass_hi, 1.1)
-    cv.px(15, 16, glass_hi, 1.1); cv.px(15, 17, glass_hi, 1.1)
-    cv.rect(10, 42, 28, 4, IRON, 1.2); cv.rect(10, 42, 28, 1, IRON_L, 1.3)        # alas besi
-    cv.outline(OUT, region=cv.col[:, :, 3] == 255)
-    save(cv, props, "prop_jar")
+    dungeon_jar(props)
 
     # pintu sel (2 frame: tertutup, terbuka) 48x48, jeruji besi + kayu
     cv = sheet(2, 26)
@@ -340,6 +377,65 @@ def dungeon():
             x += w + 1 + cv.rng.integers(2)
     cv.outline(WOOD_OUT)
     save(cv, props, "prop_shelf")
+    mech_props(props)
+
+
+def dungeon_jar(props):
+    # Toples kaca teman (isi teman dirender di atasnya oleh prefab Jar). Redraw 20 Nov 2026: tampak 3/4 top-down
+    # (dulu tampak depan datar): tutup gabus = cakram dengan permukaan atas, mulut & bahu melengkung, badan kaca silinder
+    # dengan dasar elips yang terlihat menembus kaca, alas besi = cakram.
+    cv = Canvas(C, C, 25)
+    glass_edge = (170, 205, 220, 255); glass = (120, 160, 185, 70); glass_hi = (220, 240, 250, 200)
+    disc(cv, 24, 40, 14, 2, IRON_L, IRON, rim=hexc("7a8292"), ht=1.1)            # alas besi
+    cyl(cv, 24, 17, 39, 12.5, glass, 0.6, edge=glass_edge)                        # badan kaca
+    arc(cv, 24, 39, 12.5, 5, glass_edge, 0.7, front=False, a=110)                 # dasar kaca bagian belakang (tembus)
+    for x in range(12, 37):                                                       # bahu membulat ke leher
+        u = (x + 0.5 - 24) / 12.5
+        top = 17 - 7 * (1 - u * u) ** 0.5 if abs(u) <= 1 else 17
+        for y in range(int(np.ceil(top)), 18):
+            cv.px(x, y, glass_edge if y == int(np.ceil(top)) else glass, 0.8)
+    cyl(cv, 24, 8, 11, 7, glass, 0.9, edge=glass_edge)                            # leher
+    disc(cv, 24, 6, 8, 3, WOOD_L, WOOD[0], rim=hexc("a87650"), ht=1.5)            # tutup gabus
+    for y in range(19, 35): cv.px(15, y, glass_hi, 1.1)                          # kilau kaca vertikal
+    for y in range(21, 28): cv.px(17, y, glass_hi[:3] + (120,), 1.1)
+    cv.px(17, 14, glass_hi, 1.0); cv.px(18, 13, glass_hi, 1.0); cv.px(19, 12, glass_hi, 1.0)
+    cv.outline(OUT, region=cv.col[:, :, 3] == 255)
+    save(cv, props, "prop_jar")
+
+
+def mech_props(props):
+    # Tuas (2 frame: off, on) + balok dorong. 20 Nov 2026, menggantikan placeholder (tuas tampak samping datar,
+    # peti dorong tampak atas murni). Tampak 3/4. Balok dorong sengaja BATU, bukan kayu, supaya tidak mirip peti tempat
+    # sembunyi (prop_crate).
+    cv = sheet(2, 28)
+    for f in range(2):
+        ox = f * C
+        X = ox + 24
+        # alas batu: permukaan atas + muka depan, celah tempat tuas bergerak
+        cv.rect(ox + 13, 33, 22, 7, ST_TRIM[1], 1.4); cv.rect(ox + 13, 33, 22, 1, ST_FACE_HI, 1.5)
+        cv.rect(ox + 13, 40, 22, 5, ST_FACE[0], 1.1)
+        cv.rect(ox + 16, 35, 16, 2, ST_MORTAR, 1.0)
+        # batang: miring ke kiri (off) / kanan (on), pangkal di celah
+        tip = (X - 9, 18) if f == 0 else (X + 9, 18)
+        for t in np.linspace(0, 1, 24):
+            x = X + (tip[0] - X) * t; y = 36 + (tip[1] - 36) * t
+            cv.px(int(np.floor(x)), int(np.floor(y)), IRON, 1.6); cv.px(int(np.floor(x)) + 1, int(np.floor(y)), IRON_L, 1.65)
+        cv.ellipse(tip[0] + 0.5, tip[1], 3, 3, hexc("a8323a") if f == 0 else hexc("3fae6a"), 1.9, 0.4)   # kenop
+        cv.px(tip[0] - 1, tip[1] - 1, (255, 230, 220, 255), 2.0)
+        cv.ellipse(X + 0.5, 36, 3, 1.4, IRON_L, 1.6)                                  # poros
+    cv.outline(OUT)
+    save(cv, props, "prop_lever")
+
+    cv = Canvas(C, C, 29)
+    TOP = [hexc("6d7488"), hexc("737b90"), hexc("666d80")]
+    cv.rect(7, 12, 34, 12, TOP[0], 1.4); cv.rect(7, 12, 34, 1, ST_FACE_HI, 1.5)         # permukaan atas
+    cv.rect(7, 24, 34, 20, ST_FACE[1], 1.1)                                             # muka depan
+    cv.rect(7, 24, 34, 1, ST_TRIM[1], 1.2)
+    for (x, y) in [(15, 30), (16, 31), (17, 31), (30, 36), (31, 37)]: cv.px(x, y, ST_MORTAR, 1.0)   # retak
+    for x in (12, 33): cv.rect(x, 29, 3, 6, IRON, 1.4); cv.rect(x, 29, 3, 1, IRON_L, 1.5)  # gelang besi pegangan
+    m = cv.alpha_mask(); cv.speckle(m, TOP + ST_FACE, 0.08)
+    cv.outline(OUT, region=cv.hgt > 0.5)
+    save(cv, props, "prop_pushblock")
 
 
 # ================================================================ TAMAN KASTIL
@@ -665,7 +761,8 @@ def castle():
 
     cv = sheet(2, 49)   # vas rapuh (utuh, pecah)
     cv.ellipse(24, 32, 9, 10, MOON[0], 1.2, 0.8)
-    cv.rect(20, 16, 8, 8, MOON[0], 1.3); cv.rect(18, 14, 12, 3, MOON[1], 1.4)
+    cyl(cv, 24, 17, 22, 4, MOON[0], 1.3)                                       # leher
+    cv.ellipse(24, 16, 6, 2.4, MOON[1], 1.4); cv.ellipse(24, 16, 3.6, 1.3, hexc("1a2236"), 1.2)   # bibir + mulut (3/4)
     for x in range(16, 33, 4): cv.px(x, 32, CLOTH[0], 1.4)
     cv.rect(17, 40, 14, 3, hexc("34496f"), 1.0)
     for (x, y, w, h) in [(14, 38, 6, 4), (24, 40, 7, 3), (30, 35, 5, 4), (19, 33, 4, 3)]:
@@ -682,116 +779,228 @@ def castle():
     save(cv, props, "prop_candelabra")
 
 
-# ================================================================ PUNCAK
+# ================================================================ PUNCAK (menara alkemis, medieval gelap)
+# Remake 19 Nov (arah user: medieval + lebih gelap, aksen ungu aura curian, sedikit kuningan di alat alkimia).
+# Dulu panel mesin sci-fi; sekarang batu menara, rak buku/botol, lilin, urat kristal aura, rune samar.
 SM_PURPLE = [hexc("3a2a5c"), hexc("43316a"), hexc("34264f")]
 SM_GLOW = hexc("a77ef0"); SM_GLOW_D = hexc("7a52c7")
-SM_METAL = [hexc("2b2f3a"), hexc("323745"), hexc("272a34")]
+SM_METAL = [hexc("2b2f3a"), hexc("323745"), hexc("272a34")]   # besi tempa (katup, rantai, sangkar)
 SM_METAL_L = hexc("4a5163")
-SM_TOP = [hexc("17141f"), hexc("1a1623"), hexc("15121c")]
+SM_TOP = [hexc("1b1923"), hexc("1f1c28"), hexc("18161f")]
 SM_GAP = hexc("0e0c13")
+SM_STONE = [hexc("4a4758"), hexc("524f62"), hexc("444152"), hexc("58556a")]   # batu menara dingin keunguan
+SM_STONE_L = hexc("666379")
+SM_FLOOR = [hexc("3e3c4b"), hexc("444252"), hexc("3a3846"), hexc("48465a")]   # lantai sedikit lebih gelap dari tembok
+SM_FLOOR_L = hexc("535064")
+SM_MORTAR = hexc("25232f")
+SM_BRASS = hexc("b08a4a"); SM_BRASS_L = hexc("d4ad62"); SM_BRASS_D = hexc("7a5e30")
+SM_WAX = hexc("d8d0bc"); SM_FLAME = hexc("ffc861")
 
 
-def summit():
+def summit_tiles():
     tiles = os.path.join(SPR, "Tiles", "Summit")
-    props = os.path.join(SPR, "Props", "Summit")
 
-    cv = sheet(4, 61)   # lantai pelat mesin + garis aura ungu
+    # lantai: lempeng batu besar tidak beraturan, retak, debu; variasi 3 = potongan rune ungu samar
+    cv = sheet(4, 61)
     for f in range(4):
         ox = f * C
-        cv.rect(ox, 0, C, C, hexc("15131b"), 0.2)
-        for (x, y) in [(0, 0), (24, 0), (0, 24), (24, 24)]:
-            cv.rect(ox + x + 1, y + 1, 22, 22, SM_METAL[(x + y + f) % 3], 1.0)
-            for (bx, by) in [(3, 3), (19, 3), (3, 19), (19, 19)]: cv.px(ox + x + bx, y + by, SM_METAL_L, 1.2)
-        m = np.zeros((C, cv.w), bool); m[:, ox:ox + C] = cv.hgt[:, ox:ox + C] > 0.9
-        cv.speckle(m, SM_METAL, 0.15, 0.1)
-        if f in (1, 3):
-            cv.rect(ox, 23, C, 2, SM_GLOW_D, 0.3); cv.rect(ox, 23, C, 1, SM_GLOW, 0.3)
-        if f == 2:
-            cv.rect(ox + 23, 0, 2, C, SM_GLOW_D, 0.3)
-    save(cv, tiles, "smt_floor", wrap=True, strength=1.6)
+        cv.rect(ox, 0, C, C, SM_MORTAR, 0.0)
+        r = np.random.default_rng(700 + f)
+        rows = [(0, 15 + f % 3), (15 + f % 3, 33), (33, C)]
+        for ri, (y0, y1) in enumerate(rows):
+            n = 1 + (ri + f) % 2
+            cuts = sorted(set([0] + [int(v) for v in r.integers(10, 38, size=n)] + [C]))
+            for x0, x1 in zip(cuts, cuts[1:]):
+                if x1 - x0 < 4: continue
+                base = SM_FLOOR[int(r.integers(len(SM_FLOOR)))]
+                cv.rect(ox + x0 + 1, y0 + 1, x1 - x0 - 2, y1 - y0 - 2, base, 1.0)
+                cv.rect(ox + x0 + 1, y0 + 1, x1 - x0 - 2, 1, SM_FLOOR_L, 1.05)          # tepi aus atas
+                cv.hgt[y0 + 1:y1 - 1, ox + x0 + 1] = 0.7
+                cv.hgt[y1 - 2, ox + x0 + 1:ox + x1 - 1] = 0.7
+        m = np.zeros((C, cv.w), bool); m[:, ox:ox + C] = cv.hgt[:, ox:ox + C] > 0.6
+        cv.speckle(m, SM_FLOOR + [hexc("353342")], 0.16, 0.2)
+        if f == 1:   # retak panjang
+            x, y = 8, 6
+            for i in range(26):
+                cv.px(ox + x, y, SM_MORTAR, 0.2); x += 1; y += 1 if i % 3 == 0 else 0
+        if f == 3:   # retak kecil bercabang (rune ungu dipindah ke dekor supaya jarang muncul)
+            for (x, y) in [(30, 10), (31, 11), (31, 12), (32, 13), (30, 13), (29, 14)]:
+                cv.px(ox + x, y, SM_MORTAR, 0.2)
+    save(cv, tiles, "smt_floor", wrap=True, strength=1.8)
 
-    cv = sheet(5, 62)   # tembok mesin: 0 atas, 1 panel, 2 pipa aura, 3 pengukur, 4 retak roh
+    # tembok: 0 atas, 1 muka batu besar, 2 ceruk rak buku + botol, 3 ceruk lilin, 4 urat kristal aura
+    cv = sheet(5, 62)
     top_blocks(cv, SM_GAP, SM_TOP)
     for f in range(1, 5):
         ox = f * C
-        cap_top(cv, ox, SM_GAP, SM_TOP, SM_GLOW_D)
-        cv.rect(ox, 8, C, 37, SM_PURPLE[0], 1.0)
-        for x in (1, 25):
-            cv.rect(ox + x, 10, 22, 33, SM_PURPLE[1], 1.1); cv.rect(ox + x, 10, 22, 1, hexc("54407e"), 1.15)
-            for (bx, by) in [(2, 2), (19, 2), (2, 30), (19, 30)]: cv.px(ox + x + bx, 10 + by, SM_METAL_L, 1.3)
+        cap_top(cv, ox, SM_GAP, SM_TOP, SM_STONE_L)
+        cv.rect(ox, 8, C, 37, SM_MORTAR, 0.0)
+        for row, (y0, h) in enumerate([(8, 12), (21, 12), (34, 11)]):
+            off = 0 if row % 2 == 0 else 12
+            for bx in range(-off, C, 24):
+                x0, x1 = max(0, bx) + 1, min(C, bx + 24) - 1
+                if x1 - x0 < 3: continue
+                cv.rect(ox + x0, y0, x1 - x0, h - 1, SM_STONE[(row + bx // 24 + f) % 4], 1.0)
+                cv.rect(ox + x0, y0, x1 - x0, 1, SM_STONE_L, 1.05)
+        m = np.zeros((C, cv.w), bool); m[8:45, ox:ox + C] = cv.hgt[8:45, ox:ox + C] > 0.9
+        cv.speckle(m, SM_STONE, 0.14, 0.2)
         cv.rect(ox, 45, C, 3, SM_GAP, 0.0)
-        if f == 2:
-            for x in (12, 32):
-                cv.rect(ox + x, 8, 5, 37, SM_METAL[1], 1.6); cv.rect(ox + x + 2, 8, 1, 37, SM_GLOW, 1.7)
-                for y in (14, 30): cv.rect(ox + x - 1, y, 7, 3, SM_METAL_L, 1.8)
-        if f == 3:
-            cv.ellipse(ox + 24, 24, 9, 9, SM_METAL_L, 1.6); cv.ellipse(ox + 24, 24, 7, 7, hexc("1b1626"), 1.5)
-            for i in range(6): cv.px(ox + 24 + i, 24 - i, hexc("c2253a"), 1.6)
-            cv.px(ox + 24, 24, CLOTH[0], 1.7)
-        if f == 4:
-            pts = [(10, 12), (14, 18), (12, 24), (18, 30), (16, 38)]
+        if f == 2:   # ceruk rak: buku + botol ramuan
+            cv.rect(ox + 7, 11, 34, 31, hexc("17141c"), 0.4)
+            BOOK = [hexc("5a2430"), hexc("2c3a5a"), hexc("4a3a28"), hexc("3f2a52"), hexc("6b5a3a")]
+            for sy in (12, 27):
+                cv.rect(ox + 7, sy + 13, 34, 2, WOOD[2], 1.2)
+                x = 9
+                while x < 38:
+                    w = 2 + int(cv.rng.integers(3)); hh = 8 + int(cv.rng.integers(5))
+                    cv.rect(ox + x, sy + 13 - hh, w, hh, BOOK[int(cv.rng.integers(len(BOOK)))], 1.1); x += w
+            for (x, c) in [(13, SM_GLOW_D), (31, hexc("3f7a5a"))]:
+                cv.rect(ox + x, 33, 4, 6, c, 1.2); cv.rect(ox + x + 1, 31, 2, 2, hexc("8a8478"), 1.25)
+        if f == 3:   # ceruk lilin + lelehan lilin
+            cv.ellipse(ox + 24, 22, 9, 11, hexc("17141c"), 0.4)
+            cv.rect(ox + 15, 33, 18, 2, SM_STONE_L, 1.2)
+            for (cx, h) in [(20, 8), (24, 11), (28, 7)]:
+                cv.rect(ox + cx - 1, 33 - h, 3, h, SM_WAX, 1.3)
+                cv.px(ox + cx, 31 - h, SM_FLAME, 1.4); cv.px(ox + cx, 32 - h, hexc("f08a2e"), 1.4)
+            for x in (18, 23, 29): cv.rect(ox + x, 35, 1, 2 + x % 3, SM_WAX, 1.1)
+        if f == 4:   # urat kristal aura menembus batu
+            pts = [(8, 12), (14, 18), (12, 24), (20, 30), (18, 38), (26, 42)]
             for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-                for t in np.linspace(0, 1, 8): cv.px(ox + int(x0 + (x1 - x0) * t) + 12, int(y0 + (y1 - y0) * t), SM_GLOW, 0.6)
+                for t in np.linspace(0, 1, 9):
+                    x, y = int(x0 + (x1 - x0) * t) + 10, int(y0 + (y1 - y0) * t)
+                    cv.px(ox + x, y, SM_GLOW_D, 0.6); cv.px(ox + x + 1, y, SM_PURPLE[1], 0.6)
+            for (x, y) in [(24, 18), (30, 30), (34, 38)]:
+                for i in range(5):
+                    w = 2 - abs(i - 2)
+                    cv.rect(ox + x - w, y - i, 1 + 2 * w, 1, SM_GLOW if i > 1 else SM_GLOW_D, 1.3)
     save(cv, tiles, "smt_wall", wrap=True)
 
-    cv = sheet(5, 63)   # dekor: 0 kabel aura, 1 kristal, 2 genangan roh, 3 baut, 4 asap tipis
-    for x in range(6, 42):
-        yy = 24 + int(4 * np.sin(x * 0.25)); cv.px(x, yy, SM_METAL_L, 0.4); cv.px(x, yy + 1, SM_GLOW_D, 0.4)
-    for (cx, h) in [(18, 12), (24, 18), (30, 10)]:
-        for y in range(h):
-            w = max(1, int((h - y) / h * 4))
-            cv.rect(C + cx - w // 2, 38 - y, w, 1, SM_GLOW if y % 3 else SM_GLOW_D, 1.0 + y * 0.05)
-    cv.ellipse(96 + 24, 28, 13, 6, (122, 82, 199, 150), 0.0); cv.ellipse(96 + 24, 27, 7, 3, (167, 126, 240, 170), 0.0)
-    for k in range(5):
-        x, y = 144 + 10 + cv.rng.integers(28), 12 + cv.rng.integers(24)
-        cv.rect(x, y, 3, 3, SM_METAL_L, 0.6); cv.px(x + 1, y + 1, SM_METAL[0], 0.5)
-    for k in range(12):
-        cv.px(192 + 12 + cv.rng.integers(24), 10 + cv.rng.integers(28), (167, 126, 240, 70), 0.0)
+    # dekor lantai: 0 rune tergores, 1 sisa lilin, 2 halaman berserakan, 3 serpih kristal aura, 4 sarang laba-laba
+    cv = sheet(5, 63)
+    for a in np.linspace(0.3, 2.8, 36):
+        cv.px(int(24 + 17 * np.cos(a)), int(30 - 17 * np.sin(a) * 0.55), SM_GLOW_D, 0.3)
+    for (x, y) in [(15, 22), (24, 19), (33, 22)]:
+        cv.rect(x, y, 1, 4, SM_GLOW_D, 0.3); cv.rect(x - 1, y + 1, 3, 1, SM_GLOW_D, 0.3)
+    for (cx, h) in [(C + 18, 6), (C + 25, 9), (C + 31, 4)]:
+        cv.ellipse(cx, 36, 3, 1.5, SM_WAX, 0.5); cv.rect(cx - 1, 36 - h, 3, h, SM_WAX, 0.8); cv.px(cx, 35 - h, hexc("3a2e22"), 0.8)
+    for (x, y) in [(10, 18), (22, 26), (30, 16)]:
+        cv.rect(96 + x, y, 9, 7, CLOTH[0], 0.4)
+        for k in range(3): cv.rect(96 + x + 1, y + 1 + k * 2, 6 - k, 1, hexc("6e6a60"), 0.4)
+    for (cx, h) in [(144 + 18, 9), (144 + 24, 13), (144 + 29, 7)]:
+        for i in range(h):
+            w = max(1, int((h - i) / h * 3))
+            cv.rect(cx - w // 2, 38 - i, w, 1, SM_GLOW if i % 3 else SM_GLOW_D, 1.0 + i * 0.05)
+    for i in range(14):
+        cv.px(192 + 2 + i, 2 + i // 2, (200, 200, 215, 140), 0.2); cv.px(192 + 2 + i // 2, 2 + i, (200, 200, 215, 140), 0.2)
+    for i in range(10):
+        cv.px(192 + 2 + i, 2 + i, (200, 200, 215, 110), 0.2)
     save(cv, tiles, "smt_decor", wrap=False, strength=1.2)
 
-    # katup aura (tertutup merah = menyedot, terbalik hijau)
+
+def summit_valve():
+    props = os.path.join(SPR, "Props", "Summit")
+    # Katup aura. Redraw 20 Nov 2026 (tampak 3/4): roda kuningan MENDATAR di atas pipa tembaga tegak (tampak elips dari
+    # atas, dulu roda menghadap kamera), alas batu = cakram. Kaca ukur di muka pipa: merah-ungu = aura disedot,
+    # hijau = sudah dibalik; frame 1 roda berputar 45 derajat.
     cv = sheet(2, 64)
     for f in range(2):
         ox = f * C
-        glow = hexc("c2253a") if f == 0 else hexc("3fd1a0")
-        cv.rect(ox + 21, 26, 6, 20, SM_METAL[1], 1.3); cv.rect(ox + 16, 42, 16, 4, SM_METAL[0], 1.2)
-        cv.ellipse(ox + 24, 22, 12, 12, SM_METAL_L, 1.5, 0.3)
-        cv.ellipse(ox + 24, 22, 9, 9, SM_METAL[2], 1.3)
+        X = ox + 24
+        glow = hexc("b0306a") if f == 0 else hexc("3fd1a0")
+        disc(cv, X, 39, 11, 3, SM_STONE_L, SM_STONE[1], rim=SM_STONE[3], ht=1.1)           # alas batu
+        cyl(cv, X, 22, 39, 3.5, hexc("8a5232"), 1.3)                                         # pipa tembaga
+        for y in range(22, 41): cv.px(X - 2, y, hexc("b8744a"), 1.35)
+        disc(cv, X, 33, 5, 2, SM_BRASS, SM_BRASS_D, ht=1.4)                                  # sambungan
+        cv.ellipse(X + 1, 29, 2.5, 2.5, SM_BRASS_D, 1.5); cv.ellipse(X + 1, 29, 1.5, 1.5, glow, 1.6)   # kaca ukur
+    cv.outline(OUT)
+    # roda mendatar digambar SETELAH outline (cincin tipis akan tertelan outline otomatis): cincin kuningan 3 px dengan
+    # garis gelap di tepi luar & dalam, belakang lebih gelap, 4 jari-jari, poros.
+    for f in range(2):
+        X = f * C + 24
+        RX, RY, CY = 12.0, 5.0, 18.5
+        def e(x, y, rx, ry): return ((x + 0.5 - X) / rx) ** 2 + ((y + 0.5 - CY) / ry) ** 2
+        for y in range(10, 27):
+            for x in range(X - 14, X + 15):
+                if e(x, y, RX + 1, RY + 1) > 1.0: continue
+                if e(x, y, RX, RY) > 1.0 or (e(x, y, RX - 3, RY - 2) <= 1.0 and e(x, y, RX - 4, RY - 2.8) > 1.0):
+                    cv.px(x, y, OUT, 1.6)
+                elif e(x, y, RX - 3, RY - 2) > 1.0:
+                    cv.px(x, y, SM_BRASS_D if y + 0.5 < CY - 1 else (SM_BRASS_L if y + 0.5 > CY + RY - 2 else SM_BRASS), 1.6)
         ang = 0.0 if f == 0 else np.pi / 4
         for k in range(4):
-            a = ang + k * np.pi / 2
-            for t in range(2, 10): cv.px(ox + 24 + int(round(np.cos(a) * t)), 22 + int(round(np.sin(a) * t)), SM_METAL_L, 1.6)
-        cv.ellipse(ox + 24, 22, 3, 3, glow, 1.7)
-    cv.outline(OUT)
+            a2 = ang + k * np.pi / 2
+            for t in np.linspace(0.2, 0.8, 8):
+                cv.px(int(np.floor(X + np.cos(a2) * (RX - 1.5) * t)), int(np.floor(CY + np.sin(a2) * (RY - 1) * t)), SM_BRASS_L, 1.65)
+        disc(cv, X, 17.5, 2.6, 1.5, SM_BRASS_L, SM_BRASS_D, ht=1.8)
     save(cv, props, "prop_valve")
 
-    # toples raja 96 px
+
+def summit():
+    summit_tiles()
+    summit_valve()
+    summit_kingjar()
+
+
+def summit_kingjar():
+    # Toples raja 96 px, 2 frame: 0 tertutup, 1 terbuka (setelah semua katup terbalik).
+    # Redraw 20 Nov 2026: tampak 3/4 top-down (dulu bola tampak depan dengan tutup & alas kotak datar).
+    #   alas batu bertingkat = cakram, badan kaca bulat dengan pita kuningan melengkung, dasar & kabut aura ungu dengan
+    #   permukaan elips (bahasa yang sama dengan gelembung esens), kerah leher + tutup = cakram berpermukaan atas.
+    props = os.path.join(SPR, "Props", "Summit")
     tw = 96
-    cv = Canvas(tw, tw, 65)
-    glass_edge = (180, 200, 235, 255); glass = (110, 90, 170, 60); glass_hi = (230, 235, 255, 210)
-    cv.rect(28, 8, 40, 9, CS_GOLD, 1.5); cv.rect(28, 8, 40, 2, CS_GOLD_L, 1.6); cv.rect(44, 3, 8, 6, CS_GOLD_D, 1.6)
-    cv.rect(32, 17, 32, 5, glass_edge, 1.2)
-    for y in range(20, 88):
-        for x in range(14, 82):
-            d = ((x + 0.5 - 48) / 33) ** 2 + ((y + 0.5 - 54) / 33) ** 2
-            if d <= 1.0:
-                cv.px(x, y, glass_edge if d > 0.9 else glass, 1.0 if d > 0.9 else 0.5 + 0.5 * (1 - d))
-    for y in range(32, 66): cv.px(24, y, glass_hi, 1.2); cv.px(25, y, glass_hi, 1.2)
-    cv.rect(16, 84, 64, 8, CS_GOLD_D, 1.2); cv.rect(16, 84, 64, 2, CS_GOLD, 1.3)
+    cv = Canvas(tw * 2, tw, 65)
+    edge = (180, 200, 235, 255); glass = (110, 90, 170, 55); hi = (230, 235, 255, 210)
+    mist = (150, 100, 230, 120); mist_top = (190, 150, 250, 150)
+    for f in range(2):
+        ox = f * tw
+        X = ox + 48
+        # alas: batu menara (lebar) + cincin kuningan (lebih kecil) di atasnya
+        disc(cv, X, 79, 34, 4, SM_STONE_L, SM_STONE[2], rim=SM_STONE[3], ht=1.1)
+        disc(cv, X, 76, 26, 3, CS_GOLD, CS_GOLD_D, rim=CS_GOLD_L, ht=1.3)
+        # badan kaca: bola, dasar duduk di cincin
+        for y in range(18, 80):
+            for x in range(ox + 14, ox + 83):
+                d = ((x + 0.5 - X) / 31) ** 2 + ((y + 0.5 - 48) / 30) ** 2
+                if d <= 1.0:
+                    cv.px(x, y, edge if d > 0.91 else glass, 1.0 if d > 0.91 else 0.5 + 0.5 * (1 - d))
+        arc(cv, X, 74, 22, 8.5, edge, 0.7, front=False, a=110)             # dasar kaca belakang (tembus)
+        # kabut aura ungu mengendap di dasar: permukaan elips + isi di bawahnya (dibatasi bola)
+        for y in range(56, 80):
+            for x in range(ox + 18, ox + 79):
+                inb = ((x + 0.5 - X) / 29.5) ** 2 + ((y + 0.5 - 48) / 28.5) ** 2 <= 1.0
+                if not inb: continue
+                if ((x + 0.5 - X) / 25) ** 2 + ((y + 0.5 - 64) / 6) ** 2 <= 1.0:
+                    cv.px(x, y, mist_top, 0.8)
+                elif y > 64:
+                    cv.px(x, y, mist, 0.7)
+        # pita kuningan melingkar di perut: busur depan tegas, belakang samar
+        arc(cv, X, 47, 31, 12, CS_GOLD_D, 1.1, front=False, a=90)
+        for dy, c in ((0, CS_GOLD_D), (1, CS_GOLD), (2, CS_GOLD_L)):
+            arc(cv, X, 47 + dy, 31, 12, c, 1.3)
+        # kilau kaca
+        for y in range(30, 58): cv.px(ox + 24, y, hi, 1.2)
+        for y in range(34, 50): cv.px(ox + 26, y, hi[:3] + (130,), 1.2)
+        for (x, y) in [(28, 25), (29, 24), (31, 23), (32, 22)]: cv.px(ox + x, y, hi, 1.2)
+        # leher + kerah
+        cyl(cv, X, 15, 20, 13, glass, 0.9, edge=edge)
+        if f == 0:
+            disc(cv, X, 16, 16, 3, CS_GOLD, CS_GOLD_D, rim=CS_GOLD_L, ht=1.5)     # kerah
+            disc(cv, X, 10, 18, 4, CS_GOLD_L, CS_GOLD, rim=hexc("e2c27e"), ht=1.7)   # tutup
+            disc(cv, X, 5, 4, 2, CS_GOLD_L, CS_GOLD_D, ht=1.9)                      # pegangan
+            cv.ellipse(X, 3, 2.5, 2.5, CS_GOLD_L, 2.0)
+        else:
+            disc(cv, X, 16, 16, 3, CS_GOLD, CS_GOLD_D, rim=CS_GOLD_L, ht=1.5)     # kerah = bibir mulut
+            cv.ellipse(X, 16, 12.5, 4.6, hexc("1a1426"), 1.0)                   # mulut terbuka (gelap)
+            cv.ellipse(X, 17, 9, 2.6, hexc("3a2a5c"), 1.0)
+            for (x, y, a) in [(44, 10, 200), (51, 6, 150), (47, 2, 100)]:       # sisa aura naik dari mulut
+                cv.px(ox + x, y, mist_top[:3] + (a,), 1.0); cv.px(ox + x + 1, y, mist_top[:3] + (a // 2,), 1.0)
+            # tutup tergeletak di depan alas
+            disc(cv, ox + 72, 85, 9, 2, CS_GOLD_L, CS_GOLD, rim=hexc("e2c27e"), ht=1.5)
+            cv.ellipse(ox + 72, 84, 2.5, 1.5, CS_GOLD_D, 1.7)
     cv.outline(OUT, region=cv.col[:, :, 3] == 255)
     save_big(cv, props, "prop_kingjar_c96")
 
-    # mesin penyadap (dekor besar 96)
-    cv = Canvas(tw, tw, 66)
-    cv.rect(16, 30, 64, 60, SM_METAL[1], 1.2); cv.rect(16, 30, 64, 3, SM_METAL_L, 1.35)
-    cv.rect(22, 38, 52, 24, hexc("15121c"), 0.6)
-    for x in range(26, 72, 8): cv.rect(x, 42, 4, 16, SM_GLOW_D, 0.8); cv.rect(x + 1, 44, 2, 12, SM_GLOW, 0.9)
-    for x in (24, 46, 68): cv.rect(x, 8, 6, 22, SM_METAL[0], 1.5); cv.rect(x + 2, 8, 2, 22, SM_GLOW, 1.6)
-    cv.rect(26, 68, 44, 14, SM_PURPLE[1], 1.3)
-    for (cx, cy) in [(34, 75), (48, 75), (62, 75)]:
-        cv.ellipse(cx, cy, 4, 4, SM_METAL_L, 1.5); cv.px(cx, cy, hexc("c2253a"), 1.6)
-    cv.outline(OUT)
-    save_big(cv, props, "prop_drainmachine_c96")
+    # Mesin penyadap (prop_drainmachine_c96) sekarang dimodel di Blender: art/blender/drainmachine_v01.blend
 
 
 def preview(name, items, scale=3):
@@ -819,6 +1028,13 @@ def preview(name, items, scale=3):
 
 
 if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1:   # contoh: python gen_area_art.py jar kingjar  -> hanya sprite itu (tanpa pratinjau)
+        props_d = os.path.join(SPR, "Props", "Dungeon")
+        only = {"jar": lambda: dungeon_jar(props_d), "mech": lambda: mech_props(props_d), "kingjar": summit_kingjar, "valve": summit_valve,
+                "tiles_summit": summit_tiles}
+        for a in sys.argv[1:]: only[a]()
+        print("ok", sys.argv[1:]); sys.exit(0)
     dungeon(); preview("dungeon", PREVIEW); PREVIEW.clear()
     garden(); preview("garden", PREVIEW); PREVIEW.clear()
     castle(); preview("castle", PREVIEW); PREVIEW.clear()
