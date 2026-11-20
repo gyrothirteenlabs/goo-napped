@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c753370eabdd5c43bbe41faef5dc928, type: 3}
+  m_Name: SceneMusic
+  m_EditorClassIdentifier: GooNapped.Runtime::GooNapped.SceneMusicTable
+  entries:
+  - scenes: MainMenu, Intro
+    music: {fileID: 8300000, guid: 9006d3c21f428f8498bb961dc2b19c67, type: 3}
+    musicVolume: 0.5
+    ambience: {fileID: 0}
+    ambienceVolume: 0
+  - scenes: L00_Tutorial, L04_Cells, L05_CellBlock, L06_DrainLab, L07_GreatHall,
+      L08_Dining, L09_Gallery, L10_Tower
+    music: {fileID: 8300000, guid: 1f5a294dd7b3da140881889ec5a8b3b1, type: 3}
+    musicVolume: 0.35
+    ambience: {fileID: 8300000, guid: 8220a6914e23e1747bbd3815fec23b22, type: 3}
+    ambienceVolume: 0.5
+  - scenes: L01_Gate, L02_Hedge, L03_Mud
+    music: {fileID: 8300000, guid: 1f5a294dd7b3da140881889ec5a8b3b1, type: 3}
+    musicVolume: 0.35
+    ambience: {fileID: 8300000, guid: 7bde0a1f90829da49b4623ae485b19a1, type: 3}
+    ambienceVolume: 0.45
+  - scenes: L11_Summit
+    music: {fileID: 8300000, guid: feea353de31d4aa4292636c2563d4fee, type: 3}
+    musicVolume: 0.4
+    ambience: {fileID: 8300000, guid: 8220a6914e23e1747bbd3815fec23b22, type: 3}
+    ambienceVolume: 0.4
+  - scenes: Markas, Ending
+    music: {fileID: 8300000, guid: 9bc21993e57ae4649a473ef089cfa706, type: 3}
+    musicVolume: 0.35
+    ambience: {fileID: 0}
+    ambienceVolume: 0
+  crossfade: 1.5

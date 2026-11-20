@@ -54,6 +54,7 @@ Menu → Intro → L01 … L11 (Markas di antaranya) → Ending.
 |---|---|
 | ⬜ | Slime final + teman (sprite `move` sesuai panduan-blender-3d C.1) |
 | ✅ | Revisi 20 Nov: esens jadi gelembung aura seragam (warna = aura toples/HUD, ikon unik di dalam) + kartu info esens di HUD saat dekat (aura, cocok toples siapa, efek samping) + pesan setelah makan; perspektif 3/4 diperbaiki (toples teman, toples raja 2 frame, tangki lab, katup, tiang, patung, vas, tuas, balok dorong); obor beranimasi + cahaya berkedip; cahaya lilin dekorasi (tidak dihitung "cahaya = bahaya") | `gen_essences.py`, `EssenceInfo`, `GameHud`, `gen_area_art` (helper 3/4), `TorchFlicker`, `DecorLight`, `CandleLights` |
+| ✅ | Audio dari zip tim (20 Nov): musik per scene (`MusicDirector` + `Resources/SceneMusic`, crossfade, lanjut tanpa ulang kalau klip sama, listener cadangan untuk menu/cerita), ambience taman, SFX lompat slime (2 variasi) + belah. Hanya CC0/CC BY; rip YouTube & CC BY-NC ditolak. Kredit: `CREDITS.txt` (ikut build) | `Audio/LISENSI.md`, `MusicDirector`, `AudioDirector` |
 | ⬜ | Palet esens final (Slime_Embun/Belerang/Beku/Bayang/Pendar masih placeholder AI) |
 | ⬜ | Tileset 3 area + puncak, props tempat sembunyi, ventilasi, toples 2 ukuran |
 | ⬜ | Sprite musuh v2, audio final (tegang, kejar, alarm) |
