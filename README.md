@@ -1,106 +1,112 @@
-# Goo-napped (nama kerja)
+# Goo-napped
 
-Game puzzle stealth 2D top-down untuk **GitHub Game Off 2026** (tema **SHIFT**). Kamu slime kecil yang lolos dari alkemis jahat. Makan bahan alkemi untuk mengubah tubuh, belah diri, menyamar jadi barang, dan tukar dirimu dengan teman yang dikurung di toples segel, tanpa ketahuan penjaga.
+A 2D top-down stealth puzzle game about a clear-aura slime who is thrown out of his kingdom and must steal his friends back from an alchemist's laboratory. Split yourself, copy the aura of the friend you want to rescue, and slip past the guards without being seen.
 
-Engine **Unity 6 (6000.3.28f1)**, URP 2D. Art dibuat di **Blender** lalu dirender jadi sprite pixel 48 px.
+Made for **GitHub Game Off 2026**, theme **SHIFT**. Working title, the final name is still open.
+
+- **Engine:** Unity 6 (6000.3.28f1), Universal Render Pipeline 2D
+- **Art:** pixel art, 3D-rendered sprites made in Blender
+- **Platform:** Windows (keyboard)
+- **Status:** game-jam build, playtest and balance ongoing
 
 ---
 
-## Mulai cepat
+## Play
 
-1. Install **Unity 6000.3.28f1** (Unity Hub) dan **Git LFS** (`git lfs install`). Sprite, `.blend`, dan audio disimpan lewat LFS.
-2. Clone repo, buka folder ini di Unity Hub.
-3. Buka scene `Assets/_Game/Scenes/Boot/Boot.unity`, tekan **Play** (masuk menu utama → Mulai / Pilih level). Atau buka scene level langsung, misal `Scenes/Levels/Chapter1/C1_L01.unity`. Level bersambung otomatis: C1_L01 → C1_L04 → C2_L01 → C2_L04.
+Download the Windows build from the itch.io page (link to be added after publishing), unzip it, and run `GooNapped.exe`.
 
-### Kontrol
-| Tombol | Aksi |
+### Controls
+
+| Key | Action |
 |---|---|
-| WASD / panah | Gerak (lompatan kecil yang merayap) |
-| E | Makan bahan / tukar dengan isi toples / telan teman / padamkan lentera (butuh tubuh dingin) |
-| Space | Belah diri (ke arah hadap) / gabung kalau menyentuh potongan lain |
-| Shift | Pindah kendali ke potongan lain (yang ditinggal otomatis nyamar) |
-| Tahan C | Nyamar jadi barang di tempat |
-| Q | Muntahkan bahan terakhir (tubuh kembali seperti sebelumnya, bahan jatuh ke lantai) |
-| F | Lempar gumpalan lendir: bunyinya memancing penjaga (cooldown 5 detik) |
-| R | Ulang level |
-| Esc | Jeda (lanjut / ulang / menu utama) |
+| WASD / Arrow keys | Move (small hopping slime movement) |
+| E | Eat essence, use things, interact (swap with a jar, rescue a friend) |
+| Space | Split off a piece (max 2 pieces); merge when touching another piece |
+| Shift | Switch control to another piece, or to a friend in the vent |
+| C | Hide inside an object (you cannot move while hidden) |
+| F | Call / wait for a rescued friend; use a friend's power in the vent |
+| Q | Spit out the last essence you ate |
+| R | Retry from the last vent checkpoint |
+| Esc | Pause |
 
-### Alur satu level
-Intip toples (lihat resep) → makan bahan sesuai resep (urutan penting: ciri sejenis tertimpa) → belah → potongan masuk toples jadi tiruan → telan teman → kabur ke exit (kotak hijau). Ketahuan penjaga = level diulang.
+### How a level works
 
----
+1. Find the experiment room. There is no marker; follow the clues in the environment (aura pipes, glowing jars, dripping goo).
+2. Eat essences. Each one adds mass and effects. **The last essence you eat decides your aura.**
+3. Split. A piece whose mass equals a friend's size goes into that friend's jar as a copy, and the friend is freed.
+4. Lead the friend to a vent without being caught. Vents are safe, act as checkpoints, and are the level exit.
 
-## Dokumentasi
-
-| Dokumen | Isi | Untuk |
-|---|---|---|
-| [docs/arsitektur.md](docs/arsitektur.md) | Cara kerja game: sistem, script, alur data | Programmer |
-| [docs/cara-edit-unity.md](docs/cara-edit-unity.md) | Resep kerja di Unity: bikin level, bahan, resep, penjaga, suara | Semua |
-| [docs/panduan-blender-3d.md](docs/panduan-blender-3d.md) | Model Blender → sprite 48 px (template + add-on 1 klik) | Desainer 3D |
-| [docs/panduan-art-desainer.md](docs/panduan-art-desainer.md) | Aturan sprite 2D: albedo flat, normal map, tile | Desainer 2D |
-| [docs/rundown-level.md](docs/rundown-level.md) | Usulan urutan chapter & level | Desainer level |
-| [docs/cara-edit-unity.md#8-cerita-cutscene--dialog](docs/cara-edit-unity.md) | Menulis cutscene & dialog (tanpa kode) | Penulis cerita |
-| [docs/backlog.md](docs/backlog.md) | Daftar fitur: selesai / dikerjakan / berikutnya | Semua |
-| [docs/ai-vs-tim.md](docs/ai-vs-tim.md) | Pembagian kerja tim dan AI | Semua |
-| [CLAUDE.md](CLAUDE.md), [art/CLAUDE.md](art/CLAUDE.md) | Keputusan desain + aturan teknis (juga dibaca asisten AI) | Semua |
+Being spotted means the guards chase you. Break line of sight and hide to escape. Being caught sends you back to the last vent.
 
 ---
 
-## Struktur folder (standar)
+## Development
+
+### Requirements
+- Unity **6000.3.28f1** (install through Unity Hub)
+- **Git LFS** (`git lfs install`). Sprites, `.blend` files, and audio are stored with LFS.
+
+### Open the project
+1. Clone the repository and open the folder in Unity Hub.
+2. Open `Assets/_Game/Scenes/Boot/Boot.unity` and press Play. The main menu starts the game flow: Intro → L00 tutorial → L01 … L11, with the friend hideout between levels, and the Ending.
+
+### Build for Windows
+Use the **GooNapped → Build** menu in the editor:
+- **Windows Rilis** (release) → `Builds/Windows/`
+- **Windows Dev (dengan log)** (development, with log file and in-game log overlay) → `Builds/Windows-Dev/`
+
+The build script adds every scene in the game flow automatically, so you do not need to edit Build Settings. Builds are ignored by git.
+
+Smoke test: run `smoke_test.bat` in a build folder. It loads every scene and quits, then writes results to `goo-napped_log.txt`.
+
+### Project layout
 
 ```
 Assets/
-  _Game/                  SEMUA aset milik game. Jangan taruh aset game di luar folder ini.
-    Art/
-      Sprites/            sprite import otomatis (PPU 48, Point, grid 48, pivot tengah-bawah)
-        Characters/  Enemies/  Props/  Environment/  UI/  VFX/
-        Tiles/            sprite untuk Tilemap: pivot otomatis TENGAH
-      Materials/          Slime_* (palet per state bahan), Slime_Face, Env_Lit, Enemy_*
-      Shaders/            PixelToonLit.shader (semua sprite lit)
-      Tiles/              aset Tile (Placeholder/ = blockout)
-      Animations/  Fonts/
-    Audio/  Music/  SFX/  (proto_* = placeholder hasil sintesis)
-    UI/                   UI Toolkit: Hud.uxml (layout), Hud.uss (gaya), HudPanelSettings, tema
-    Data/                 ScriptableObject: Ingredients/, Recipes/, Levels/
-    Prefabs/              Characters/  Enemies/  Props/  Level/  Systems/  UI/
-    Scenes/
-      Boot/  Menus/  Story/
-      Levels/Chapter1..3/ C<ch>_L<nn>.unity
-      Sandbox/            scene uji (tidak masuk build)
+  _Game/                 all game-owned assets
+    Art/                 sprites, materials, shaders (PixelToonLit), animations, tiles, fonts
+    Audio/               music, SFX
+    Data/                ScriptableObjects: essences, friend recipes, story
+    Prefabs/             characters, enemies, props, levels, UI, systems
+    Scenes/              Boot, Menus, Story, Levels (V2 = current levels), Sandbox (test scenes)
     Scripts/
-      Runtime/            asmdef GooNapped.Runtime, namespace GooNapped
-        Audio/ Core/ Demo/ Enemies/ Ingredients/ Level/ Player/ Slime/ UI/
-      Editor/             asmdef GooNapped.Editor: Art/ Audio/ Level/ (tool editor)
-    Tests/EditMode/  PlayMode/
-  ThirdParty/             aset pihak ketiga + lisensinya (wajib boleh diredistribusi: repo publik)
-  Settings/               URP, Renderer2D, Input Actions
-art/                      sumber art di luar Unity
-  blender/                .blend (template, model, placeholder)
-  sprites/<nama>/         hasil render siap copy ke Assets/_Game/Art/Sprites/
-  renders/raw/            frame mentah (tidak di-commit)
-  tools/                  add-on Blender + skrip render/pixelize
-  palette.hex  ref/
-docs/                     dokumentasi tim
+      Runtime/           game code (asmdef GooNapped.Runtime)
+      Editor/            editor tools and build script (asmdef GooNapped.Editor)
+    Tests/               EditMode and PlayMode tests
+  ThirdParty/            third-party assets and their licenses
+  Settings/              URP, renderer, input actions
+art/                     art sources (Blender files, render tools, palette)
+docs/                    team documentation (in Indonesian)
 ```
 
-### Aturan nama
-| Jenis | Pola | Contoh |
-|---|---|---|
-| Scene level | `C<chapter>_L<nomor>` | `C1_L03.unity` |
-| Script | PascalCase, 1 MonoBehaviour per file, nama file = nama class | `GolemGuard.cs` |
-| Prefab | `<Jenis>_<Nama>` atau nama benda | `Golem_Placeholder`, `Jar`, `Lantern` |
-| Data | `Ingredient_<Nama>`, `Recipe_<NamaTeman>` | `Ingredient_SerbukBatu.asset` |
-| Sprite sheet | `<aset>_<layer>_<anim>_<arah>.png` | `slime_body_move_side.png`, `golem_albedo_idle_front.png` |
-| Normal map | ganti `_body_`/`_albedo_` jadi `_normal_`, atau tambah `_normal` | `golem_normal_idle_front.png`, `crate_normal.png` |
-| Objek Blender | `<Karakter>_<Bagian>` | `Slime_Body`, `Golem_Head` |
-| File Blender | `art/blender/<nama>_v01.blend` (naik versi sebelum perubahan besar) | `golem_v02.blend` |
-| Placeholder | awalan `proto_` atau akhiran `_placeholder` | `proto_bgm_stealth.wav`, `golem_placeholder_v01.blend` |
+### Tests
+Run tests from **Window → General → Test Runner**. EditMode and PlayMode suites are under `Assets/_Game/Tests/`.
 
 ---
 
-## Git
-- `main` stabil, hanya lewat PR + review. Branch: `feat/…`, `fix/…`, `art/…`, `level/c1_l03`, `docs/…`.
-- Commit pendek dengan awalan area: `feat:`, `fix:`, `art:`, `level:`, `unity:`, `docs:`.
-- **Jangan edit scene yang sama bersamaan** (konflik YAML). Klaim scene di chat tim dulu. Kerja di prefab kalau bisa.
-- `Packages/` dan `ProjectSettings/` dibahas tim dulu sebelum di-commit.
-- Aset berbayar/berlisensi tertutup **tidak boleh** masuk repo (aturan Game Off: repo publik).
+## Credits
+
+Full list in [CREDITS.txt](CREDITS.txt). It is also included in every build.
+
+- **Team:** design, art, level design, story, and audio by the team; gameplay architecture, code, and tooling with AI assistance under the team's direction.
+- **Music and sound:** Freesound.org, CC0 and CC BY 4.0 (see CREDITS.txt for each author and link).
+- **Font:** Pixelify Sans, SIL Open Font License 1.1.
+
+## License
+
+TBD. The team has not chosen a license yet. Until one is added, all rights are reserved by the team, and third-party assets keep their own licenses.
+
+---
+
+## Team documentation (Indonesian)
+
+| Document | Contents |
+|---|---|
+| [docs/desain-v2.md](docs/desain-v2.md) | Game design v2: lore, mechanics, levels, enemies |
+| [docs/backlog.md](docs/backlog.md) | Feature progress |
+| [docs/arsitektur.md](docs/arsitektur.md) | Code architecture |
+| [docs/cara-edit-unity.md](docs/cara-edit-unity.md) | How to edit levels, essences, guards, and sound in Unity |
+| [docs/panduan-blender-3d.md](docs/panduan-blender-3d.md) | Blender model to 48 px sprite pipeline |
+| [docs/panduan-art-desainer.md](docs/panduan-art-desainer.md) | 2D art rules |
+| [docs/ai-vs-tim.md](docs/ai-vs-tim.md) | Who does what on the team |
+| [CLAUDE.md](CLAUDE.md), [art/CLAUDE.md](art/CLAUDE.md) | Design decisions and technical rules |
