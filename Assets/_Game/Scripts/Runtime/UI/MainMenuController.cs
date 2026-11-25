@@ -141,7 +141,7 @@ namespace GooNapped
             AddItem(box, mainItems, "Quit", Quit);
             mainSel = 0;
             int done = GameFlow.UnlockedIndex;
-            progress.text = hasProgress ? $"Next: {LevelCatalog.Name(Mathf.Clamp(done, 0, GameFlow.Levels.Length - 1))}   ·   {RescueLog.Count} friends rescued" : "";
+            progress.text = hasProgress ? $"Next: {LevelCatalog.Name(Mathf.Clamp(done, 0, GameFlow.Levels.Length - 1))}   ·   {RescueLog.Count} friend{(RescueLog.Count == 1 ? "" : "s")} rescued" : "";
         }
 
         private void BuildLevels()
