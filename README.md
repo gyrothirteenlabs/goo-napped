@@ -94,7 +94,7 @@ Full list in [CREDITS.txt](CREDITS.txt). It is also included in every build.
 
 ## License
 
-TBD. The team has not chosen a license yet. Until one is added, all rights are reserved by the team, and third-party assets keep their own licenses.
+The game's code, art, and other team-made content are released under the [MIT License](LICENSE). Third-party assets keep their own licenses (see [CREDITS.txt](CREDITS.txt)).
 
 ---
 

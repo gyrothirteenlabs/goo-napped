@@ -12,9 +12,9 @@ Deadline: **1 Desember 2026, 13:37 PST** (21:37 UTC). Submit beberapa hari sebel
 - [x] Screenshot 1360×768 dari build baru: [screenshots/](screenshots/)
 - [x] Cover placeholder 630×500: [cover_placeholder_630x500.png](cover_placeholder_630x500.png) (pakai logo sementara, ganti dengan art final tim)
 - [x] Kredit musik dan font: CREDITS.txt (ikut build)
+- [x] Lisensi: MIT (file [LICENSE](../../LICENSE)), aset pihak ketiga tetap pakai lisensinya sendiri
 
-## Masih perlu keputusan / aksi tim
-- [ ] **Lisensi repo**: belum dipilih (lihat README bagian License). Aturan Game Off hanya minta repo publik, jadi ini keputusan tim.
+## Masih perlu aksi tim
 - [ ] **Cover final** dari tim desainer (ukuran 630×500, format PNG atau JPG).
 - [ ] **Screenshot final** (opsional diganti dengan art final). Minimal 1 screenshot wajib.
 - [ ] **GIF gameplay** (opsional, tapi sangat membantu di halaman itch). Bisa dibuat dari Unity Recorder atau OBS.

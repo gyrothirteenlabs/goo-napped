@@ -76,7 +76,7 @@ You are a quiet, clear-aura slime. Nobody could read your aura, so you were thro
 - Music and sound: Freesound.org, CC0 and CC BY 4.0 (see CREDITS.txt for authors and links)
 - Font: Pixelify Sans, SIL Open Font License 1.1
 
-**Source code:** [https://github.com/gyrothirteenlabs/goo-napped](https://github.com/gyrothirteenlabs/goo-napped)
+**Source code:** [https://github.com/gyrothirteenlabs/goo-napped](https://github.com/gyrothirteenlabs/goo-napped) (MIT License)
 
 ---
 
